@@ -1,0 +1,345 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AdminRole {
+  FULL
+  COORDINATOR
+}
+
+enum AdminOtpStatus {
+  PENDING
+  USED
+  EXPIRED
+}
+
+enum OnboardingStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  DENIED
+  EXPIRED
+}
+
+enum ReviewStatus {
+  SUBMITTED
+  APPROVED
+  DENIED
+  EXPIRED
+}
+
+enum NotificationCategory {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+enum NotificationRecipientType {
+  ADMIN
+  PARTNER
+}
+
+enum FormStatus {
+  SENT
+  SIGNED
+  REJECTED
+}
+
+enum AuditAction {
+  PARTNER_APPROVED
+  PARTNER_DENIED
+  PARTNER_EDITED
+  PARTNER_EXPIRED
+  AGENT_APPROVED
+  AGENT_DENIED
+  AGENT_EDITED
+  AGENT_EXPIRED
+  BUSINESS_APPROVED
+  BUSINESS_DENIED
+  BUSINESS_EDITED
+  BUSINESS_EXPIRED
+  ADMIN_REGION_ASSIGNED
+  FORM_SENT
+  FORM_SIGNED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  partnerProfile PartnerProfile?
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Admin {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  role      AdminRole @default(COORDINATOR)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  otps       AdminOtp[]
+  sessions   AdminSession[]
+  regions    AdminRegionAssignment[]
+  auditLogs  AuditLog[]
+}
+
+model AdminOtp {
+  id        String         @id @default(cuid())
+  adminId   String
+  codeHash  String
+  status    AdminOtpStatus @default(PENDING)
+  expiresAt DateTime
+  createdAt DateTime       @default(now())
+
+  admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId, status])
+}
+
+model AdminRegionAssignment {
+  id         String   @id @default(cuid())
+  adminId    String
+  regionCode String
+  createdAt  DateTime @default(now())
+
+  admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@unique([adminId, regionCode])
+}
+
+model AdminSession {
+  id           String   @id @default(cuid())
+  adminId      String
+  sessionToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+}
+
+model PartnerProfile {
+  id                       String           @id @default(cuid())
+  userId                   String           @unique
+  status                   OnboardingStatus @default(DRAFT)
+  submittedAt              DateTime?
+  approvedAt               DateTime?
+  deniedAt                 DateTime?
+  denialReason             String?
+  businessName             String?
+  partnerFirstName         String?
+  partnerSurname           String?
+  phoneNumber              String?
+  paymentWallet            String?
+  ghanaCardNumber           String?
+  ghanaCardFrontUrl         String?
+  ghanaCardBackUrl          String?
+  passportPhotoUrl          String?
+  taxIdentityNumber        String?
+  addressRegionCode        String?
+  addressDistrictCode      String?
+  addressCode              String?
+  gpsLatitude              String?
+  gpsLongitude             String?
+  city                      String?
+  landmark                  String?
+  businessCertificateUrl    String?
+  fireCertificateUrl        String?
+  insuranceUrl              String?
+  storeFrontUrl             String?
+  storeInsideUrl            String?
+  apn                       String?
+  mifiImei                  String?
+  createdAt                 DateTime         @default(now())
+  updatedAt                 DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  agents    Agent[]
+  businesses Business[]
+  trainingRequests TrainingRequest[]
+  restockRequests RestockRequest[]
+  feedbackItems Feedback[]
+  formRequests FormRequest[]
+}
+
+model Agent {
+  id                 String       @id @default(cuid())
+  partnerProfileId   String
+  status             ReviewStatus @default(SUBMITTED)
+  submittedAt        DateTime     @default(now())
+  approvedAt         DateTime?
+  deniedAt           DateTime?
+  denialReason       String?
+  firstName          String
+  surname            String
+  phoneNumber        String
+  email              String
+  cpAppNumber        String?
+  ghanaCardNumber    String
+  ghanaCardFrontUrl  String
+  ghanaCardBackUrl   String
+  passportPhotoUrl   String
+  addressRegionCode  String
+  addressDistrictCode String
+  addressCode        String
+  city               String
+  businessName       String
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
+}
+
+model Business {
+  id                 String       @id @default(cuid())
+  partnerProfileId   String
+  status             ReviewStatus @default(SUBMITTED)
+  submittedAt        DateTime     @default(now())
+  approvedAt         DateTime?
+  deniedAt           DateTime?
+  denialReason       String?
+  businessName       String
+  addressRegionCode  String
+  addressDistrictCode String
+  addressCode        String
+  gpsLatitude        String?
+  gpsLongitude       String?
+  city               String
+  landmark           String?
+  storeFrontUrl      String
+  storeInsideUrl     String
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id            String                     @id @default(cuid())
+  recipientType NotificationRecipientType
+  recipientAdminId String?
+  recipientUserId  String?
+  title         String
+  message       String
+  category      NotificationCategory @default(INFO)
+  readAt        DateTime?
+  createdAt     DateTime             @default(now())
+}
+
+model TrainingRequest {
+  id              String       @id @default(cuid())
+  partnerProfileId String
+  agentIds        String[]
+  agentNames      String[]
+  message         String?
+  createdAt       DateTime     @default(now())
+
+  partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
+}
+
+model RestockRequest {
+  id              String   @id @default(cuid())
+  partnerProfileId String
+  items           String[]
+  message         String?
+  createdAt       DateTime @default(now())
+
+  partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
+}
+
+model Feedback {
+  id              String   @id @default(cuid())
+  partnerProfileId String
+  title           String
+  message         String
+  createdAt       DateTime @default(now())
+
+  partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
+}
+
+model FormRequest {
+  id              String     @id @default(cuid())
+  partnerProfileId String
+  title           String
+  documentUrl     String
+  status          FormStatus @default(SENT)
+  signedAt        DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
+  signature      FormSignature?
+}
+
+model FormSignature {
+  id            String   @id @default(cuid())
+  formRequestId String   @unique
+  signerName    String
+  signedAt      DateTime @default(now())
+  signatureUrl  String
+
+  formRequest FormRequest @relation(fields: [formRequestId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id            String     @id @default(cuid())
+  adminId       String?
+  action        AuditAction
+  targetType    String
+  targetId      String
+  metadata      Json?
+  createdAt     DateTime   @default(now())
+
+  admin Admin? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+}

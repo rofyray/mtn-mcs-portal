@@ -1,0 +1,18 @@
+-- CreateEnum
+CREATE TYPE "AuditAction" AS ENUM ('PARTNER_APPROVED', 'PARTNER_DENIED', 'PARTNER_EDITED', 'AGENT_APPROVED', 'AGENT_DENIED', 'BUSINESS_APPROVED', 'BUSINESS_DENIED', 'ADMIN_REGION_ASSIGNED', 'FORM_SENT', 'FORM_SIGNED');
+
+-- CreateTable
+CREATE TABLE "AuditLog" (
+    "id" TEXT NOT NULL,
+    "adminId" TEXT,
+    "action" "AuditAction" NOT NULL,
+    "targetType" TEXT NOT NULL,
+    "targetId" TEXT NOT NULL,
+    "metadata" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
+);
+
+-- AddForeignKey
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "Admin"("id") ON DELETE SET NULL ON UPDATE CASCADE;
