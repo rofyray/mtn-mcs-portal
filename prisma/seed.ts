@@ -49,7 +49,7 @@ const coordinators = [
     name: "Paa Grant",
     email: "geoffreyokyereforson@gmail.com",
     role: "COORDINATOR",
-    regions: ["W", "C", "R"],
+    regions: ["W", "C", "R", "G"],
   },
 ];
 

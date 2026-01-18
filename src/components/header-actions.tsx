@@ -12,6 +12,12 @@ export default function HeaderActions() {
   const { status } = useSession();
   const isPartnerRoute = pathname.startsWith("/partner") || pathname.startsWith("/onboarding");
   const isAdminRoute = pathname.startsWith("/admin");
+  const showMobileNavToggle =
+    (isPartnerRoute &&
+      status === "authenticated" &&
+      pathname !== "/partner/login" &&
+      pathname !== "/onboarding") ||
+    (isAdminRoute && pathname !== "/admin/login");
   const showPartnerNotifications =
     status === "authenticated" && isPartnerRoute && pathname !== "/partner/login";
   const showAdminNotifications = isAdminRoute && pathname !== "/admin/login";
@@ -20,29 +26,31 @@ export default function HeaderActions() {
 
   return (
     <div className="header-actions">
-      <button
-        type="button"
-        className="icon-button mobile-nav-toggle"
-        aria-label="Open menu"
-        title="Open menu"
-        onClick={() => {
-          window.dispatchEvent(new Event("toggle-mobile-nav"));
-        }}
-      >
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 24 24"
-          width="18"
-          height="18"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+      {showMobileNavToggle ? (
+        <button
+          type="button"
+          className="icon-button mobile-nav-toggle"
+          aria-label="Open menu"
+          title="Open menu"
+          onClick={() => {
+            window.dispatchEvent(new Event("toggle-mobile-nav"));
+          }}
         >
-          <path d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      ) : null}
       {showPartnerNotifications ? (
         <Link
           href="/partner/notifications"

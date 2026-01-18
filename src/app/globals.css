@@ -20,6 +20,30 @@
   --input-bg: rgba(255, 255, 255, 0.8);
   --input-border: rgba(15, 23, 42, 0.12);
   --focus-ring: rgba(1, 77, 109, 0.35);
+  --status-info-bg: #dbeafe;
+  --status-info-border: #bfdbfe;
+  --status-info-text: #0f2f6b;
+  --status-info-bg-soft: rgba(59, 130, 246, 0.12);
+  --status-info-border-soft: rgba(59, 130, 246, 0.25);
+  --status-info-text-soft: #0f2f6b;
+  --status-success-bg: #dcfce7;
+  --status-success-border: #bbf7d0;
+  --status-success-text: #0f3d23;
+  --status-success-bg-soft: rgba(22, 163, 74, 0.12);
+  --status-success-border-soft: rgba(22, 163, 74, 0.25);
+  --status-success-text-soft: #0f3d23;
+  --status-warning-bg: #fef3c7;
+  --status-warning-border: #fde68a;
+  --status-warning-text: #7a2e00;
+  --status-warning-bg-soft: rgba(245, 158, 11, 0.12);
+  --status-warning-border-soft: rgba(245, 158, 11, 0.25);
+  --status-warning-text-soft: #7a2e00;
+  --status-error-bg: #fee2e2;
+  --status-error-border: #fecaca;
+  --status-error-text: #7a1111;
+  --status-error-bg-soft: rgba(239, 68, 68, 0.12);
+  --status-error-border-soft: rgba(239, 68, 68, 0.25);
+  --status-error-text-soft: #7a1111;
 }
 
 .theme-dark {
@@ -34,6 +58,30 @@
   --input-bg: rgba(15, 23, 42, 0.8);
   --input-border: rgba(148, 163, 184, 0.24);
   --focus-ring: rgba(255, 204, 8, 0.3);
+  --status-info-bg: #1e3a8a;
+  --status-info-border: rgba(96, 165, 250, 0.65);
+  --status-info-text: #e0f2fe;
+  --status-info-bg-soft: rgba(59, 130, 246, 0.2);
+  --status-info-border-soft: rgba(147, 197, 253, 0.5);
+  --status-info-text-soft: #e0f2fe;
+  --status-success-bg: #14532d;
+  --status-success-border: rgba(74, 222, 128, 0.65);
+  --status-success-text: #dcfce7;
+  --status-success-bg-soft: rgba(34, 197, 94, 0.2);
+  --status-success-border-soft: rgba(134, 239, 172, 0.5);
+  --status-success-text-soft: #dcfce7;
+  --status-warning-bg: #78350f;
+  --status-warning-border: rgba(251, 191, 36, 0.7);
+  --status-warning-text: #fef3c7;
+  --status-warning-bg-soft: rgba(245, 158, 11, 0.2);
+  --status-warning-border-soft: rgba(252, 211, 77, 0.55);
+  --status-warning-text-soft: #fef3c7;
+  --status-error-bg: #7f1d1d;
+  --status-error-border: rgba(248, 113, 113, 0.7);
+  --status-error-text: #fee2e2;
+  --status-error-bg-soft: rgba(239, 68, 68, 0.2);
+  --status-error-border-soft: rgba(252, 165, 165, 0.6);
+  --status-error-text-soft: #fee2e2;
 }
 
 @theme inline {
@@ -568,27 +616,27 @@ p {
 }
 
 .toast-info {
-  background: #dbeafe;
-  border-color: #bfdbfe;
-  color: #0f2f6b;
+  background: var(--status-info-bg);
+  border-color: var(--status-info-border);
+  color: var(--status-info-text);
 }
 
 .toast-success {
-  background: #dcfce7;
-  border-color: #bbf7d0;
-  color: #0f3d23;
+  background: var(--status-success-bg);
+  border-color: var(--status-success-border);
+  color: var(--status-success-text);
 }
 
 .toast-warning {
-  background: #fef3c7;
-  border-color: #fde68a;
-  color: #7a2e00;
+  background: var(--status-warning-bg);
+  border-color: var(--status-warning-border);
+  color: var(--status-warning-text);
 }
 
 .toast-error {
-  background: #fee2e2;
-  border-color: #fecaca;
-  color: #7a1111;
+  background: var(--status-error-bg);
+  border-color: var(--status-error-border);
+  color: var(--status-error-text);
 }
 
 .toast-close {
@@ -874,27 +922,27 @@ p {
 }
 
 .form-message-info {
-  background: rgba(59, 130, 246, 0.12);
-  border-color: rgba(59, 130, 246, 0.25);
-  color: #0f2f6b;
+  background: var(--status-info-bg-soft);
+  border-color: var(--status-info-border-soft);
+  color: var(--status-info-text-soft);
 }
 
 .form-message-success {
-  background: rgba(22, 163, 74, 0.12);
-  border-color: rgba(22, 163, 74, 0.25);
-  color: #0f3d23;
+  background: var(--status-success-bg-soft);
+  border-color: var(--status-success-border-soft);
+  color: var(--status-success-text-soft);
 }
 
 .form-message-warning {
-  background: rgba(245, 158, 11, 0.12);
-  border-color: rgba(245, 158, 11, 0.25);
-  color: #7a2e00;
+  background: var(--status-warning-bg-soft);
+  border-color: var(--status-warning-border-soft);
+  color: var(--status-warning-text-soft);
 }
 
 .form-message-error {
-  background: rgba(239, 68, 68, 0.12);
-  border-color: rgba(239, 68, 68, 0.25);
-  color: #7a1111;
+  background: var(--status-error-bg-soft);
+  border-color: var(--status-error-border-soft);
+  color: var(--status-error-text-soft);
 }
 
 .empty-state {
@@ -1376,6 +1424,10 @@ select.input {
 @media (max-width: 900px) {
   .app-shell {
     padding: 16px 16px 40px;
+  }
+
+  .logo-wrap.logo-compact .logo-text {
+    display: none;
   }
 
   .nav-shell {

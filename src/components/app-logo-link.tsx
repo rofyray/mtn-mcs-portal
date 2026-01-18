@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 function resolveHomeHref(pathname: string) {
   if (pathname.startsWith("/admin")) {
@@ -25,10 +26,20 @@ function resolveHomeHref(pathname: string) {
 
 export default function AppLogoLink() {
   const pathname = usePathname();
+  const { status } = useSession();
   const homeHref = resolveHomeHref(pathname);
+  const isPartnerRoute = pathname.startsWith("/partner") || pathname.startsWith("/onboarding");
+  const isAdminRoute = pathname.startsWith("/admin");
+  const showCompactLogo =
+    (isPartnerRoute && status === "authenticated" && pathname !== "/partner/login") ||
+    (isAdminRoute && pathname !== "/admin/login");
 
   return (
-    <Link className="logo-wrap" href={homeHref} aria-label="MTN Community Shop home">
+    <Link
+      className={`logo-wrap ${showCompactLogo ? "logo-compact" : ""}`}
+      href={homeHref}
+      aria-label="MTN Community Shop home"
+    >
       <Image
         src="/brand/mtnlogoblack.png"
         alt="MTN logo"
@@ -36,7 +47,7 @@ export default function AppLogoLink() {
         height={60}
         className="logo-image"
       />
-      <div>
+      <div className="logo-text">
         <p className="logo-title">MTN Community Shop</p>
         <p className="logo-subtitle">Partner Management</p>
       </div>
