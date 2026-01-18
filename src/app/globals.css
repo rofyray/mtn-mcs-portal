@@ -206,6 +206,7 @@ p {
   grid-template-columns: 220px 1fr;
   gap: 20px;
   align-items: start;
+  --nav-item-size: 44px;
 }
 
 .nav-shell.collapsed {
@@ -442,6 +443,24 @@ p {
 .nav-shell.collapsed .nav-link {
   justify-content: center;
   padding: 10px;
+}
+
+.nav-shell.collapsed .nav-panel:not(.nav-panel-drawer) .nav-link {
+  width: var(--nav-item-size);
+  height: var(--nav-item-size);
+  padding: 0;
+  gap: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.nav-shell.collapsed .nav-panel:not(.nav-panel-drawer) .nav-icon {
+  width: var(--nav-item-size);
+  height: var(--nav-item-size);
+  display: grid;
+  place-items: center;
 }
 
 .nav-shell.collapsed .nav-label {
