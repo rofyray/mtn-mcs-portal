@@ -103,6 +103,7 @@ html.auth-no-scroll,
 body.auth-no-scroll {
   height: 100%;
   overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body.auth-no-scroll .app-shell {
@@ -115,6 +116,13 @@ body.auth-no-scroll .app-shell {
 
 body.auth-no-scroll .app-content {
   min-height: 0;
+}
+
+body.auth-no-scroll .app-header {
+  position: fixed;
+  left: 24px;
+  right: 24px;
+  top: 16px;
 }
 
 a {
@@ -1424,6 +1432,11 @@ select.input {
 @media (max-width: 900px) {
   .app-shell {
     padding: 16px 16px 40px;
+  }
+
+  body.auth-no-scroll .app-header {
+    left: 16px;
+    right: 16px;
   }
 
   .logo-wrap.logo-compact .logo-text {

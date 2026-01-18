@@ -16,10 +16,18 @@ export default function LoginPage() {
   useAutoDismiss(error, setError);
 
   useEffect(() => {
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const root = document.documentElement;
+    const hadRootClass = root.classList.contains("auth-no-scroll");
+    const hadBodyClass = document.body.classList.contains("auth-no-scroll");
+    document.body.classList.add("auth-no-scroll");
+    root.classList.add("auth-no-scroll");
     return () => {
-      document.body.style.overflow = previous;
+      if (!hadBodyClass) {
+        document.body.classList.remove("auth-no-scroll");
+      }
+      if (!hadRootClass) {
+        root.classList.remove("auth-no-scroll");
+      }
     };
   }, []);
 
@@ -70,42 +78,47 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-140px)] flex items-center justify-center px-6">
-      <div className="w-full max-w-md space-y-6 glass-panel p-6 page-animate">
-        <h1 className="text-2xl font-semibold">Partner Login</h1>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-1">
-            <label className="label">Email</label>
-            <input
-              className="input"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="label">Password</label>
-            <input
-              className="input"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
-          </div>
-          {error ? <p className="form-message form-message-error">{error}</p> : null}
-          <button
-            className="btn btn-primary w-full"
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? "Signing in..." : "Sign in"}
-          </button>
-        </form>
-        <p className="text-sm">
-          Don&apos;t have an account? <a href="/auth/signup" className="link-accent">Sign up</a>
-        </p>
+    <main className="min-h-0">
+      <div className="fixed inset-0 flex items-center justify-center px-6 pointer-events-none">
+        <div className="w-full max-w-md space-y-6 glass-panel p-6 page-animate pointer-events-auto">
+          <h1 className="text-2xl font-semibold">Partner Login</h1>
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="space-y-1">
+              <label className="label">Email</label>
+              <input
+                className="input"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="label">Password</label>
+              <input
+                className="input"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
+            </div>
+            {error ? <p className="form-message form-message-error">{error}</p> : null}
+            <button
+              className="btn btn-primary w-full"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Signing in..." : "Sign in"}
+            </button>
+          </form>
+          <p className="text-sm">
+            Don&apos;t have an account?{" "}
+            <a href="/auth/signup" className="link-accent">
+              Sign up
+            </a>
+          </p>
+        </div>
       </div>
     </main>
   );
