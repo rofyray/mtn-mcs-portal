@@ -675,6 +675,11 @@ p {
   flex: 0 0 auto;
 }
 
+.theme-light .toggle-ui {
+  background: rgba(1, 77, 109, 0.08);
+  border-color: rgba(1, 77, 109, 0.25);
+}
+
 .toggle-ui::after {
   content: "";
   position: absolute;
@@ -685,6 +690,10 @@ p {
   border-radius: 999px;
   background: #fff;
   transition: transform 0.2s ease;
+}
+
+.theme-light .toggle-ui::after {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
 }
 
 .toggle-field input:checked + .toggle-ui {
