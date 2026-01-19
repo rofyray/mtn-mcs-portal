@@ -77,7 +77,9 @@ const partnerLinks: NavLink[] = [
   },
 ];
 
-const adminLinks: NavLink[] = [
+type AdminNavLink = NavLink & { fullOnly?: boolean };
+
+const adminLinks: AdminNavLink[] = [
   {
     href: "/admin",
     label: "Dashboard",
@@ -136,6 +138,7 @@ const adminLinks: NavLink[] = [
   {
     href: "/admin/feedback",
     label: "Feedback",
+    fullOnly: true,
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
         <path d="M21 15a4 4 0 0 1-4 4H7l-4 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
@@ -146,6 +149,7 @@ const adminLinks: NavLink[] = [
   {
     href: "/admin/audit",
     label: "Audit Logs",
+    fullOnly: true,
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
         <path d="M3 3h18v6H3zM7 21h10" />
@@ -156,6 +160,7 @@ const adminLinks: NavLink[] = [
   {
     href: "/admin/settings",
     label: "Settings",
+    fullOnly: true,
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
         <circle cx="12" cy="12" r="3" />
@@ -170,6 +175,7 @@ const navStorageKey = "nav-collapsed";
 export default function NavShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [adminRole, setAdminRole] = useState<string | null>(null);
   const hideNav =
     pathname.startsWith("/auth") ||
     pathname === "/admin/login" ||
@@ -221,6 +227,29 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (!pathname.startsWith("/admin") || pathname === "/admin/login") {
+      return;
+    }
+    let isMounted = true;
+
+    async function loadAdminRole() {
+      const response = await fetch("/api/admin/me");
+      if (!response.ok) {
+        return;
+      }
+      const data = await response.json().catch(() => ({}));
+      if (isMounted) {
+        setAdminRole(data.admin?.role ?? null);
+      }
+    }
+
+    loadAdminRole();
+    return () => {
+      isMounted = false;
+    };
+  }, [pathname]);
+
+  useEffect(() => {
     const media = window.matchMedia("(max-width: 900px)");
     function handleChange(event: MediaQueryListEvent) {
       if (!event.matches) {
@@ -239,7 +268,13 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
   }, [mobileOpen]);
 
   const isAdmin = pathname.startsWith("/admin");
-  const links = useMemo(() => (isAdmin ? adminLinks : partnerLinks), [isAdmin]);
+  const links = useMemo(() => {
+    if (!isAdmin) {
+      return partnerLinks;
+    }
+    const isFullAccess = adminRole === "FULL";
+    return adminLinks.filter((link) => !link.fullOnly || isFullAccess);
+  }, [adminRole, isAdmin]);
 
   if (hideNav) {
     return <>{children}</>;

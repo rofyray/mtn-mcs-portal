@@ -5,19 +5,25 @@ const prisma = new PrismaClient();
 const coordinators = [
   {
     name: "Lydia Ohenewaa",
-    email: "Lydia.Ohenewaa@mtn.com",
+    email: "lydia.ohenewaa@mtn.com",
     role: "COORDINATOR",
     regions: ["A"],
   },
   {
+    name: "System Coordinator",
+    email: "regionadmin@grr.la",
+    role: "COORDINATOR",
+    regions: ["G", "A"],
+  },
+  {
     name: "Mariam Abubakar",
-    email: "Mariam.Abubakar@mtn.com",
+    email: "mariam.abubakar@mtn.com",
     role: "COORDINATOR",
     regions: ["N", "U", "X", "S", "J", "B", "F", "H"],
   },
   {
     name: "Jeremiah Agyei",
-    email: "Jeremiah.Adjei@mtn.com",
+    email: "jeremiah.adjei@mtn.com",
     role: "COORDINATOR",
     regions: ["E", "V", "O"],
   },
@@ -29,19 +35,19 @@ const coordinators = [
   },
   {
     name: "Muniratu Iddi-Abass Hussein",
-    email: "Muniratu.Iddi-AbassHussein@mtn.com",
+    email: "muniratu.iddi-abasshussein@mtn.com",
     role: "COORDINATOR",
     regions: ["G"],
   },
   {
     name: "Dennis Kwame",
-    email: "Dennis.Kwame@mtn.com",
+    email: "dennis.kwame@mtn.com",
     role: "COORDINATOR",
     regions: ["G"],
   },
   {
     name: "Lovelace Mensah",
-    email: "Lovelace.Mensah@mtn.com",
+    email: "lovelace.mensah@mtn.com",
     role: "COORDINATOR",
     regions: ["W", "C", "R"],
   },
@@ -62,7 +68,7 @@ const fullAccessAdmins = [
   },
   {
     name: "Enyonam Avevor",
-    email: "Enyonam.Avevor@mtn.com",
+    email: "enyonam.avevor@mtn.com",
     role: "FULL",
     regions: [],
   },
@@ -78,15 +84,16 @@ async function main() {
   const admins = [...coordinators, ...fullAccessAdmins];
 
   for (const admin of admins) {
+    const normalizedEmail = admin.email.trim().toLowerCase();
     const record = await prisma.admin.upsert({
-      where: { email: admin.email },
+      where: { email: normalizedEmail },
       update: {
         name: admin.name,
         role: admin.role as "COORDINATOR" | "FULL",
       },
       create: {
         name: admin.name,
-        email: admin.email,
+        email: normalizedEmail,
         role: admin.role as "COORDINATOR" | "FULL",
       },
     });

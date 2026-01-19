@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import prisma from "@/lib/db";
-import { agentSchema } from "@/lib/agent";
+import { agentUpdateSchema } from "@/lib/agent";
 import { getAdminAndAgent } from "@/lib/admin-access";
 import { logAuditEvent } from "@/lib/audit";
 
@@ -18,7 +18,7 @@ export async function PUT(
   }
 
   const body = await request.json();
-  const parsed = agentSchema.partial().safeParse(body);
+  const parsed = agentUpdateSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }

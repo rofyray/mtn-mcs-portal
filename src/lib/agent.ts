@@ -21,3 +21,9 @@ export const agentSchema = z.object({
 });
 
 export type AgentInput = z.infer<typeof agentSchema>;
+
+export const agentUpdateSchema = agentSchema.partial().extend({
+  ghanaCardFrontUrl: z.string().url().nullable().optional(),
+  ghanaCardBackUrl: z.string().url().nullable().optional(),
+  passportPhotoUrl: z.string().url().nullable().optional(),
+});

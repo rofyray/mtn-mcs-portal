@@ -15,10 +15,11 @@ async function getContainerClient() {
 
   const containerName = env.azureStorageContainer ?? "mtn-community-shop";
 
-  let BlobServiceClient: { fromConnectionString: (connection: string) => { getContainerClient: (name: string) => { createIfNotExists: () => Promise<void>; getBlockBlobClient: (name: string) => { uploadData: (data: ArrayBuffer, options?: { blobHTTPHeaders?: { blobContentType?: string } }) => Promise<void>; url: string; }; }; }; };
+  let BlobServiceClient: { fromConnectionString: (connection: string) => { getContainerClient: (name: string) => { createIfNotExists: () => Promise<void>; getBlockBlobClient: (name: string) => { uploadData: (data: ArrayBuffer, options?: { blobHTTPHeaders?: { blobContentType?: string } }) => Promise<void>; deleteIfExists: () => Promise<void>; url: string; }; }; }; };
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    ({ BlobServiceClient } = require("@azure/storage-blob"));
+    const moduleName = "@azure/storage-blob";
+    const requireFn = (0, eval)("require") as (name: string) => { BlobServiceClient: typeof BlobServiceClient };
+    ({ BlobServiceClient } = requireFn(moduleName));
   } catch {
     throw new Error(
       "Azure storage provider requires @azure/storage-blob. Install it with pnpm add @azure/storage-blob."
@@ -65,6 +66,25 @@ export function createAzureProvider(): StorageProvider {
       });
 
       return { url: blockBlobClient.url };
+    },
+    deleteFile: async (url: string) => {
+      const containerName = env.azureStorageContainer ?? "mtn-community-shop";
+      let blobName = "";
+      try {
+        const parsed = new URL(url);
+        const parts = parsed.pathname.split("/").filter(Boolean);
+        if (parts[0] !== containerName) {
+          throw new Error("Invalid blob URL.");
+        }
+        blobName = parts.slice(1).join("/");
+      } catch {
+        throw new Error("Invalid blob URL.");
+      }
+
+      validateUploadPath(blobName);
+      const containerClient = await getContainerClient();
+      const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+      await blockBlobClient.deleteIfExists();
     },
   };
 }

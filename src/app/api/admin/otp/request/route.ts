@@ -19,8 +19,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
-  const adminEmail = parsed.data.email.toLowerCase();
-  const admin = await prisma.admin.findUnique({ where: { email: adminEmail } });
+  const adminEmail = parsed.data.email.trim().toLowerCase();
+  const admin = await prisma.admin.findFirst({
+    where: { email: { equals: adminEmail, mode: "insensitive" } },
+  });
 
   if (!admin) {
     return NextResponse.json({ error: "Admin not found" }, { status: 404 });

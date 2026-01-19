@@ -10,7 +10,10 @@ import { ghanaLocations } from "@/lib/ghana-locations";
 import PostAuthToast from "@/components/post-auth-toast";
 import { useToast } from "@/components/toast";
 import EmptyState from "@/components/empty-state";
+import UploadField from "@/components/upload-field";
+import FilePreviewModal from "@/components/file-preview-modal";
 import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
+import { IMAGE_ACCEPT } from "@/lib/storage/accepts";
 import { uploadFile } from "@/lib/storage/upload-client";
 
 type Agent = {
@@ -63,6 +66,12 @@ export default function PartnerAgentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
+  const [preview, setPreview] = useState<{
+    url: string;
+    label: string;
+    kind: "image" | "pdf";
+    anchorRect?: DOMRect | null;
+  } | null>(null);
   const { notify } = useToast();
   useAutoDismiss(error, setError);
   useAutoDismiss(status, setStatus);
@@ -434,51 +443,51 @@ export default function PartnerAgentsPage() {
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="label">Ghana Card Front</label>
-                <input
-                  className="input"
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    if (file) {
-                      handleUpload("ghanaCardFrontUrl", file);
-                    }
-                  }}
-                />
-                {uploading.ghanaCardFrontUrl ? <p className="text-xs">Uploading...</p> : null}
-              </div>
-              <div className="space-y-1">
-                <label className="label">Ghana Card Back</label>
-                <input
-                  className="input"
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    if (file) {
-                      handleUpload("ghanaCardBackUrl", file);
-                    }
-                  }}
-                />
-                {uploading.ghanaCardBackUrl ? <p className="text-xs">Uploading...</p> : null}
-              </div>
-              <div className="space-y-1">
-                <label className="label">Passport Photo</label>
-                <input
-                  className="input"
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    if (file) {
-                      handleUpload("passportPhotoUrl", file);
-                    }
-                  }}
-                />
-                {uploading.passportPhotoUrl ? <p className="text-xs">Uploading...</p> : null}
-              </div>
+              <UploadField
+                label="Ghana Card Front"
+                value={form.ghanaCardFrontUrl}
+                accept={IMAGE_ACCEPT}
+                uploading={uploading.ghanaCardFrontUrl}
+                onPreview={(url, anchorRect) =>
+                  setPreview({
+                    url,
+                    label: "Ghana Card Front",
+                    kind: "image",
+                    anchorRect: anchorRect ?? null,
+                  })
+                }
+                onSelect={(file) => handleUpload("ghanaCardFrontUrl", file)}
+              />
+              <UploadField
+                label="Ghana Card Back"
+                value={form.ghanaCardBackUrl}
+                accept={IMAGE_ACCEPT}
+                uploading={uploading.ghanaCardBackUrl}
+                onPreview={(url, anchorRect) =>
+                  setPreview({
+                    url,
+                    label: "Ghana Card Back",
+                    kind: "image",
+                    anchorRect: anchorRect ?? null,
+                  })
+                }
+                onSelect={(file) => handleUpload("ghanaCardBackUrl", file)}
+              />
+              <UploadField
+                label="Passport Photo"
+                value={form.passportPhotoUrl}
+                accept={IMAGE_ACCEPT}
+                uploading={uploading.passportPhotoUrl}
+                onPreview={(url, anchorRect) =>
+                  setPreview({
+                    url,
+                    label: "Passport Photo",
+                    kind: "image",
+                    anchorRect: anchorRect ?? null,
+                  })
+                }
+                onSelect={(file) => handleUpload("passportPhotoUrl", file)}
+              />
 
               <div className="md:col-span-2 flex flex-wrap gap-3">
                 <button className="btn btn-primary" type="submit" disabled={loading}>
@@ -515,6 +524,14 @@ export default function PartnerAgentsPage() {
           </div>
         </div>
       ) : null}
+      <FilePreviewModal
+        open={Boolean(preview)}
+        url={preview?.url ?? ""}
+        label={preview?.label ?? "Preview"}
+        kind={preview?.kind ?? "image"}
+        anchorRect={preview?.anchorRect ?? null}
+        onClose={() => setPreview(null)}
+      />
     </main>
   );
 }

@@ -227,9 +227,9 @@ model Agent {
   email              String
   cpAppNumber        String?
   ghanaCardNumber    String
-  ghanaCardFrontUrl  String
-  ghanaCardBackUrl   String
-  passportPhotoUrl   String
+  ghanaCardFrontUrl  String?
+  ghanaCardBackUrl   String?
+  passportPhotoUrl   String?
   addressRegionCode  String
   addressDistrictCode String
   addressCode        String
@@ -257,8 +257,8 @@ model Business {
   gpsLongitude       String?
   city               String
   landmark           String?
-  storeFrontUrl      String
-  storeInsideUrl     String
+  storeFrontUrl      String?
+  storeInsideUrl     String?
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 

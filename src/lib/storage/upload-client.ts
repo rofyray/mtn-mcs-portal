@@ -50,3 +50,16 @@ export async function uploadFile({
 
   return data;
 }
+
+export async function deleteUploadedFile(url: string) {
+  const response = await fetch("/api/uploads", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error ?? "Delete failed.");
+  }
+}

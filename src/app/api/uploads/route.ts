@@ -23,3 +23,33 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }
+
+export async function DELETE(request: Request) {
+  const [partnerSession, adminSession] = await Promise.all([
+    getPartnerSession(),
+    getAdminSession(),
+  ]);
+
+  if (!partnerSession?.user?.email && !adminSession) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await request.json().catch(() => ({}));
+  const url = typeof body?.url === "string" ? body.url.trim() : "";
+
+  if (!url) {
+    return NextResponse.json({ error: "Missing file URL." }, { status: 400 });
+  }
+
+  try {
+    const provider = getStorageProvider();
+    if (!provider.deleteFile) {
+      return NextResponse.json({ error: "Delete not supported." }, { status: 400 });
+    }
+    await provider.deleteFile(url);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Delete failed.";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+}

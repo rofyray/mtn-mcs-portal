@@ -1,10 +1,7 @@
+import { ALLOWED_UPLOAD_CONTENT_TYPES } from "@/lib/storage/accepts";
+
 export const uploadConfig = {
-  allowedContentTypes: [
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "application/pdf",
-  ],
+  allowedContentTypes: ALLOWED_UPLOAD_CONTENT_TYPES,
   maxUploadSizeInBytes: 10 * 1024 * 1024,
   uploadPathPrefix: "onboarding/",
   cacheControlMaxAge: 60 * 60 * 24 * 30,

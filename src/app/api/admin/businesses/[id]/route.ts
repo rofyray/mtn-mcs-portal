@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import prisma from "@/lib/db";
-import { businessSchema } from "@/lib/business";
+import { businessUpdateSchema } from "@/lib/business";
 import { getAdminAndBusiness } from "@/lib/admin-access";
 import { logAuditEvent } from "@/lib/audit";
 
@@ -18,7 +18,7 @@ export async function PUT(
   }
 
   const body = await request.json();
-  const parsed = businessSchema.partial().safeParse(body);
+  const parsed = businessUpdateSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }

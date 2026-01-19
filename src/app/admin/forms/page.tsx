@@ -5,7 +5,10 @@ import { useEffect, useState } from "react";
 import EmptyState from "@/components/empty-state";
 import { AdminFormsEmptyIcon } from "@/components/admin-empty-icons";
 import { useToast } from "@/components/toast";
+import UploadField from "@/components/upload-field";
+import FilePreviewModal from "@/components/file-preview-modal";
 import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
+import { PDF_ACCEPT } from "@/lib/storage/accepts";
 import { uploadFile } from "@/lib/storage/upload-client";
 
 type Partner = {
@@ -34,6 +37,12 @@ export default function AdminFormsPage() {
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{
+    url: string;
+    label: string;
+    kind: "image" | "pdf";
+    anchorRect?: DOMRect | null;
+  } | null>(null);
   const { notify } = useToast();
   useAutoDismiss(error, setError);
   useAutoDismiss(status, setStatus);
@@ -209,22 +218,17 @@ export default function AdminFormsPage() {
                   onChange={(event) => setTitle(event.target.value)}
                 />
               </div>
-              <div className="space-y-2">
-                <label className="label">Upload Document (PDF/DOC)</label>
-                <input
-                  className="input"
-                  type="file"
-                  accept="application/pdf,.doc,.docx"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    if (file) {
-                      handleUpload(file);
-                    }
-                  }}
-                />
-                {uploading ? <p className="text-xs text-gray-600">Uploading...</p> : null}
-                {documentUrl ? <p className="text-xs text-gray-600">Uploaded</p> : null}
-              </div>
+              <UploadField
+                label="Document (PDF)"
+                value={documentUrl}
+                accept={PDF_ACCEPT}
+                uploading={uploading}
+                buttonLabel="Upload document"
+                onPreview={(url, anchorRect) =>
+                  setPreview({ url, label: "Form Document", kind: "pdf", anchorRect: anchorRect ?? null })
+                }
+                onSelect={handleUpload}
+              />
               <div className="space-y-2">
                 <label className="label">Select Partners</label>
                 <div className="grid gap-2 md:grid-cols-2">
@@ -260,6 +264,14 @@ export default function AdminFormsPage() {
           </div>
         </div>
       ) : null}
+      <FilePreviewModal
+        open={Boolean(preview)}
+        url={preview?.url ?? ""}
+        label={preview?.label ?? "Preview"}
+        kind={preview?.kind ?? "pdf"}
+        anchorRect={preview?.anchorRect ?? null}
+        onClose={() => setPreview(null)}
+      />
     </main>
   );
 }

@@ -6,6 +6,7 @@ import EmptyState from "@/components/empty-state";
 import { AdminPartnersEmptyIcon } from "@/components/admin-empty-icons";
 import MultiSelectDropdown from "@/components/multi-select-dropdown";
 import { useToast } from "@/components/toast";
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import { ghanaLocations } from "@/lib/ghana-locations";
 
 type PartnerProfile = {
@@ -40,6 +41,7 @@ export default function AdminPartnersPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { notify } = useToast();
+  const { confirm, confirmDialog, getInputValue } = useConfirmDialog();
   const statusLabel = statusOptions.find((option) => option.value === status)?.label ?? status;
   const statusLabelLower = statusLabel.toLowerCase();
 
@@ -61,6 +63,15 @@ export default function AdminPartnersPage() {
   }
 
   async function handleApprove(id: string) {
+    const confirmed = await confirm({
+      title: "Approve partner?",
+      description: "This will mark the submission as approved.",
+      confirmLabel: "Approve",
+      confirmVariant: "primary",
+    });
+    if (!confirmed) {
+      return;
+    }
     const response = await fetch(`/api/admin/partners/${id}/approve`, { method: "POST" });
     if (!response.ok) {
       setError("Unable to approve partner.");
@@ -72,7 +83,19 @@ export default function AdminPartnersPage() {
   }
 
   async function handleDeny(id: string) {
-    const reason = window.prompt("Reason for denial?");
+    const confirmed = await confirm({
+      title: "Deny partner?",
+      description: "Provide a reason for denying this submission.",
+      confirmLabel: "Deny",
+      confirmVariant: "danger",
+      inputLabel: "Reason for denial",
+      inputPlaceholder: "Add a brief reason",
+      inputRequired: true,
+    });
+    if (!confirmed) {
+      return;
+    }
+    const reason = getInputValue().trim();
     if (!reason) {
       return;
     }
@@ -295,6 +318,7 @@ export default function AdminPartnersPage() {
           </div>
         )}
       </div>
+      {confirmDialog}
     </main>
   );
 }

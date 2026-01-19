@@ -19,9 +19,11 @@ export async function POST(request: Request) {
   }
 
   const { email, code } = parsed.data;
-  const normalizedEmail = email.toLowerCase();
+  const normalizedEmail = email.trim().toLowerCase();
 
-  const admin = await prisma.admin.findUnique({ where: { email: normalizedEmail } });
+  const admin = await prisma.admin.findFirst({
+    where: { email: { equals: normalizedEmail, mode: "insensitive" } },
+  });
   if (!admin) {
     return NextResponse.json({ error: "Admin not found" }, { status: 404 });
   }

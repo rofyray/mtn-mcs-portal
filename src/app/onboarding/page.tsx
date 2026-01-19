@@ -13,6 +13,9 @@ import PostAuthToast, { storeToast } from "@/components/post-auth-toast";
 import { useToast } from "@/components/toast";
 import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
 import { uploadFile } from "@/lib/storage/upload-client";
+import UploadField from "@/components/upload-field";
+import FilePreviewModal from "@/components/file-preview-modal";
+import { DOCUMENT_ACCEPT, IMAGE_ACCEPT } from "@/lib/storage/accepts";
 
 type FieldType = "text" | "select" | "upload";
 
@@ -62,7 +65,7 @@ const steps: Step[] = [
       { key: "partnerFirstName", label: "First Name", type: "text" },
       { key: "partnerSurname", label: "Surname", type: "text" },
       { key: "phoneNumber", label: "Phone Number", type: "text" },
-      { key: "passportPhotoUrl", label: "Passport Photo", type: "upload", accept: "image/*" },
+      { key: "passportPhotoUrl", label: "Passport Photo", type: "upload", accept: IMAGE_ACCEPT },
     ],
   },
   {
@@ -92,19 +95,19 @@ const steps: Step[] = [
         key: "businessCertificateUrl",
         label: "Business Certificate",
         type: "upload",
-        accept: "image/*,application/pdf",
+        accept: DOCUMENT_ACCEPT,
       },
       {
         key: "fireCertificateUrl",
         label: "Fire Certificate",
         type: "upload",
-        accept: "image/*,application/pdf",
+        accept: DOCUMENT_ACCEPT,
       },
       {
         key: "insuranceUrl",
         label: "Insurance Document",
         type: "upload",
-        accept: "image/*,application/pdf",
+        accept: DOCUMENT_ACCEPT,
       },
     ],
   },
@@ -126,8 +129,8 @@ const steps: Step[] = [
     ),
     fields: [
       { key: "ghanaCardNumber", label: "Ghana Card Number", type: "text" },
-      { key: "ghanaCardFrontUrl", label: "Ghana Card Front", type: "upload", accept: "image/*" },
-      { key: "ghanaCardBackUrl", label: "Ghana Card Back", type: "upload", accept: "image/*" },
+      { key: "ghanaCardFrontUrl", label: "Ghana Card Front", type: "upload", accept: IMAGE_ACCEPT },
+      { key: "ghanaCardBackUrl", label: "Ghana Card Back", type: "upload", accept: IMAGE_ACCEPT },
     ],
   },
   {
@@ -192,8 +195,8 @@ const steps: Step[] = [
       </svg>
     ),
     fields: [
-      { key: "storeFrontUrl", label: "Store Front Photo", type: "upload", accept: "image/*" },
-      { key: "storeInsideUrl", label: "Store Inside Photo", type: "upload", accept: "image/*" },
+      { key: "storeFrontUrl", label: "Store Front Photo", type: "upload", accept: IMAGE_ACCEPT },
+      { key: "storeInsideUrl", label: "Store Inside Photo", type: "upload", accept: IMAGE_ACCEPT },
       { key: "paymentWallet", label: "Payment Wallet", type: "text" },
       { key: "apn", label: "APN", type: "text" },
       { key: "mifiImei", label: "MiFi/Router IMEI", type: "text" },
@@ -224,6 +227,12 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
+  const [preview, setPreview] = useState<{
+    url: string;
+    label: string;
+    kind: "image" | "pdf";
+    anchorRect?: DOMRect | null;
+  } | null>(null);
   const { notify } = useToast();
   useAutoDismiss(error, setError);
   useAutoDismiss(status, setStatus);
@@ -422,27 +431,24 @@ export default function OnboardingPage() {
         <div className="space-y-4">
           {step.fields.map((field) => {
             if (field.type === "upload") {
+              const isImageOnly = field.accept === IMAGE_ACCEPT;
               return (
-                <div key={field.key} className="space-y-2">
-                  <label className="label">{field.label}</label>
-                  <input
-                    className="input"
-                    type="file"
-                    accept={field.accept}
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
-                      if (file) {
-                        handleUpload(field.key, file);
-                      }
-                    }}
-                  />
-                  {form[field.key] ? (
-                    <p className="text-xs text-gray-600">Uploaded</p>
-                  ) : null}
-                  {uploading[field.key] ? (
-                    <p className="text-xs text-gray-600">Uploading...</p>
-                  ) : null}
-                </div>
+                <UploadField
+                  key={field.key}
+                  label={field.label}
+                  value={form[field.key]}
+                  accept={field.accept}
+                  uploading={uploading[field.key]}
+                  onPreview={(url, anchorRect) =>
+                    setPreview({
+                      url,
+                      label: field.label,
+                      kind: isImageOnly ? "image" : "pdf",
+                      anchorRect: anchorRect ?? null,
+                    })
+                  }
+                  onSelect={(file) => handleUpload(field.key, file)}
+                />
               );
             }
 
@@ -669,6 +675,14 @@ export default function OnboardingPage() {
           </div>
         </div>
       ) : null}
+      <FilePreviewModal
+        open={Boolean(preview)}
+        url={preview?.url ?? ""}
+        label={preview?.label ?? "Preview"}
+        kind={preview?.kind ?? "image"}
+        anchorRect={preview?.anchorRect ?? null}
+        onClose={() => setPreview(null)}
+      />
     </main>
   );
 }

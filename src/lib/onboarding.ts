@@ -10,7 +10,7 @@ const optionalString = z.preprocess(
 
 const optionalUrl = z.preprocess(
   emptyToUndefined,
-  z.string().url().optional()
+  z.string().url().nullable().optional()
 );
 
 const optionalDigits = z.preprocess(

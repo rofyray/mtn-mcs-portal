@@ -9,7 +9,10 @@ import {
 import { ghanaLocations } from "@/lib/ghana-locations";
 import { useToast } from "@/components/toast";
 import EmptyState from "@/components/empty-state";
+import UploadField from "@/components/upload-field";
+import FilePreviewModal from "@/components/file-preview-modal";
 import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
+import { IMAGE_ACCEPT } from "@/lib/storage/accepts";
 import { uploadFile } from "@/lib/storage/upload-client";
 
 type Business = {
@@ -41,6 +44,12 @@ export default function PartnerBusinessesPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
+  const [preview, setPreview] = useState<{
+    url: string;
+    label: string;
+    kind: "image" | "pdf";
+    anchorRect?: DOMRect | null;
+  } | null>(null);
   const { notify } = useToast();
   useAutoDismiss(error, setError);
   useAutoDismiss(status, setStatus);
@@ -337,36 +346,36 @@ export default function PartnerBusinessesPage() {
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="label">Store Front Photo</label>
-                <input
-                  className="input"
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    if (file) {
-                      handleUpload("storeFrontUrl", file);
-                    }
-                  }}
-                />
-                {uploading.storeFrontUrl ? <p className="text-xs">Uploading...</p> : null}
-              </div>
-              <div className="space-y-1">
-                <label className="label">Store Inside Photo</label>
-                <input
-                  className="input"
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    if (file) {
-                      handleUpload("storeInsideUrl", file);
-                    }
-                  }}
-                />
-                {uploading.storeInsideUrl ? <p className="text-xs">Uploading...</p> : null}
-              </div>
+              <UploadField
+                label="Store Front Photo"
+                value={form.storeFrontUrl}
+                accept={IMAGE_ACCEPT}
+                uploading={uploading.storeFrontUrl}
+                onPreview={(url, anchorRect) =>
+                  setPreview({
+                    url,
+                    label: "Store Front Photo",
+                    kind: "image",
+                    anchorRect: anchorRect ?? null,
+                  })
+                }
+                onSelect={(file) => handleUpload("storeFrontUrl", file)}
+              />
+              <UploadField
+                label="Store Inside Photo"
+                value={form.storeInsideUrl}
+                accept={IMAGE_ACCEPT}
+                uploading={uploading.storeInsideUrl}
+                onPreview={(url, anchorRect) =>
+                  setPreview({
+                    url,
+                    label: "Store Inside Photo",
+                    kind: "image",
+                    anchorRect: anchorRect ?? null,
+                  })
+                }
+                onSelect={(file) => handleUpload("storeInsideUrl", file)}
+              />
 
               <div className="md:col-span-2 flex flex-wrap gap-3">
                 <button className="btn btn-primary" type="submit" disabled={loading}>
@@ -379,6 +388,14 @@ export default function PartnerBusinessesPage() {
           </div>
         </div>
       ) : null}
+      <FilePreviewModal
+        open={Boolean(preview)}
+        url={preview?.url ?? ""}
+        label={preview?.label ?? "Preview"}
+        kind={preview?.kind ?? "image"}
+        anchorRect={preview?.anchorRect ?? null}
+        onClose={() => setPreview(null)}
+      />
     </main>
   );
 }

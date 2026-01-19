@@ -1,7 +1,17 @@
+import { del } from "@vercel/blob";
 import { handleUpload } from "@vercel/blob/client";
 
-import { uploadConfig, validateUploadPath } from "@/lib/storage/config";
+import { normalizeUploadPath, uploadConfig, validateUploadPath } from "@/lib/storage/config";
 import type { StorageProvider } from "@/lib/storage/types";
+
+function getPathnameFromUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    return normalizeUploadPath(parsed.pathname);
+  } catch {
+    return normalizeUploadPath(url);
+  }
+}
 
 export function createVercelProvider(): StorageProvider {
   return {
@@ -22,6 +32,11 @@ export function createVercelProvider(): StorageProvider {
         },
       });
       return response;
+    },
+    deleteFile: async (url: string) => {
+      const pathname = getPathnameFromUrl(url);
+      validateUploadPath(pathname);
+      await del(url);
     },
   };
 }

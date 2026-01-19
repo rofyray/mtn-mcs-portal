@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import EmptyState from "@/components/empty-state";
 import { AdminAgentsEmptyIcon } from "@/components/admin-empty-icons";
 import { useToast } from "@/components/toast";
+import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import { ghanaLocations } from "@/lib/ghana-locations";
 
 type Agent = {
@@ -35,6 +36,7 @@ export default function AdminAgentsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { notify } = useToast();
+  const { confirm, confirmDialog, getInputValue } = useConfirmDialog();
   const statusLabel = statusOptions.find((option) => option.value === status)?.label ?? status;
   const statusLabelLower = statusLabel.toLowerCase();
 
@@ -56,6 +58,15 @@ export default function AdminAgentsPage() {
   }
 
   async function handleApprove(id: string) {
+    const confirmed = await confirm({
+      title: "Approve agent?",
+      description: "This will mark the submission as approved.",
+      confirmLabel: "Approve",
+      confirmVariant: "primary",
+    });
+    if (!confirmed) {
+      return;
+    }
     const response = await fetch(`/api/admin/agents/${id}/approve`, { method: "POST" });
     if (!response.ok) {
       setError("Unable to approve agent.");
@@ -67,7 +78,19 @@ export default function AdminAgentsPage() {
   }
 
   async function handleDeny(id: string) {
-    const reason = window.prompt("Reason for denial?");
+    const confirmed = await confirm({
+      title: "Deny agent?",
+      description: "Provide a reason for denying this submission.",
+      confirmLabel: "Deny",
+      confirmVariant: "danger",
+      inputLabel: "Reason for denial",
+      inputPlaceholder: "Add a brief reason",
+      inputRequired: true,
+    });
+    if (!confirmed) {
+      return;
+    }
+    const reason = getInputValue().trim();
     if (!reason) {
       return;
     }
@@ -284,6 +307,7 @@ export default function AdminAgentsPage() {
           </div>
         )}
       </div>
+      {confirmDialog}
     </main>
   );
 }

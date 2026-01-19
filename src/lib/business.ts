@@ -22,3 +22,8 @@ export const businessSchema = z.object({
 });
 
 export type BusinessInput = z.infer<typeof businessSchema>;
+
+export const businessUpdateSchema = businessSchema.partial().extend({
+  storeFrontUrl: z.string().url().nullable().optional(),
+  storeInsideUrl: z.string().url().nullable().optional(),
+});
