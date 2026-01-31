@@ -369,6 +369,21 @@ export default function OnboardingPage() {
     setStatus(null);
     setError(null);
 
+    // Save form data first to ensure profile exists
+    const saveResponse = await fetch("/api/partner/onboarding", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+
+    if (!saveResponse.ok) {
+      const data = await saveResponse.json().catch(() => ({}));
+      setError(data.error ?? "Unable to save before submission.");
+      notify({ title: "Submission failed", message: data.error ?? "Could not save form data.", kind: "error" });
+      setLoading(false);
+      return;
+    }
+
     const response = await fetch("/api/partner/onboarding/submit", {
       method: "POST",
     });
