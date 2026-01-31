@@ -1,16 +1,26 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Poppins } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import Providers from "@/app/providers";
 import AppLogoLink from "@/components/app-logo-link";
 import HeaderActions from "@/components/header-actions";
 import NavShell from "@/components/nav-shell";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
-  subsets: ["latin"],
-  weight: ["200", "300", "400", "500", "600", "700", "800"],
+const mtnBrighterSans = localFont({
+  src: [
+    {
+      path: "../../public/fonts/MTNBrighterSans-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/MTNBrighterSans-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-mtn",
 });
 
 export const metadata: Metadata = {
@@ -25,7 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="theme-dark" suppressHydrationWarning>
-      <body className={`${poppins.variable} antialiased`}>
+      <body className={`${mtnBrighterSans.variable} antialiased`} suppressHydrationWarning>
         <Script id="theme-init" strategy="beforeInteractive">
           {`
             (function () {
