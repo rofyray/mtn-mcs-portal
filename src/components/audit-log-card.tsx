@@ -213,7 +213,7 @@ export function AuditLogCard({ log }: { log: EnrichedAuditLog }) {
 
           {/* Timestamp Footer */}
           <div className="audit-card-footer">
-            <span className="audit-timestamp">{fullTime} (Ghana Time)</span>
+            <span className="audit-timestamp">{fullTime} GMT - Ghana Time</span>
           </div>
         </div>
       )}

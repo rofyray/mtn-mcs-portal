@@ -2095,3 +2095,134 @@ select.input {
   width: 14px;
   height: 14px;
 }
+
+/* Feedback Card Styles */
+.feedback-card {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: 0 12px 30px var(--shadow);
+  overflow: hidden;
+}
+
+.feedback-card-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--foreground);
+  transition: background 0.15s ease;
+}
+
+.feedback-card-header:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.theme-light .feedback-card-header:hover {
+  background: rgba(1, 77, 109, 0.04);
+}
+
+.feedback-card-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.feedback-card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.feedback-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.feedback-card-time {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.feedback-chevron {
+  color: var(--muted);
+  transition: transform 0.2s ease;
+}
+
+.feedback-chevron-expanded {
+  transform: rotate(180deg);
+}
+
+.feedback-card-details {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-top: 1px solid var(--border);
+  margin-top: 0;
+  padding-top: 16px;
+}
+
+.feedback-detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feedback-detail-heading {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin: 0;
+}
+
+.feedback-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px 24px;
+}
+
+.feedback-detail-grid-full {
+  grid-template-columns: 1fr;
+}
+
+.feedback-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.feedback-detail-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.feedback-detail-value {
+  font-size: 0.85rem;
+  color: var(--foreground);
+  word-break: break-word;
+}
+
+.feedback-card-footer {
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+
+.feedback-timestamp {
+  font-size: 0.75rem;
+  color: var(--muted);
+}

@@ -31,25 +31,9 @@ export default function AdminAuditPage() {
   return (
     <main className="min-h-screen px-6 py-10">
       <div className="mx-auto w-full max-w-5xl space-y-6 glass-panel p-6">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold">Audit Logs</h1>
-            <p className="text-sm text-gray-600">Admin actions across partner workflows.</p>
-          </div>
-          <div className="audit-timezone-note">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 6v6l4 2" />
-            </svg>
-            All times shown in Ghana Time (GMT)
-          </div>
+        <div>
+          <h1 className="text-2xl font-semibold">Audit Logs</h1>
+          <p className="text-sm text-gray-600">Admin actions across partner workflows.</p>
         </div>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
