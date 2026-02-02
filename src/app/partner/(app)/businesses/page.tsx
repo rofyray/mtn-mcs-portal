@@ -43,6 +43,7 @@ export default function PartnerBusinessesPage() {
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [partnerBusinessName, setPartnerBusinessName] = useState("");
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [preview, setPreview] = useState<{
     url: string;
@@ -79,6 +80,7 @@ export default function PartnerBusinessesPage() {
     }
     const data = await response.json();
     setBusinesses(data.businesses ?? []);
+    setPartnerBusinessName(data.partnerBusinessName ?? "");
   }
 
   useEffect(() => {
@@ -170,7 +172,14 @@ export default function PartnerBusinessesPage() {
         <div className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold">Submitted Businesses</h2>
-            <button className="btn btn-primary" type="button" onClick={() => setShowForm(true)}>
+            <button
+              className="btn btn-primary"
+              type="button"
+              onClick={() => {
+                setForm({ ...initialForm, businessName: partnerBusinessName });
+                setShowForm(true);
+              }}
+            >
               Add Business
             </button>
           </div>
@@ -218,10 +227,14 @@ export default function PartnerBusinessesPage() {
               <div className="space-y-1">
                 <label className="label">Business Name</label>
                 <input
-                  className="input"
+                  className="input bg-gray-100 cursor-not-allowed"
                   value={form.businessName}
-                  onChange={(event) => updateField("businessName", event.target.value)}
+                  readOnly
+                  disabled
                 />
+                <p className="text-xs text-gray-500">
+                  This is your registered business name from onboarding.
+                </p>
               </div>
               <div className="space-y-1">
                 <label className="label">City/Town</label>

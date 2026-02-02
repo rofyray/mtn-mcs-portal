@@ -65,6 +65,7 @@ export default function PartnerAgentsPage() {
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [partnerBusinessName, setPartnerBusinessName] = useState("");
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [preview, setPreview] = useState<{
     url: string;
@@ -101,6 +102,7 @@ export default function PartnerAgentsPage() {
     }
     const data = await response.json();
     setAgents(data.agents ?? []);
+    setPartnerBusinessName(data.partnerBusinessName ?? "");
   }
 
   useEffect(() => {
@@ -227,7 +229,10 @@ export default function PartnerAgentsPage() {
             <button
               className="btn btn-primary"
               type="button"
-              onClick={() => setShowForm(true)}
+              onClick={() => {
+                setForm({ ...initialForm, businessName: partnerBusinessName });
+                setShowForm(true);
+              }}
             >
               Add Agent
             </button>
@@ -331,10 +336,14 @@ export default function PartnerAgentsPage() {
               <div className="space-y-1">
                 <label className="label">Business Name</label>
                 <input
-                  className="input"
+                  className="input bg-gray-100 cursor-not-allowed"
                   value={form.businessName}
-                  onChange={(event) => updateField("businessName", event.target.value)}
+                  readOnly
+                  disabled
                 />
+                <p className="text-xs text-gray-500">
+                  This is your registered business name from onboarding.
+                </p>
               </div>
               <div className="space-y-1">
                 <label className="label">Ghana Card Number</label>

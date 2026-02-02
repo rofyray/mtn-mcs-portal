@@ -18,7 +18,10 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json({ businesses });
+  return NextResponse.json({
+    businesses,
+    partnerBusinessName: result.profile.businessName ?? "",
+  });
 }
 
 export async function POST(request: Request) {
