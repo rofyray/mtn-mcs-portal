@@ -11,6 +11,16 @@ export async function GET() {
 
   const feedback = await prisma.feedback.findMany({
     orderBy: { createdAt: "desc" },
+    include: {
+      partnerProfile: {
+        select: {
+          businessName: true,
+          partnerFirstName: true,
+          partnerSurname: true,
+          city: true,
+        },
+      },
+    },
   });
 
   return NextResponse.json({ feedback });

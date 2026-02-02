@@ -457,11 +457,16 @@ export default function AdminAgentDetailPage() {
             <h1 className="text-2xl font-semibold">Agent Details</h1>
             <p className="text-sm text-gray-600">Review and edit agent info.</p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button className="btn btn-secondary" type="button" onClick={() => router.back()}>
               Go back
             </button>
-            {canEdit ? (
+            {(agentStatus === "APPROVED" || agentStatus === "DENIED") && (
+              <span className={`badge badge-${agentStatus === "APPROVED" ? "success" : "error"}`}>
+                {agentStatus}
+              </span>
+            )}
+            {agentStatus !== "APPROVED" && canEdit && (
               <>
                 <button className="btn btn-danger-light" type="button" onClick={handleDeny}>
                   Deny
@@ -470,7 +475,7 @@ export default function AdminAgentDetailPage() {
                   Approve
                 </button>
               </>
-            ) : null}
+            )}
           </div>
         </div>
 

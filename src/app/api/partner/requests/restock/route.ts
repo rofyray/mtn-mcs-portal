@@ -10,6 +10,7 @@ import { getApprovedPartnerProfile } from "@/lib/partner";
 const itemOptions = ["SIM Cards", "Y'ello Biz", "Y'ello Cameras"] as const;
 
 const restockSchema = z.object({
+  businessId: z.string().min(1),
   items: z.array(z.enum(itemOptions)).min(1),
   message: z.string().trim().optional(),
 });
@@ -29,19 +30,34 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
+  const business = await prisma.business.findFirst({
+    where: {
+      id: parsed.data.businessId,
+      partnerProfileId: result.profile.id,
+      status: "APPROVED",
+    },
+  });
+
+  if (!business) {
+    return NextResponse.json({ error: "Business not found or not approved" }, { status: 400 });
+  }
+
   const requestRecord = await prisma.restockRequest.create({
     data: {
       partnerProfileId: result.profile.id,
+      businessId: parsed.data.businessId,
       items: parsed.data.items,
       message: parsed.data.message,
     },
   });
 
+  const locationInfo = `${business.businessName} (${business.city})`;
+
   await prisma.notification.create({
     data: {
       recipientType: "ADMIN",
       title: "Restock request",
-      message: `${result.profile.businessName ?? "Partner"} requested restock: ${parsed.data.items.join(", ")}.`,
+      message: `${result.profile.businessName ?? "Partner"} requested restock for ${locationInfo}: ${parsed.data.items.join(", ")}.`,
       category: "INFO",
     },
   });
@@ -51,6 +67,7 @@ export async function POST(request: Request) {
     preheader: "A partner submitted a restock request.",
     message: [
       `Partner: ${result.profile.businessName ?? "Unknown"}`,
+      `Location: ${locationInfo}`,
       parsed.data.message ? `Message: ${parsed.data.message}` : "Message: -",
     ],
     bullets: parsed.data.items.length ? [`Items: ${parsed.data.items.join(", ")}`] : undefined,

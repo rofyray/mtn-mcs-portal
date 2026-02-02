@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import EmptyState from "@/components/empty-state";
+import MultiSelectDropdown from "@/components/multi-select-dropdown";
 import { useToast } from "@/components/toast";
 import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
 
@@ -13,12 +14,23 @@ type Agent = {
   status: string;
 };
 
+type Business = {
+  id: string;
+  businessName: string;
+  city: string;
+  status: string;
+};
+
 const restockItems = ["SIM Cards", "Y'ello Biz", "Y'ello Cameras"] as const;
+
+const restockOptions = restockItems.map((item) => ({ value: item, label: item }));
 
 export default function PartnerRequestsPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
   const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
   const [trainingMessage, setTrainingMessage] = useState("");
+  const [selectedBusinessId, setSelectedBusinessId] = useState("");
   const [restockSelection, setRestockSelection] = useState<string[]>([]);
   const [restockMessage, setRestockMessage] = useState("");
   const [feedbackTitle, setFeedbackTitle] = useState("");
@@ -39,7 +51,20 @@ export default function PartnerRequestsPage() {
       setAgents(data.agents ?? []);
     }
 
+    async function loadBusinesses() {
+      const response = await fetch("/api/partner/businesses");
+      if (!response.ok) {
+        return;
+      }
+      const data = await response.json();
+      const approvedBusinesses = (data.businesses ?? []).filter(
+        (b: Business) => b.status === "APPROVED"
+      );
+      setBusinesses(approvedBusinesses);
+    }
+
     loadAgents();
+    loadBusinesses();
   }, []);
 
   const trainingEmptyIcon = (
@@ -78,10 +103,22 @@ export default function PartnerRequestsPage() {
     setError(null);
     setStatus(null);
 
+    if (!selectedBusinessId) {
+      setError("Please select a business location.");
+      notify({ title: "Restock request failed", message: "Please select a business location.", kind: "error" });
+      return;
+    }
+
+    if (restockSelection.length === 0) {
+      setError("Please select at least one item to restock.");
+      notify({ title: "Restock request failed", message: "Please select at least one item.", kind: "error" });
+      return;
+    }
+
     const response = await fetch("/api/partner/requests/restock", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items: restockSelection, message: restockMessage }),
+      body: JSON.stringify({ businessId: selectedBusinessId, items: restockSelection, message: restockMessage }),
     });
 
     if (!response.ok) {
@@ -93,6 +130,7 @@ export default function PartnerRequestsPage() {
 
     setStatus("Restock request submitted.");
     notify({ title: "Restock request sent", message: "Admins have been notified.", kind: "success" });
+    setSelectedBusinessId("");
     setRestockSelection([]);
     setRestockMessage("");
   }
@@ -138,67 +176,96 @@ export default function PartnerRequestsPage() {
               description="Add at least one agent before requesting training."
             />
           ) : (
-            <div className="grid gap-2 md:grid-cols-2">
-              {agents.map((agent) => (
-                <label key={agent.id} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={selectedAgents.includes(agent.id)}
-                    onChange={(event) => {
-                      if (event.target.checked) {
-                        setSelectedAgents((prev) => [...prev, agent.id]);
-                      } else {
-                        setSelectedAgents((prev) => prev.filter((id) => id !== agent.id));
-                      }
-                    }}
-                  />
-                  {agent.firstName} {agent.surname} ({agent.status})
-                </label>
-              ))}
-            </div>
+            <>
+              <div className="grid gap-2 md:grid-cols-2">
+                {agents.map((agent) => (
+                  <label key={agent.id} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={selectedAgents.includes(agent.id)}
+                      onChange={(event) => {
+                        if (event.target.checked) {
+                          setSelectedAgents((prev) => [...prev, agent.id]);
+                        } else {
+                          setSelectedAgents((prev) => prev.filter((id) => id !== agent.id));
+                        }
+                      }}
+                    />
+                    {agent.firstName} {agent.surname} ({agent.status})
+                  </label>
+                ))}
+              </div>
+              <textarea
+                className="input"
+                rows={3}
+                placeholder="Add notes for the training request"
+                value={trainingMessage}
+                onChange={(event) => setTrainingMessage(event.target.value)}
+              />
+              <button className="btn btn-primary" type="button" onClick={submitTraining}>
+                Submit training request
+              </button>
+            </>
           )}
-          <textarea
-            className="input"
-            rows={3}
-            placeholder="Add notes for the training request"
-            value={trainingMessage}
-            onChange={(event) => setTrainingMessage(event.target.value)}
-          />
-          <button className="btn btn-primary" type="button" onClick={submitTraining}>
-            Submit training request
-          </button>
         </section>
 
         <section className="card space-y-4">
           <h2 className="text-lg font-semibold">Restock request</h2>
-          <div className="flex flex-wrap gap-3">
-            {restockItems.map((item) => (
-              <label key={item} className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={restockSelection.includes(item)}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      setRestockSelection((prev) => [...prev, item]);
-                    } else {
-                      setRestockSelection((prev) => prev.filter((value) => value !== item));
-                    }
-                  }}
+          <p className="text-sm text-gray-600">Request inventory for a business location.</p>
+          {businesses.length === 0 ? (
+            <EmptyState
+              icon={
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" />
+                </svg>
+              }
+              title="No approved businesses"
+              description="You need at least one approved business to request restocking."
+            />
+          ) : (
+            <>
+              <div className="space-y-1">
+                <label className="form-label">Business Location</label>
+                <select
+                  className="input"
+                  value={selectedBusinessId}
+                  onChange={(event) => setSelectedBusinessId(event.target.value)}
+                >
+                  <option value="">Select a business</option>
+                  {businesses.map((business) => (
+                    <option key={business.id} value={business.id}>
+                      {business.businessName} ({business.city})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="form-label">Restock Type</label>
+                <MultiSelectDropdown
+                  label="Restock Type"
+                  options={restockOptions}
+                  selectedValues={restockSelection}
+                  onChange={setRestockSelection}
+                  placeholder="Select items to restock"
                 />
-                {item}
-              </label>
-            ))}
-          </div>
-          <textarea
-            className="input"
-            rows={3}
-            placeholder="Add notes for the restock request"
-            value={restockMessage}
-            onChange={(event) => setRestockMessage(event.target.value)}
-          />
-          <button className="btn btn-primary" type="button" onClick={submitRestock}>
-            Submit restock request
-          </button>
+              </div>
+              <textarea
+                className="input"
+                rows={3}
+                placeholder="Add notes for the restock request"
+                value={restockMessage}
+                onChange={(event) => setRestockMessage(event.target.value)}
+              />
+              <button
+                className="btn btn-primary"
+                type="button"
+                onClick={submitRestock}
+                disabled={!selectedBusinessId || restockSelection.length === 0}
+              >
+                Submit restock request
+              </button>
+            </>
+          )}
         </section>
 
         <section className="card space-y-4">

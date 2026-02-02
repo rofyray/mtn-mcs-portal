@@ -288,7 +288,7 @@ export default function PartnerAgentsPage() {
                 Close
               </button>
             </div>
-            <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
+            <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit} noValidate>
               <div className="space-y-1">
                 <label className="label">First Name</label>
                 <input

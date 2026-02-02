@@ -424,11 +424,16 @@ export default function AdminBusinessDetailPage() {
             <h1 className="text-2xl font-semibold">Business Details</h1>
             <p className="text-sm text-gray-600">Review and edit business info.</p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button className="btn btn-secondary" type="button" onClick={() => router.back()}>
               Go back
             </button>
-            {canEdit ? (
+            {(businessStatus === "APPROVED" || businessStatus === "DENIED") && (
+              <span className={`badge badge-${businessStatus === "APPROVED" ? "success" : "error"}`}>
+                {businessStatus}
+              </span>
+            )}
+            {businessStatus !== "APPROVED" && canEdit && (
               <>
                 <button className="btn btn-danger-light" type="button" onClick={handleDeny}>
                   Deny
@@ -437,7 +442,7 @@ export default function AdminBusinessDetailPage() {
                   Approve
                 </button>
               </>
-            ) : null}
+            )}
           </div>
         </div>
 

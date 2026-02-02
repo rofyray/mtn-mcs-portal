@@ -495,7 +495,7 @@ export default function AdminPartnerDetailPage() {
             <h1 className="text-2xl font-semibold">Partner Details</h1>
             <p className="text-sm text-gray-600">Review and edit onboarding info.</p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               className="btn btn-secondary"
               type="button"
@@ -503,7 +503,12 @@ export default function AdminPartnerDetailPage() {
             >
               Go back
             </button>
-            {canEdit ? (
+            {(profileStatus === "APPROVED" || profileStatus === "DENIED") && (
+              <span className={`badge badge-${profileStatus === "APPROVED" ? "success" : "error"}`}>
+                {profileStatus}
+              </span>
+            )}
+            {profileStatus !== "APPROVED" && canEdit && (
               <>
                 <button
                   className="btn btn-danger-light"
@@ -520,7 +525,7 @@ export default function AdminPartnerDetailPage() {
                   Approve
                 </button>
               </>
-            ) : null}
+            )}
           </div>
         </div>
 

@@ -4,30 +4,25 @@ import { useEffect, useState } from "react";
 
 import EmptyState from "@/components/empty-state";
 import { AdminAuditEmptyIcon } from "@/components/admin-empty-icons";
-
-type AuditLog = {
-  id: string;
-  action: string;
-  targetType: string;
-  targetId: string;
-  createdAt: string;
-  metadata?: Record<string, unknown> | null;
-  admin: { name: string | null; email: string | null } | null;
-};
+import { AuditLogCard, type EnrichedAuditLog } from "@/components/audit-log-card";
 
 export default function AdminAuditPage() {
-  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [logs, setLogs] = useState<EnrichedAuditLog[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadLogs() {
+      setLoading(true);
       const response = await fetch("/api/admin/audit");
       if (!response.ok) {
         setError("Unable to load audit logs.");
+        setLoading(false);
         return;
       }
       const data = await response.json();
       setLogs(data.logs ?? []);
+      setLoading(false);
     }
 
     loadLogs();
@@ -36,15 +31,36 @@ export default function AdminAuditPage() {
   return (
     <main className="min-h-screen px-6 py-10">
       <div className="mx-auto w-full max-w-5xl space-y-6 glass-panel p-6">
-        <div>
-          <h1 className="text-2xl font-semibold">Audit Logs</h1>
-          <p className="text-sm text-gray-600">Admin actions across partner workflows.</p>
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">Audit Logs</h1>
+            <p className="text-sm text-gray-600">Admin actions across partner workflows.</p>
+          </div>
+          <div className="audit-timezone-note">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+            All times shown in Ghana Time (GMT)
+          </div>
         </div>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
         <div className="space-y-3">
-          {logs.length === 0 ? (
+          {loading ? (
+            <div className="audit-loading">
+              <div className="audit-spinner" />
+              Loading audit logs...
+            </div>
+          ) : logs.length === 0 ? (
             <div className="card">
               <EmptyState
                 icon={<AdminAuditEmptyIcon />}
@@ -54,25 +70,7 @@ export default function AdminAuditPage() {
               />
             </div>
           ) : (
-            logs.map((log) => (
-              <div key={log.id} className="rounded border p-3 text-sm">
-                <p className="text-xs text-gray-500">{log.action}</p>
-                <p className="text-sm">
-                  {log.admin?.name ?? "System"} ({log.admin?.email ?? "n/a"})
-                </p>
-                <p className="text-xs text-gray-500">
-                  {log.targetType}: {log.targetId}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {new Date(log.createdAt).toLocaleString()}
-                </p>
-                {log.metadata ? (
-                  <pre className="mt-2 whitespace-pre-wrap text-xs text-gray-600">
-                    {JSON.stringify(log.metadata, null, 2)}
-                  </pre>
-                ) : null}
-              </div>
-            ))
+            logs.map((log) => <AuditLogCard key={log.id} log={log} />)
           )}
         </div>
       </div>

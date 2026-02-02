@@ -10,6 +10,12 @@ type Feedback = {
   title: string;
   message: string;
   createdAt: string;
+  partnerProfile: {
+    businessName: string | null;
+    partnerFirstName: string | null;
+    partnerSurname: string | null;
+    city: string | null;
+  } | null;
 };
 
 export default function AdminFeedbackPage() {
@@ -51,12 +57,28 @@ export default function AdminFeedbackPage() {
               />
             </div>
           ) : (
-            feedbackItems.map((item) => (
-              <div key={item.id} className="rounded border p-3">
-                <h2 className="text-sm font-semibold">{item.title}</h2>
-                <p className="text-sm text-gray-700">{item.message}</p>
-              </div>
-            ))
+            feedbackItems.map((item) => {
+              const partnerName = item.partnerProfile
+                ? [item.partnerProfile.partnerFirstName, item.partnerProfile.partnerSurname]
+                    .filter(Boolean)
+                    .join(" ") || item.partnerProfile.businessName
+                : null;
+              const location = item.partnerProfile?.city;
+
+              return (
+                <div key={item.id} className="rounded border p-3">
+                  {(partnerName || location) && (
+                    <div className="mb-1 text-xs text-gray-500">
+                      {partnerName && <span className="font-medium">{partnerName}</span>}
+                      {partnerName && location && <span> &middot; </span>}
+                      {location && <span>{location}</span>}
+                    </div>
+                  )}
+                  <h2 className="text-sm font-semibold">{item.title}</h2>
+                  <p className="text-sm text-gray-700">{item.message}</p>
+                </div>
+              );
+            })
           )}
         </div>
       </div>

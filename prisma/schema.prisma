@@ -263,6 +263,7 @@ model Business {
   updatedAt          DateTime     @updatedAt
 
   partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
+  restockRequests RestockRequest[]
 }
 
 model Notification {
@@ -289,13 +290,15 @@ model TrainingRequest {
 }
 
 model RestockRequest {
-  id              String   @id @default(cuid())
+  id               String   @id @default(cuid())
   partnerProfileId String
-  items           String[]
-  message         String?
-  createdAt       DateTime @default(now())
+  businessId       String
+  items            String[]
+  message          String?
+  createdAt        DateTime @default(now())
 
   partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
+  business       Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
 }
 
 model Feedback {
