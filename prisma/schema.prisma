@@ -10,6 +10,7 @@ datasource db {
 enum AdminRole {
   FULL
   COORDINATOR
+  SENIOR_MANAGER
 }
 
 enum AdminOtpStatus {

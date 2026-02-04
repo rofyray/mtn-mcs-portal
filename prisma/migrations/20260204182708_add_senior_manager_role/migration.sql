@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "AdminRole" ADD VALUE 'SENIOR_MANAGER';

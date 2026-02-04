@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, AdminRole } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -80,8 +80,29 @@ const fullAccessAdmins = [
   },
 ];
 
+const seniorManagers = [
+  {
+    name: "Janet Quarshie",
+    email: "janet.quarshie@mtn.com",
+    role: "SENIOR_MANAGER",
+    regions: ["C", "W", "E", "O", "V", "G", "R"],
+  },
+  {
+    name: "Adwoa Baah Obeng",
+    email: "adwoa.obeng@mtn.com",
+    role: "SENIOR_MANAGER",
+    regions: ["U", "X", "A", "N", "B", "F", "H", "S", "J"],
+  },
+  {
+    name: "System Senior Manager",
+    email: "snrmgr@grr.la",
+    role: "SENIOR_MANAGER",
+    regions: ["A", "B", "C", "E", "F", "G", "H", "J", "N", "O", "R", "S", "U", "V", "W", "X"],
+  },
+];
+
 async function main() {
-  const admins = [...coordinators, ...fullAccessAdmins];
+  const admins = [...coordinators, ...fullAccessAdmins, ...seniorManagers];
 
   for (const admin of admins) {
     const normalizedEmail = admin.email.trim().toLowerCase();
@@ -89,16 +110,16 @@ async function main() {
       where: { email: normalizedEmail },
       update: {
         name: admin.name,
-        role: admin.role as "COORDINATOR" | "FULL",
+        role: admin.role as AdminRole,
       },
       create: {
         name: admin.name,
         email: normalizedEmail,
-        role: admin.role as "COORDINATOR" | "FULL",
+        role: admin.role as AdminRole,
       },
     });
 
-    if (admin.role === "COORDINATOR") {
+    if (admin.role === "COORDINATOR" || admin.role === "SENIOR_MANAGER") {
       for (const region of admin.regions) {
         await prisma.adminRegionAssignment.upsert({
           where: {

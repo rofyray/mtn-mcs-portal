@@ -63,7 +63,7 @@ export async function POST(request: Request) {
     },
   });
 
-  const response = NextResponse.json({ status: "verified" });
+  const response = NextResponse.json({ status: "verified", role: admin.role });
   response.cookies.set("admin_session", sessionToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

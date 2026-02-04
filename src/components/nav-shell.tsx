@@ -77,7 +77,7 @@ const partnerLinks: NavLink[] = [
   },
 ];
 
-type AdminNavLink = NavLink & { fullOnly?: boolean };
+type AdminNavLink = NavLink & { fullOnly?: boolean; seniorManagerOnly?: boolean };
 
 const adminLinks: AdminNavLink[] = [
   {
@@ -86,6 +86,17 @@ const adminLinks: AdminNavLink[] = [
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
         <path d="M3 3h7v9H3zM14 3h7v5h-7zM14 10h7v11h-7zM3 14h7v7H3z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/admin/map-reports",
+    label: "Map Reports",
+    seniorManagerOnly: true,
+    icon: (
+      <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
+        <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z" />
+        <path d="M8 2v16M16 6v16" />
       </svg>
     ),
   },
@@ -180,7 +191,8 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/auth") ||
     pathname === "/admin/login" ||
     pathname === "/partner/login" ||
-    pathname === "/onboarding";
+    pathname === "/onboarding" ||
+    pathname === "/admin/map-reports";
 
   const collapsed = useSyncExternalStore(
     (callback) => {
@@ -273,7 +285,12 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
       return partnerLinks;
     }
     const isFullAccess = adminRole === "FULL";
-    return adminLinks.filter((link) => !link.fullOnly || isFullAccess);
+    const isSeniorManager = adminRole === "SENIOR_MANAGER";
+    return adminLinks.filter((link) => {
+      if (link.fullOnly && !isFullAccess) return false;
+      if (link.seniorManagerOnly && !isFullAccess && !isSeniorManager) return false;
+      return true;
+    });
   }, [adminRole, isAdmin]);
 
   if (hideNav) {

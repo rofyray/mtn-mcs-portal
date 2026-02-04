@@ -32,6 +32,10 @@ export default function AdminLoginPage() {
     () => admins.filter((admin) => admin.role === "FULL"),
     [admins]
   );
+  const seniorManagers = useMemo(
+    () => admins.filter((admin) => admin.role === "SENIOR_MANAGER"),
+    [admins]
+  );
 
   useEffect(() => {
     const root = document.documentElement;
@@ -116,13 +120,15 @@ export default function AdminLoginPage() {
         kind: "error",
       });
     } else {
+      const data = await response.json().catch(() => ({}));
       setStatus("Verified. Redirecting...");
       storeToast({
         title: "Welcome back",
         message: "Admin access granted.",
         kind: "success",
       });
-      window.location.href = "/admin";
+      const redirectPath = data.role === "SENIOR_MANAGER" ? "/admin/map-reports" : "/admin";
+      window.location.href = redirectPath;
     }
 
     setLoading(false);
@@ -159,6 +165,15 @@ export default function AdminLoginPage() {
               {fullAccessAdmins.length > 0 ? (
                 <optgroup label="Platform Admins">
                   {fullAccessAdmins.map((admin) => (
+                    <option key={admin.id} value={admin.email}>
+                      {admin.name} ({admin.email})
+                    </option>
+                  ))}
+                </optgroup>
+              ) : null}
+              {seniorManagers.length > 0 ? (
+                <optgroup label="Senior Managers">
+                  {seniorManagers.map((admin) => (
                     <option key={admin.id} value={admin.email}>
                       {admin.name} ({admin.email})
                     </option>
