@@ -99,6 +99,18 @@ const seniorManagers = [
     role: "SENIOR_MANAGER",
     regions: ["A", "B", "C", "E", "F", "G", "H", "J", "N", "O", "R", "S", "U", "V", "W", "X"],
   },
+  {
+    name: "Okyere Forson",
+    email: "okyereforsong@gmail.com",
+    role: "SENIOR_MANAGER",
+    regions: ["A", "B", "C", "E", "F", "G", "H", "J", "N", "O", "R", "S", "U", "V", "W", "X"],
+  },
+  {
+    name: "Geoffrey Okyere-Forson",
+    email: "geoffreyokyereforson05@gmail.com",
+    role: "SENIOR_MANAGER",
+    regions: ["C", "W", "E", "O", "V", "G", "R"],
+  },
 ];
 
 async function main() {

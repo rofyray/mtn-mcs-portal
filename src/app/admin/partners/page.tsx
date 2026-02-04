@@ -6,6 +6,8 @@ import EmptyState from "@/components/empty-state";
 import { AdminPartnersEmptyIcon } from "@/components/admin-empty-icons";
 import { useToast } from "@/components/toast";
 import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
+import ViewModeToggle from "@/components/view-mode-toggle";
+import { useViewMode } from "@/hooks/use-view-mode";
 
 type PartnerProfile = {
   id: string;
@@ -35,6 +37,7 @@ export default function AdminPartnersPage() {
   const [error, setError] = useState<string | null>(null);
   const { notify } = useToast();
   const { confirm, confirmDialog, getInputValue } = useConfirmDialog();
+  const viewMode = useViewMode();
   const statusLabel = statusOptions.find((option) => option.value === status)?.label ?? status;
   const statusLabelLower = statusLabel.toLowerCase();
 
@@ -139,6 +142,9 @@ export default function AdminPartnersPage() {
               ))}
             </select>
           </div>
+          <div className="admin-filter-field" style={{ flex: "0 0 auto" }}>
+            <ViewModeToggle />
+          </div>
         </div>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
@@ -161,6 +167,77 @@ export default function AdminPartnersPage() {
               }
               variant="inset"
             />
+          </div>
+        ) : viewMode === "list" ? (
+          <div className="submission-list submission-list-partners">
+            <div className="submission-list-header">
+              <span>Status</span>
+              <span>Business Name</span>
+              <span>Partner Name</span>
+              <span>Phone</span>
+              <span>Actions</span>
+            </div>
+            {partners.map((partner) => (
+              <div key={partner.id} className="submission-list-row">
+                <span className="submission-list-cell" data-label="Status">
+                  <span
+                    className={`badge badge-${
+                      partner.status === "APPROVED"
+                        ? "success"
+                        : partner.status === "DENIED"
+                          ? "error"
+                          : partner.status === "EXPIRED"
+                            ? "warning"
+                            : "info"
+                    }`}
+                  >
+                    {partner.status}
+                  </span>
+                </span>
+                <span className="submission-list-cell" data-label="Business Name">
+                  {partner.businessName ?? "Business Name Pending"}
+                </span>
+                <span className="submission-list-cell" data-label="Partner Name">
+                  {partner.partnerFirstName} {partner.partnerSurname}
+                </span>
+                <span className="submission-list-cell submission-list-cell-muted" data-label="Phone">
+                  {partner.phoneNumber}
+                </span>
+                <div className="submission-list-actions" data-label="Actions">
+                  {adminRole ? (
+                    adminRole === "FULL" ? (
+                      <a className="btn btn-secondary" href={`/admin/partners/${partner.id}`}>
+                        View details
+                      </a>
+                    ) : (
+                      <>
+                        <a className="btn btn-secondary" href={`/admin/partners/${partner.id}`}>
+                          View & edit
+                        </a>
+                        {partner.status === "SUBMITTED" ? (
+                          <>
+                            <button
+                              className="btn btn-primary"
+                              type="button"
+                              onClick={() => handleApprove(partner.id)}
+                            >
+                              Approve
+                            </button>
+                            <button
+                              className="btn btn-danger-light"
+                              type="button"
+                              onClick={() => handleDeny(partner.id)}
+                            >
+                              Deny
+                            </button>
+                          </>
+                        ) : null}
+                      </>
+                    )
+                  ) : null}
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-3 justify-items-start stagger">

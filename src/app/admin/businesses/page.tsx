@@ -8,6 +8,8 @@ import MultiSelectDropdown from "@/components/multi-select-dropdown";
 import { useToast } from "@/components/toast";
 import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import { ghanaLocations } from "@/lib/ghana-locations";
+import ViewModeToggle from "@/components/view-mode-toggle";
+import { useViewMode } from "@/hooks/use-view-mode";
 
 type Business = {
   id: string;
@@ -37,6 +39,7 @@ export default function AdminBusinessesPage() {
   const [error, setError] = useState<string | null>(null);
   const { notify } = useToast();
   const { confirm, confirmDialog, getInputValue } = useConfirmDialog();
+  const viewMode = useViewMode();
   const statusLabel = statusOptions.find((option) => option.value === status)?.label ?? status;
   const statusLabelLower = statusLabel.toLowerCase();
 
@@ -254,7 +257,7 @@ export default function AdminBusinessesPage() {
               ))}
             </select>
           </div>
-          <div className="admin-filter-field admin-filter-span-3">
+          <div className="admin-filter-field admin-filter-span-2">
             <label className="label">Regions</label>
             <MultiSelectDropdown
               label="Regions"
@@ -274,6 +277,9 @@ export default function AdminBusinessesPage() {
               onChange={setSelectedDistricts}
               emptyLabel="Select a region to view districts"
             />
+          </div>
+          <div style={{ display: "flex", alignItems: "flex-end", marginLeft: "auto" }}>
+            <ViewModeToggle />
           </div>
         </div>
 
@@ -306,6 +312,81 @@ export default function AdminBusinessesPage() {
               }
               variant="inset"
             />
+          </div>
+        ) : viewMode === "list" ? (
+          <div className="submission-list submission-list-businesses">
+            <div className="submission-list-header">
+              <span>Status</span>
+              <span>Business Name</span>
+              <span>City</span>
+              <span>Region</span>
+              <span>District</span>
+              <span>Actions</span>
+            </div>
+            {filteredBusinesses.map((business) => (
+              <div key={business.id} className="submission-list-row">
+                <span className="submission-list-cell" data-label="Status">
+                  <span
+                    className={`badge badge-${
+                      business.status === "APPROVED"
+                        ? "success"
+                        : business.status === "DENIED"
+                          ? "error"
+                          : business.status === "EXPIRED"
+                            ? "warning"
+                            : "info"
+                    }`}
+                  >
+                    {business.status}
+                  </span>
+                </span>
+                <span className="submission-list-cell" data-label="Business Name">
+                  {business.businessName}
+                </span>
+                <span className="submission-list-cell submission-list-cell-muted" data-label="City">
+                  {business.city}
+                </span>
+                <span className="submission-list-cell submission-list-cell-muted" data-label="Region">
+                  {getRegionName(business.addressRegionCode) ?? "-"}
+                </span>
+                <span className="submission-list-cell submission-list-cell-muted" data-label="District">
+                  {getDistrictName(business.addressRegionCode, business.addressDistrictCode) ?? "-"}
+                </span>
+                <div className="submission-list-actions" data-label="Actions">
+                  {adminRole ? (
+                    adminRole === "FULL" ? (
+                      <a className="btn btn-secondary" href={`/admin/businesses/${business.id}`}>
+                        View details
+                      </a>
+                    ) : (
+                      <>
+                        <a className="btn btn-secondary" href={`/admin/businesses/${business.id}`}>
+                          View & edit
+                        </a>
+                        {business.status === "SUBMITTED" ? (
+                          <>
+                            <button
+                              className="btn btn-primary"
+                              type="button"
+                              onClick={() => handleApprove(business.id)}
+                            >
+                              Approve
+                            </button>
+                            <button
+                              className="btn btn-danger-light"
+                              type="button"
+                              onClick={() => handleDeny(business.id)}
+                            >
+                              Deny
+                            </button>
+                          </>
+                        ) : null}
+                      </>
+                    )
+                  ) : null}
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 stagger">

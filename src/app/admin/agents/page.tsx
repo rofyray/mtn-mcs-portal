@@ -6,6 +6,8 @@ import EmptyState from "@/components/empty-state";
 import { AdminAgentsEmptyIcon } from "@/components/admin-empty-icons";
 import { useToast } from "@/components/toast";
 import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
+import ViewModeToggle from "@/components/view-mode-toggle";
+import { useViewMode } from "@/hooks/use-view-mode";
 
 type Business = {
   id: string;
@@ -43,6 +45,7 @@ export default function AdminAgentsPage() {
   const [error, setError] = useState<string | null>(null);
   const { notify } = useToast();
   const { confirm, confirmDialog, getInputValue } = useConfirmDialog();
+  const viewMode = useViewMode();
   const statusLabel = statusOptions.find((option) => option.value === status)?.label ?? status;
   const statusLabelLower = statusLabel.toLowerCase();
 
@@ -211,6 +214,9 @@ export default function AdminAgentsPage() {
               ))}
             </select>
           </div>
+          <div className="admin-filter-field" style={{ flex: "0 0 auto" }}>
+            <ViewModeToggle />
+          </div>
         </div>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
@@ -236,6 +242,81 @@ export default function AdminAgentsPage() {
               }
               variant="inset"
             />
+          </div>
+        ) : viewMode === "list" ? (
+          <div className="submission-list submission-list-agents">
+            <div className="submission-list-header">
+              <span>Status</span>
+              <span>Name</span>
+              <span>Phone</span>
+              <span>Email</span>
+              <span>Business</span>
+              <span>Actions</span>
+            </div>
+            {filteredAgents.map((agent) => (
+              <div key={agent.id} className="submission-list-row">
+                <span className="submission-list-cell" data-label="Status">
+                  <span
+                    className={`badge badge-${
+                      agent.status === "APPROVED"
+                        ? "success"
+                        : agent.status === "DENIED"
+                          ? "error"
+                          : agent.status === "EXPIRED"
+                            ? "warning"
+                            : "info"
+                    }`}
+                  >
+                    {agent.status}
+                  </span>
+                </span>
+                <span className="submission-list-cell" data-label="Name">
+                  {agent.firstName} {agent.surname}
+                </span>
+                <span className="submission-list-cell submission-list-cell-muted" data-label="Phone">
+                  {agent.phoneNumber}
+                </span>
+                <span className="submission-list-cell submission-list-cell-muted" data-label="Email">
+                  {agent.email}
+                </span>
+                <span className="submission-list-cell submission-list-cell-muted" data-label="Business">
+                  {agent.businessName ?? "-"}
+                </span>
+                <div className="submission-list-actions" data-label="Actions">
+                  {adminRole ? (
+                    adminRole === "FULL" ? (
+                      <a className="btn btn-secondary" href={`/admin/agents/${agent.id}`}>
+                        View details
+                      </a>
+                    ) : (
+                      <>
+                        <a className="btn btn-secondary" href={`/admin/agents/${agent.id}`}>
+                          View & edit
+                        </a>
+                        {agent.status === "SUBMITTED" ? (
+                          <>
+                            <button
+                              className="btn btn-primary"
+                              type="button"
+                              onClick={() => handleApprove(agent.id)}
+                            >
+                              Approve
+                            </button>
+                            <button
+                              className="btn btn-danger-light"
+                              type="button"
+                              onClick={() => handleDeny(agent.id)}
+                            >
+                              Deny
+                            </button>
+                          </>
+                        ) : null}
+                      </>
+                    )
+                  ) : null}
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 stagger">
