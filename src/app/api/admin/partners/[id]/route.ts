@@ -13,7 +13,7 @@ export async function PUT(
   const access = await getAdminAndProfile(id);
 
   if ("error" in access) {
-    const status = access.error === "unauthorized" ? 401 : access.error === "forbidden" ? 403 : 404;
+    const status = access.error === "unauthorized" ? 401 : 404;
     return NextResponse.json({ error: access.error }, { status });
   }
 
@@ -47,7 +47,7 @@ export async function GET(
   const access = await getAdminAndProfile(id);
 
   if ("error" in access) {
-    const status = access.error === "unauthorized" ? 401 : access.error === "forbidden" ? 403 : 404;
+    const status = access.error === "unauthorized" ? 401 : 404;
     return NextResponse.json({ error: access.error }, { status });
   }
 

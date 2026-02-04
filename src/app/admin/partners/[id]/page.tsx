@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
-import { buildAddressCode, parseAddressCode } from "@/lib/ghana-post-gps";
 import { useToast } from "@/components/toast";
 import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
 import { useAdminActionsEnabled } from "@/hooks/use-admin-actions-enabled";
 import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
-import { ghanaLocations } from "@/lib/ghana-locations";
 import UploadField from "@/components/upload-field";
 import FilePreviewModal from "@/components/file-preview-modal";
 import { DOCUMENT_ACCEPT, IMAGE_ACCEPT } from "@/lib/storage/accepts";
@@ -22,13 +20,6 @@ const editableFields = [
   { key: "paymentWallet", label: "Payment Wallet" },
   { key: "ghanaCardNumber", label: "Ghana Card Number" },
   { key: "taxIdentityNumber", label: "Tax Identity Number" },
-  { key: "addressRegionCode", label: "Region" },
-  { key: "addressDistrictCode", label: "District" },
-  { key: "addressCode", label: "Digital Address Code" },
-  { key: "gpsLatitude", label: "GPS Latitude" },
-  { key: "gpsLongitude", label: "GPS Longitude" },
-  { key: "city", label: "City/Town" },
-  { key: "landmark", label: "Landmark" },
   { key: "apn", label: "APN" },
   { key: "mifiImei", label: "MiFi/Router IMEI" },
 ];
@@ -40,8 +31,6 @@ const fileFields = [
   { key: "businessCertificateUrl", label: "Business Certificate", kind: "pdf" as const, accept: DOCUMENT_ACCEPT },
   { key: "fireCertificateUrl", label: "Fire Certificate", kind: "pdf" as const, accept: DOCUMENT_ACCEPT },
   { key: "insuranceUrl", label: "Insurance Document", kind: "pdf" as const, accept: DOCUMENT_ACCEPT },
-  { key: "storeFrontUrl", label: "Store Front Photo", kind: "image" as const, accept: IMAGE_ACCEPT },
-  { key: "storeInsideUrl", label: "Store Inside Photo", kind: "image" as const, accept: IMAGE_ACCEPT },
 ];
 
 const phonePrefix = "+233";
@@ -69,7 +58,7 @@ export default function AdminPartnerDetailPage() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [deleting, setDeleting] = useState<Record<string, boolean>>({});
-  const [activeTab, setActiveTab] = useState<"details" | "location" | "photos" | "documents">("details");
+  const [activeTab, setActiveTab] = useState<"details" | "photos" | "documents">("details");
   const [preview, setPreview] = useState<{
     url: string;
     label: string;
@@ -112,50 +101,8 @@ export default function AdminPartnerDetailPage() {
   const actionsEnabled = useAdminActionsEnabled();
   const canEdit = adminRole === "FULL" ? actionsEnabled : showAdminActions;
   const saveLabel = profileStatus === "DENIED" ? "Update details" : "Save changes";
-  const detailsFields = editableFields.filter((field) =>
-    [
-      "businessName",
-      "partnerFirstName",
-      "partnerSurname",
-      "phoneNumber",
-      "paymentWallet",
-      "ghanaCardNumber",
-      "taxIdentityNumber",
-      "apn",
-      "mifiImei",
-    ].includes(field.key)
-  );
-  const locationFields = editableFields.filter((field) =>
-    [
-      "addressRegionCode",
-      "addressDistrictCode",
-      "addressCode",
-      "gpsLatitude",
-      "gpsLongitude",
-      "city",
-      "landmark",
-    ].includes(field.key)
-  );
   const photoFields = fileFields.filter((field) => field.kind === "image");
   const documentFields = fileFields.filter((field) => field.kind === "pdf");
-
-  const regionOptions = useMemo(() => {
-    return Object.values(ghanaLocations).map((region) => ({
-      value: region.code,
-      label: region.name,
-    }));
-  }, []);
-
-  const districtOptions = useMemo(() => {
-    const regionCode = form.addressRegionCode;
-    if (!regionCode || !ghanaLocations[regionCode]) {
-      return [];
-    }
-    return ghanaLocations[regionCode].districts.map((district) => ({
-      value: district.code,
-      label: district.name,
-    }));
-  }, [form.addressRegionCode]);
 
   function updateField(key: string, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -177,101 +124,6 @@ export default function AdminPartnerDetailPage() {
               value={formatPhoneForDisplay(form[field.key])}
               onChange={(event) => updateField(field.key, formatPhoneForStorage(event.target.value))}
               disabled={!canEdit}
-            />
-          </div>
-        ) : field.key === "addressRegionCode" ? (
-          <div className="space-y-1">
-            <select
-              className="input"
-              value={form[field.key] ?? ""}
-              onChange={(event) => {
-                updateField(field.key, event.target.value);
-                updateField("addressDistrictCode", "");
-                updateField("addressCode", "");
-              }}
-              disabled={!canEdit}
-            >
-              <option value="">Select region</option>
-              {regionOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            {form.addressRegionCode ? (
-              <p className="text-xs text-gray-500">Code: {form.addressRegionCode}</p>
-            ) : null}
-          </div>
-        ) : field.key === "addressDistrictCode" ? (
-          <div className="space-y-1">
-            <select
-              className="input"
-              value={form[field.key] ?? ""}
-              onChange={(event) => {
-                updateField(field.key, event.target.value);
-                updateField("addressCode", "");
-              }}
-              disabled={!canEdit || !form.addressRegionCode}
-            >
-              <option value="">Select district</option>
-              {districtOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            {form.addressDistrictCode ? (
-              <p className="text-xs text-gray-500">Code: {form.addressDistrictCode}</p>
-            ) : null}
-          </div>
-        ) : field.key === "addressCode" ? (
-          <div className="address-code-grid">
-            <input
-              className="input address-code-segment address-code-prefix"
-              value={(form.addressDistrictCode ?? "").toUpperCase()}
-              disabled
-            />
-            <span className="address-code-divider">-</span>
-            <input
-              className="input address-code-segment"
-              inputMode="numeric"
-              pattern="\\d{3,4}"
-              maxLength={4}
-              placeholder="123"
-              value={parseAddressCode(form.addressCode ?? "").area}
-              onChange={(event) => {
-                const parts = parseAddressCode(form.addressCode ?? "");
-                updateField(
-                  "addressCode",
-                  buildAddressCode(
-                    (form.addressDistrictCode ?? "").toUpperCase(),
-                    event.target.value,
-                    parts.unique
-                  )
-                );
-              }}
-              disabled={!canEdit || !form.addressDistrictCode}
-            />
-            <span className="address-code-divider">-</span>
-            <input
-              className="input address-code-segment"
-              inputMode="numeric"
-              pattern="\\d{3,4}"
-              maxLength={4}
-              placeholder="4567"
-              value={parseAddressCode(form.addressCode ?? "").unique}
-              onChange={(event) => {
-                const parts = parseAddressCode(form.addressCode ?? "");
-                updateField(
-                  "addressCode",
-                  buildAddressCode(
-                    (form.addressDistrictCode ?? "").toUpperCase(),
-                    parts.area,
-                    event.target.value
-                  )
-                );
-              }}
-              disabled={!canEdit || !form.addressDistrictCode}
             />
           </div>
         ) : field.key === "apn" || field.key === "mifiImei" ? (
@@ -547,16 +399,6 @@ export default function AdminPartnerDetailPage() {
             className="tab-button"
             type="button"
             role="tab"
-            aria-selected={activeTab === "location"}
-            aria-controls="partner-location-tab"
-            onClick={() => setActiveTab("location")}
-          >
-            Location
-          </button>
-          <button
-            className="tab-button"
-            type="button"
-            role="tab"
             aria-selected={activeTab === "photos"}
             aria-controls="partner-photos-tab"
             onClick={() => setActiveTab("photos")}
@@ -576,12 +418,7 @@ export default function AdminPartnerDetailPage() {
         </div>
         {activeTab === "details" ? (
           <div id="partner-details-tab" role="tabpanel" className="grid gap-4 md:grid-cols-2">
-            {detailsFields.map((field) => renderEditableField(field))}
-          </div>
-        ) : null}
-        {activeTab === "location" ? (
-          <div id="partner-location-tab" role="tabpanel" className="grid gap-4 md:grid-cols-2">
-            {locationFields.map((field) => renderEditableField(field))}
+            {editableFields.map((field) => renderEditableField(field))}
           </div>
         ) : null}
         {activeTab === "photos" ? (

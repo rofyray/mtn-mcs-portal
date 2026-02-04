@@ -3,12 +3,6 @@
 import { signOut } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 
-import {
-  buildAddressCode,
-  isAddressCodeComplete,
-  parseAddressCode,
-} from "@/lib/ghana-post-gps";
-import { ghanaLocations } from "@/lib/ghana-locations";
 import PostAuthToast, { storeToast } from "@/components/post-auth-toast";
 import { useToast } from "@/components/toast";
 import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
@@ -40,7 +34,7 @@ type Step = {
 const steps: Step[] = [
   {
     id: "partner",
-    title: "Partner Identity",
+    title: "Partner Details",
     description: "Tell us who owns this MTN Community Shop.",
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24">
@@ -70,7 +64,7 @@ const steps: Step[] = [
   },
   {
     id: "business",
-    title: "Business Identity",
+    title: "Business Details",
     description: "Provide the business details and compliance documents.",
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24">
@@ -113,7 +107,7 @@ const steps: Step[] = [
   },
   {
     id: "ids",
-    title: "Government IDs",
+    title: "Ghana Card Details",
     description: "Provide Ghana card details.",
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24">
@@ -134,51 +128,9 @@ const steps: Step[] = [
     ],
   },
   {
-    id: "location",
-    title: "Location",
-    description: "Capture the digital address and GPS location.",
-    icon: (
-      <svg aria-hidden="true" viewBox="0 0 24 24">
-        <path
-          d="M12 3a6 6 0 0 1 6 6c0 4.5-6 12-6 12S6 13.5 6 9a6 6 0 0 1 6-6Z"
-          fill="currentColor"
-        />
-        <circle cx="12" cy="9" r="2.5" fill="#0b0c0f" />
-      </svg>
-    ),
-    fields: [
-      { key: "addressRegionCode", label: "Region", type: "select" },
-      { key: "addressDistrictCode", label: "District", type: "select" },
-      {
-        key: "addressCode",
-        label: "Digital Address Code",
-        type: "text",
-        placeholder: "123-4567",
-        hint: "Get this from the GhanaPostGPS app.",
-        hintLink: "https://ghanapostgps.com/",
-      },
-      {
-        key: "gpsLatitude",
-        label: "GPS Latitude",
-        type: "text",
-        hint: "Use the GhanaPostGPS app to copy coordinates.",
-        hintLink: "https://ghanapostgps.com/",
-      },
-      {
-        key: "gpsLongitude",
-        label: "GPS Longitude",
-        type: "text",
-        hint: "Use the GhanaPostGPS app to copy coordinates.",
-        hintLink: "https://ghanapostgps.com/",
-      },
-      { key: "city", label: "City/Town", type: "text" },
-      { key: "landmark", label: "Directional Address (Landmark)", type: "text" },
-    ],
-  },
-  {
-    id: "store",
-    title: "Store & Assets",
-    description: "Provide store photos and device assets.",
+    id: "assets",
+    title: "Device Assets",
+    description: "Provide device asset information.",
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24">
         <path
@@ -195,8 +147,6 @@ const steps: Step[] = [
       </svg>
     ),
     fields: [
-      { key: "storeFrontUrl", label: "Store Front Photo", type: "upload", accept: IMAGE_ACCEPT },
-      { key: "storeInsideUrl", label: "Store Inside Photo", type: "upload", accept: IMAGE_ACCEPT },
       { key: "paymentWallet", label: "Payment Wallet", type: "text" },
       { key: "apn", label: "APN", type: "text" },
       { key: "mifiImei", label: "MiFi/Router IMEI", type: "text" },
@@ -242,31 +192,10 @@ export default function OnboardingPage() {
       if (phoneKeys.has(key)) {
         return formatPhoneForDisplay(form[key]).length !== 9;
       }
-      if (key === "addressCode") {
-        return !isAddressCodeComplete(form[key]);
-      }
       const value = form[key];
       return !value || value.trim() === "";
     });
   }, [form]);
-
-  const regionOptions = useMemo(() => {
-    return Object.values(ghanaLocations).map((region) => ({
-      value: region.code,
-      label: region.name,
-    }));
-  }, []);
-
-  const districtOptions = useMemo(() => {
-    const regionCode = form.addressRegionCode;
-    if (!regionCode || !ghanaLocations[regionCode]) {
-      return [];
-    }
-    return ghanaLocations[regionCode].districts.map((district) => ({
-      value: district.code,
-      label: district.name,
-    }));
-  }, [form.addressRegionCode]);
 
   useEffect(() => {
     async function loadDraft() {
@@ -429,7 +358,7 @@ export default function OnboardingPage() {
           <p className="text-sm text-gray-600">{step.description}</p>
         </div>
 
-        <div className="grid gap-2 md:grid-cols-5 stagger">
+        <div className="grid gap-2 md:grid-cols-4 stagger">
           {steps.map((item, index) => (
             <button
               key={item.id}
@@ -467,47 +396,6 @@ export default function OnboardingPage() {
               );
             }
 
-            if (field.type === "select") {
-              const options =
-                field.key === "addressRegionCode" ? regionOptions : districtOptions;
-
-              return (
-                <div key={field.key} className="space-y-2">
-                  <label className="label">{field.label}</label>
-                  <select
-                    className="input"
-                    value={form[field.key] ?? ""}
-                    onChange={(event) => {
-                      updateField(field.key, event.target.value);
-                      if (field.key === "addressRegionCode") {
-                        updateField("addressDistrictCode", "");
-                        updateField("addressCode", "");
-                      }
-                      if (field.key === "addressDistrictCode") {
-                        updateField("addressCode", "");
-                      }
-                    }}
-                    disabled={
-                      field.key === "addressDistrictCode" && !form.addressRegionCode
-                    }
-                    required
-                  >
-                    <option value="">Select</option>
-                    {options.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  {field.key === "addressRegionCode" ? (
-                    <p className="text-xs text-gray-500">
-                      Region determines available districts.
-                    </p>
-                  ) : null}
-                </div>
-              );
-            }
-
             return (
               <div key={field.key} className="space-y-1">
                 <label className="label">{field.label}</label>
@@ -522,58 +410,6 @@ export default function OnboardingPage() {
                       placeholder="24xxxxxxx"
                       value={formatPhoneForDisplay(form[field.key])}
                       onChange={(event) => updateField(field.key, formatPhoneForStorage(event.target.value))}
-                      required
-                    />
-                  </div>
-                ) : field.key === "addressCode" ? (
-                  <div className="address-code-grid">
-                    <input
-                      className="input address-code-segment address-code-prefix"
-                      value={(form.addressDistrictCode ?? "").toUpperCase()}
-                      disabled
-                    />
-                    <span className="address-code-divider">-</span>
-                    <input
-                      className="input address-code-segment"
-                      inputMode="numeric"
-                      pattern="\\d{3,4}"
-                      maxLength={4}
-                      placeholder="123"
-                      value={parseAddressCode(form.addressCode ?? "").area}
-                      onChange={(event) => {
-                        const parts = parseAddressCode(form.addressCode ?? "");
-                        updateField(
-                          "addressCode",
-                          buildAddressCode(
-                            (form.addressDistrictCode ?? "").toUpperCase(),
-                            event.target.value,
-                            parts.unique
-                          )
-                        );
-                      }}
-                      disabled={!form.addressDistrictCode}
-                      required
-                    />
-                    <span className="address-code-divider">-</span>
-                    <input
-                      className="input address-code-segment"
-                      inputMode="numeric"
-                      pattern="\\d{3,4}"
-                      maxLength={4}
-                      placeholder="4567"
-                      value={parseAddressCode(form.addressCode ?? "").unique}
-                      onChange={(event) => {
-                        const parts = parseAddressCode(form.addressCode ?? "");
-                        updateField(
-                          "addressCode",
-                          buildAddressCode(
-                            (form.addressDistrictCode ?? "").toUpperCase(),
-                            parts.area,
-                            event.target.value
-                          )
-                        );
-                      }}
-                      disabled={!form.addressDistrictCode}
                       required
                     />
                   </div>
@@ -598,7 +434,7 @@ export default function OnboardingPage() {
                     required
                   />
                 )}
-                {field.hint && !(step.id === "location" && field.hintLink) ? (
+                {field.hint ? (
                   <p className="text-xs text-gray-500">
                     {field.hint}
                     {field.hintLink ? (
@@ -614,14 +450,6 @@ export default function OnboardingPage() {
               </div>
             );
           })}
-          {step.id === "location" ? (
-            <p className="text-xs text-gray-500">
-              Get the digital address code and GPS coordinates from the GhanaPostGPS app.{" "}
-              <a href="https://ghanapostgps.com/" target="_blank" rel="noreferrer" className="link-accent">
-                Download app
-              </a>
-            </p>
-          ) : null}
         </div>
 
         {error ? <p className="form-message form-message-error">{error}</p> : null}

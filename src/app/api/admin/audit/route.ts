@@ -69,8 +69,6 @@ export async function GET() {
             businessName: true,
             partnerFirstName: true,
             partnerSurname: true,
-            addressRegionCode: true,
-            city: true,
             user: { select: { email: true } },
           },
         })
@@ -83,8 +81,7 @@ export async function GET() {
             firstName: true,
             surname: true,
             businessName: true,
-            addressRegionCode: true,
-            city: true,
+            business: { select: { addressRegionCode: true, city: true } },
             partnerProfile: { select: { id: true, businessName: true } },
           },
         })
@@ -135,12 +132,6 @@ export async function GET() {
           targetDetails = {
             name: partner.businessName || fullName || "Unknown Partner",
             email: partner.user?.email ?? undefined,
-            location: partner.addressRegionCode
-              ? {
-                  regionCode: partner.addressRegionCode,
-                  city: partner.city ?? undefined,
-                }
-              : undefined,
           };
         }
         break;
@@ -150,10 +141,12 @@ export async function GET() {
         if (agent) {
           targetDetails = {
             name: `${agent.firstName} ${agent.surname}`.trim() || "Unknown Agent",
-            location: {
-              regionCode: agent.addressRegionCode,
-              city: agent.city,
-            },
+            location: agent.business
+              ? {
+                  regionCode: agent.business.addressRegionCode,
+                  city: agent.business.city,
+                }
+              : undefined,
             linkedPartner: agent.partnerProfile
               ? {
                   id: agent.partnerProfile.id,

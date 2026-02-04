@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { admin, regionCodes } = adminContext;
+  const { admin } = adminContext;
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status");
 
@@ -19,9 +19,8 @@ export async function GET(request: Request) {
     where.status = status;
   }
 
-  if (admin.role !== "FULL") {
-    where.addressRegionCode = { in: regionCodes };
-  }
+  // Partners no longer have direct location - all admins can view all partners
+  // Region filtering now applies at the agent/business level
 
   const partners = await prisma.partnerProfile.findMany({
     where,

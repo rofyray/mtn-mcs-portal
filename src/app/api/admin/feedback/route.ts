@@ -17,7 +17,6 @@ export async function GET() {
           businessName: true,
           partnerFirstName: true,
           partnerSurname: true,
-          city: true,
         },
       },
     },

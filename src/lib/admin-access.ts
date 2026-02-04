@@ -15,14 +15,8 @@ export async function getAdminAndProfile(profileId: string) {
     return { error: "not_found" as const };
   }
 
-  if (
-    adminContext.admin.role !== "FULL" &&
-    (!profile.addressRegionCode ||
-      !adminContext.regionCodes.includes(profile.addressRegionCode))
-  ) {
-    return { error: "forbidden" as const };
-  }
-
+  // Partners no longer have direct location - FULL access admins can view all,
+  // COORDINATOR admins can view all partners (region filtering now through businesses)
   return { admin: adminContext.admin, profile } as const;
 }
 
@@ -34,6 +28,7 @@ export async function getAdminAndAgent(agentId: string) {
 
   const agent = await prisma.agent.findUnique({
     where: { id: agentId },
+    include: { business: true },
   });
 
   if (!agent) {
@@ -42,7 +37,7 @@ export async function getAdminAndAgent(agentId: string) {
 
   if (
     adminContext.admin.role !== "FULL" &&
-    !adminContext.regionCodes.includes(agent.addressRegionCode)
+    !adminContext.regionCodes.includes(agent.business.addressRegionCode)
   ) {
     return { error: "forbidden" as const };
   }

@@ -1,13 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import EmptyState from "@/components/empty-state";
 import { AdminPartnersEmptyIcon } from "@/components/admin-empty-icons";
-import MultiSelectDropdown from "@/components/multi-select-dropdown";
 import { useToast } from "@/components/toast";
 import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
-import { ghanaLocations } from "@/lib/ghana-locations";
 
 type PartnerProfile = {
   id: string;
@@ -16,9 +14,6 @@ type PartnerProfile = {
   partnerFirstName: string | null;
   partnerSurname: string | null;
   phoneNumber: string | null;
-  addressCode: string | null;
-  addressRegionCode: string | null;
-  addressDistrictCode: string | null;
   submittedAt: string | null;
   updatedAt: string;
   user: { id: string; name: string | null; email: string | null };
@@ -36,8 +31,6 @@ export default function AdminPartnersPage() {
   const [status, setStatus] = useState("SUBMITTED");
   const [partners, setPartners] = useState<PartnerProfile[]>([]);
   const [adminRole, setAdminRole] = useState<string | null>(null);
-  const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
-  const [selectedDistricts, setSelectedDistricts] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { notify } = useToast();
@@ -118,61 +111,6 @@ export default function AdminPartnersPage() {
     loadPartners(status);
   }, [status]);
 
-  const regionOptions = useMemo(() => {
-    return Object.values(ghanaLocations).map((region) => ({
-      value: region.code,
-      label: region.name,
-    }));
-  }, []);
-
-  const allDistrictOptions = useMemo(() => {
-    return Object.values(ghanaLocations).flatMap((region) =>
-      region.districts.map((district) => ({
-        value: district.code,
-        label: `${district.name} (${region.name})`,
-        regionCode: region.code,
-      }))
-    );
-  }, []);
-
-  const districtOptions = useMemo(() => {
-    if (selectedRegions.length === 0) {
-      return [];
-    }
-    return allDistrictOptions
-      .filter((district) => selectedRegions.includes(district.regionCode))
-      .map(({ value, label }) => ({ value, label }));
-  }, [allDistrictOptions, selectedRegions]);
-
-  function handleRegionChange(nextRegions: string[]) {
-    setSelectedRegions(nextRegions);
-    const allowedDistricts =
-      nextRegions.length === 0
-        ? new Set(allDistrictOptions.map((district) => district.value))
-        : new Set(
-            allDistrictOptions
-              .filter((district) => nextRegions.includes(district.regionCode))
-              .map((district) => district.value)
-          );
-    setSelectedDistricts((prev) => prev.filter((district) => allowedDistricts.has(district)));
-  }
-
-  const filteredPartners = useMemo(() => {
-    return partners.filter((partner) => {
-      if (selectedRegions.length > 0 && partner.addressRegionCode) {
-        if (!selectedRegions.includes(partner.addressRegionCode)) {
-          return false;
-        }
-      }
-      if (selectedDistricts.length > 0 && partner.addressDistrictCode) {
-        if (!selectedDistricts.includes(partner.addressDistrictCode)) {
-          return false;
-        }
-      }
-      return true;
-    });
-  }, [partners, selectedRegions, selectedDistricts]);
-
   return (
     <main className="min-h-screen px-6 py-10">
       <div className="mx-auto w-full max-w-5xl space-y-6 glass-panel p-6 page-animate panel-loading">
@@ -201,58 +139,32 @@ export default function AdminPartnersPage() {
               ))}
             </select>
           </div>
-          <div className="admin-filter-field">
-            <label className="label">Regions</label>
-            <MultiSelectDropdown
-              label="Regions"
-              placeholder="All regions"
-              options={regionOptions}
-              selectedValues={selectedRegions}
-              onChange={handleRegionChange}
-            />
-          </div>
-          <div className="admin-filter-field">
-            <label className="label">Districts</label>
-            <MultiSelectDropdown
-              label="Districts"
-              placeholder={selectedRegions.length > 0 ? "Select districts" : "Select regions first"}
-              options={districtOptions}
-              selectedValues={selectedDistricts}
-              onChange={setSelectedDistricts}
-              emptyLabel="Select a region to view districts"
-            />
-          </div>
         </div>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        
 
-        {filteredPartners.length === 0 ? (
+        {partners.length === 0 ? (
           <div className="card">
             <EmptyState
               icon={<AdminPartnersEmptyIcon />}
               title={
-                selectedRegions.length > 0 || selectedDistricts.length > 0
-                  ? `No ${statusLabelLower} partners match those filters`
-                  : status === "SUBMITTED"
-                    ? "No partner submissions yet"
-                    : `No ${statusLabelLower} partners yet`
+                status === "SUBMITTED"
+                  ? "No partner submissions yet"
+                  : `No ${statusLabelLower} partners yet`
               }
               description={
-                selectedRegions.length > 0 || selectedDistricts.length > 0
-                  ? "Try adjusting the region or district filters."
-                  : status === "SUBMITTED"
-                    ? "New partner onboarding requests will show here."
-                    : status === "DRAFT"
-                      ? "Once partners start drafts, they'll appear here."
-                      : `Once partners are ${statusLabelLower}, they'll appear here.`
+                status === "SUBMITTED"
+                  ? "New partner onboarding requests will show here."
+                  : status === "DRAFT"
+                    ? "Once partners start drafts, they'll appear here."
+                    : `Once partners are ${statusLabelLower}, they'll appear here.`
               }
               variant="inset"
             />
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-3 justify-items-start stagger">
-            {filteredPartners.map((partner) => (
+            {partners.map((partner) => (
               <div key={partner.id} className="card partner-card space-y-3">
                 <div className="space-y-1">
                   <span
@@ -275,9 +187,6 @@ export default function AdminPartnersPage() {
                     {partner.partnerFirstName} {partner.partnerSurname}
                   </p>
                   <p className="text-sm text-gray-600">{partner.phoneNumber}</p>
-                  <p className="text-xs text-gray-500">
-                    {partner.addressCode ?? "Digital address pending"}
-                  </p>
                 </div>
 
                 {adminRole ? (

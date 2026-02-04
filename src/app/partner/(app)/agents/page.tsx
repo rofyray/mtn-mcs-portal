@@ -1,12 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
-import {
-  buildAddressCode,
-  parseAddressCode,
-} from "@/lib/ghana-post-gps";
-import { ghanaLocations } from "@/lib/ghana-locations";
 import PostAuthToast from "@/components/post-auth-toast";
 import { useToast } from "@/components/toast";
 import EmptyState from "@/components/empty-state";
@@ -24,7 +19,17 @@ type Agent = {
   email: string;
   status: string;
   cpAppNumber?: string | null;
+  businessId: string;
+  business?: Business;
   createdAt: string;
+};
+
+type Business = {
+  id: string;
+  businessName: string;
+  city: string;
+  addressCode: string;
+  status: string;
 };
 
 const initialForm = {
@@ -36,10 +41,7 @@ const initialForm = {
   ghanaCardFrontUrl: "",
   ghanaCardBackUrl: "",
   passportPhotoUrl: "",
-  addressRegionCode: "",
-  addressDistrictCode: "",
-  addressCode: "",
-  city: "",
+  businessId: "",
   businessName: "",
 };
 
@@ -59,6 +61,7 @@ function formatPhoneForDisplay(value?: string) {
 export default function PartnerAgentsPage() {
   const [form, setForm] = useState(initialForm);
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [cpAppAgentId, setCpAppAgentId] = useState<string | null>(null);
   const [cpAppNumber, setCpAppNumber] = useState("");
@@ -77,24 +80,6 @@ export default function PartnerAgentsPage() {
   useAutoDismiss(error, setError);
   useAutoDismiss(status, setStatus);
 
-  const regionOptions = useMemo(() => {
-    return Object.values(ghanaLocations).map((region) => ({
-      value: region.code,
-      label: region.name,
-    }));
-  }, []);
-
-  const districtOptions = useMemo(() => {
-    const regionCode = form.addressRegionCode;
-    if (!regionCode || !ghanaLocations[regionCode]) {
-      return [];
-    }
-    return ghanaLocations[regionCode].districts.map((district) => ({
-      value: district.code,
-      label: district.name,
-    }));
-  }, [form.addressRegionCode]);
-
   async function loadAgents() {
     const response = await fetch("/api/partner/agents");
     if (!response.ok) {
@@ -102,6 +87,7 @@ export default function PartnerAgentsPage() {
     }
     const data = await response.json();
     setAgents(data.agents ?? []);
+    setBusinesses(data.businesses ?? []);
     setPartnerBusinessName(data.partnerBusinessName ?? "");
   }
 
@@ -266,6 +252,11 @@ export default function PartnerAgentsPage() {
                     </p>
                     <p className="text-xs text-gray-600">{agent.phoneNumber}</p>
                     <p className="text-xs text-gray-600">{agent.email}</p>
+                    {agent.business ? (
+                      <p className="text-xs text-gray-600">
+                        Location: {agent.business.city} ({agent.business.addressCode})
+                      </p>
+                    ) : null}
                   </div>
                   {agent.cpAppNumber ? (
                     <p className="text-xs text-gray-600">CP App Number: {agent.cpAppNumber}</p>
@@ -293,6 +284,18 @@ export default function PartnerAgentsPage() {
                 Close
               </button>
             </div>
+            {businesses.length === 0 ? (
+              <EmptyState
+                icon={
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V10Z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 10l4-6h10l4 6" />
+                  </svg>
+                }
+                title="No businesses available yet"
+                description="Add at least one business before adding an agent."
+              />
+            ) : (
             <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit} noValidate>
               <div className="space-y-1">
                 <label className="label">First Name</label>
@@ -353,103 +356,23 @@ export default function PartnerAgentsPage() {
                   onChange={(event) => updateField("ghanaCardNumber", event.target.value)}
                 />
               </div>
-              <div className="space-y-1">
-                <label className="label">City/Town</label>
-                <input
-                  className="input"
-                  value={form.city}
-                  onChange={(event) => updateField("city", event.target.value)}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="label">Region</label>
-                <select
-                  className="input"
-                  value={form.addressRegionCode}
-                  onChange={(event) => {
-                    updateField("addressRegionCode", event.target.value);
-                    updateField("addressDistrictCode", "");
-                    updateField("addressCode", "");
-                  }}
-                >
-                  <option value="">Select</option>
-                  {regionOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="label">District</label>
-                <select
-                  className="input"
-                  value={form.addressDistrictCode}
-                  onChange={(event) => {
-                    updateField("addressDistrictCode", event.target.value);
-                    updateField("addressCode", "");
-                  }}
-                  disabled={!form.addressRegionCode}
-                >
-                  <option value="">Select</option>
-                  {districtOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
               <div className="space-y-1 md:col-span-2">
-                <label className="label">Digital Address Code</label>
-                <div className="address-code-grid">
-                  <input
-                    className="input address-code-segment address-code-prefix"
-                    value={(form.addressDistrictCode ?? "").toUpperCase()}
-                    disabled
-                  />
-                  <span className="address-code-divider">-</span>
-                  <input
-                    className="input address-code-segment"
-                    inputMode="numeric"
-                    pattern="\\d{3,4}"
-                    maxLength={4}
-                    placeholder="123"
-                    value={parseAddressCode(form.addressCode).area}
-                    onChange={(event) => {
-                      const parts = parseAddressCode(form.addressCode);
-                      updateField(
-                        "addressCode",
-                        buildAddressCode(
-                          (form.addressDistrictCode ?? "").toUpperCase(),
-                          event.target.value,
-                          parts.unique
-                        )
-                      );
-                    }}
-                    disabled={!form.addressDistrictCode}
-                  />
-                  <span className="address-code-divider">-</span>
-                  <input
-                    className="input address-code-segment"
-                    inputMode="numeric"
-                    pattern="\\d{3,4}"
-                    maxLength={4}
-                    placeholder="4567"
-                    value={parseAddressCode(form.addressCode).unique}
-                    onChange={(event) => {
-                      const parts = parseAddressCode(form.addressCode);
-                      updateField(
-                        "addressCode",
-                        buildAddressCode(
-                          (form.addressDistrictCode ?? "").toUpperCase(),
-                          parts.area,
-                          event.target.value
-                        )
-                      );
-                    }}
-                    disabled={!form.addressDistrictCode}
-                  />
-                </div>
+                <label className="label">Business Location</label>
+                <select
+                  className="input"
+                  value={form.businessId}
+                  onChange={(event) => updateField("businessId", event.target.value)}
+                >
+                  <option value="">Select a business location</option>
+                  {businesses.map((business) => (
+                    <option key={business.id} value={business.id}>
+                      {business.city} ({business.addressCode})
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500">
+                  Select the business location where this agent will be assigned.
+                </p>
               </div>
 
               <UploadField
@@ -506,6 +429,7 @@ export default function PartnerAgentsPage() {
                 {status ? <p className="form-message form-message-success">{status}</p> : null}
               </div>
             </form>
+            )}
           </div>
         </div>
       ) : null}

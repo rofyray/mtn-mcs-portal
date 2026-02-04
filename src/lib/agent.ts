@@ -13,10 +13,7 @@ export const agentSchema = z.object({
   ghanaCardFrontUrl: z.string().url(),
   ghanaCardBackUrl: z.string().url(),
   passportPhotoUrl: z.string().url(),
-  addressRegionCode: z.string().trim().min(1),
-  addressDistrictCode: z.string().trim().min(1),
-  addressCode: z.string().trim().min(1),
-  city: z.string().trim().min(1),
+  businessId: z.string().trim().min(1),
   businessName: z.string().trim().min(1),
 });
 

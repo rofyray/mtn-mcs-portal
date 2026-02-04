@@ -6,7 +6,13 @@ import EmptyState from "@/components/empty-state";
 import { AdminAgentsEmptyIcon } from "@/components/admin-empty-icons";
 import { useToast } from "@/components/toast";
 import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
-import { ghanaLocations } from "@/lib/ghana-locations";
+
+type Business = {
+  id: string;
+  businessName: string;
+  city: string;
+  addressCode: string;
+};
 
 type Agent = {
   id: string;
@@ -16,8 +22,8 @@ type Agent = {
   email: string;
   status: string;
   businessName?: string | null;
-  addressRegionCode?: string | null;
-  addressDistrictCode?: string | null;
+  businessId: string;
+  business?: Business;
 };
 
 const statusOptions = [
@@ -122,23 +128,6 @@ export default function AdminAgentsPage() {
       )
     ).sort();
   }, [agents]);
-
-  function getRegionName(code?: string | null) {
-    if (!code) {
-      return null;
-    }
-    return ghanaLocations[code]?.name ?? null;
-  }
-
-  function getDistrictName(regionCode?: string | null, districtCode?: string | null) {
-    if (!regionCode || !districtCode) {
-      return null;
-    }
-    return (
-      ghanaLocations[regionCode]?.districts.find((district) => district.code === districtCode)
-        ?.name ?? null
-    );
-  }
 
   const filteredAgents = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLowerCase();
@@ -259,16 +248,10 @@ export default function AdminAgentsPage() {
                   </p>
                   <p className="text-xs text-gray-600">{agent.phoneNumber}</p>
                   <p className="text-xs text-gray-600">{agent.email}</p>
-                  {agent.addressRegionCode && agent.addressDistrictCode ? (
-                    <>
-                      <p className="text-xs text-gray-600">
-                        {getRegionName(agent.addressRegionCode) ?? "Region"} ·{" "}
-                        {getDistrictName(agent.addressRegionCode, agent.addressDistrictCode) ?? "District"}
-                      </p>
-                      <p className="text-[11px] text-gray-500">
-                        Codes: {agent.addressRegionCode} · {agent.addressDistrictCode}
-                      </p>
-                    </>
+                  {agent.business ? (
+                    <p className="text-xs text-gray-600">
+                      Location: {agent.business.city} ({agent.business.addressCode})
+                    </p>
                   ) : null}
                 </div>
                 {adminRole ? (

@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
-import { buildAddressCode, parseAddressCode } from "@/lib/ghana-post-gps";
-import { ghanaLocations } from "@/lib/ghana-locations";
 import { useToast } from "@/components/toast";
 import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
 import { useAdminActionsEnabled } from "@/hooks/use-admin-actions-enabled";
@@ -21,10 +19,6 @@ const editableFields = [
   { key: "email", label: "Email" },
   { key: "cpAppNumber", label: "CP App Number" },
   { key: "ghanaCardNumber", label: "Ghana Card Number" },
-  { key: "addressRegionCode", label: "Region" },
-  { key: "addressDistrictCode", label: "District" },
-  { key: "addressCode", label: "Digital Address Code" },
-  { key: "city", label: "City/Town" },
   { key: "businessName", label: "Business Name" },
 ];
 
@@ -58,7 +52,8 @@ export default function AdminAgentDetailPage() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [deleting, setDeleting] = useState<Record<string, boolean>>({});
-  const [activeTab, setActiveTab] = useState<"details" | "location" | "photos">("details");
+  const [businessInfo, setBusinessInfo] = useState<{ city: string; addressCode: string } | null>(null);
+  const [activeTab, setActiveTab] = useState<"details" | "photos">("details");
   const [preview, setPreview] = useState<{
     url: string;
     label: string;
@@ -93,6 +88,12 @@ export default function AdminAgentDetailPage() {
       setForm(next);
       setAdminRole(data.adminRole ?? null);
       setAgentStatus(data.agent.status ?? null);
+      if (data.agent.business) {
+        setBusinessInfo({
+          city: data.agent.business.city,
+          addressCode: data.agent.business.addressCode,
+        });
+      }
     }
 
     loadAgent();
@@ -100,33 +101,7 @@ export default function AdminAgentDetailPage() {
 
   const canEdit = adminRole === "FULL" ? actionsEnabled : Boolean(adminRole);
   const saveLabel = agentStatus === "DENIED" ? "Update details" : "Save changes";
-  const detailsFields = editableFields.filter((field) =>
-    ["firstName", "surname", "phoneNumber", "email", "businessName", "cpAppNumber", "ghanaCardNumber"].includes(
-      field.key
-    )
-  );
-  const locationFields = editableFields.filter((field) =>
-    ["addressRegionCode", "addressDistrictCode", "addressCode", "city"].includes(field.key)
-  );
   const photoFields = fileFields.filter((field) => field.kind === "image");
-
-  const regionOptions = useMemo(() => {
-    return Object.values(ghanaLocations).map((region) => ({
-      value: region.code,
-      label: region.name,
-    }));
-  }, []);
-
-  const districtOptions = useMemo(() => {
-    const regionCode = form.addressRegionCode;
-    if (!regionCode || !ghanaLocations[regionCode]) {
-      return [];
-    }
-    return ghanaLocations[regionCode].districts.map((district) => ({
-      value: district.code,
-      label: district.name,
-    }));
-  }, [form.addressRegionCode]);
 
   function updateField(key: string, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -148,101 +123,6 @@ export default function AdminAgentDetailPage() {
               value={formatPhoneForDisplay(form[field.key])}
               onChange={(event) => updateField(field.key, formatPhoneForStorage(event.target.value))}
               disabled={!canEdit}
-            />
-          </div>
-        ) : field.key === "addressRegionCode" ? (
-          <div className="space-y-1">
-            <select
-              className="input"
-              value={form[field.key] ?? ""}
-              onChange={(event) => {
-                updateField(field.key, event.target.value);
-                updateField("addressDistrictCode", "");
-                updateField("addressCode", "");
-              }}
-              disabled={!canEdit}
-            >
-              <option value="">Select region</option>
-              {regionOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            {form.addressRegionCode ? (
-              <p className="text-xs text-gray-500">Code: {form.addressRegionCode}</p>
-            ) : null}
-          </div>
-        ) : field.key === "addressDistrictCode" ? (
-          <div className="space-y-1">
-            <select
-              className="input"
-              value={form[field.key] ?? ""}
-              onChange={(event) => {
-                updateField(field.key, event.target.value);
-                updateField("addressCode", "");
-              }}
-              disabled={!canEdit || !form.addressRegionCode}
-            >
-              <option value="">Select district</option>
-              {districtOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            {form.addressDistrictCode ? (
-              <p className="text-xs text-gray-500">Code: {form.addressDistrictCode}</p>
-            ) : null}
-          </div>
-        ) : field.key === "addressCode" ? (
-          <div className="address-code-grid">
-            <input
-              className="input address-code-segment address-code-prefix"
-              value={(form.addressDistrictCode ?? "").toUpperCase()}
-              disabled
-            />
-            <span className="address-code-divider">-</span>
-            <input
-              className="input address-code-segment"
-              inputMode="numeric"
-              pattern="\\d{3,4}"
-              maxLength={4}
-              placeholder="123"
-              value={parseAddressCode(form.addressCode ?? "").area}
-              onChange={(event) => {
-                const parts = parseAddressCode(form.addressCode ?? "");
-                updateField(
-                  "addressCode",
-                  buildAddressCode(
-                    (form.addressDistrictCode ?? "").toUpperCase(),
-                    event.target.value,
-                    parts.unique
-                  )
-                );
-              }}
-              disabled={!canEdit || !form.addressDistrictCode}
-            />
-            <span className="address-code-divider">-</span>
-            <input
-              className="input address-code-segment"
-              inputMode="numeric"
-              pattern="\\d{3,4}"
-              maxLength={4}
-              placeholder="4567"
-              value={parseAddressCode(form.addressCode ?? "").unique}
-              onChange={(event) => {
-                const parts = parseAddressCode(form.addressCode ?? "");
-                updateField(
-                  "addressCode",
-                  buildAddressCode(
-                    (form.addressDistrictCode ?? "").toUpperCase(),
-                    parts.area,
-                    event.target.value
-                  )
-                );
-              }}
-              disabled={!canEdit || !form.addressDistrictCode}
             />
           </div>
         ) : (
@@ -493,16 +373,6 @@ export default function AdminAgentDetailPage() {
           >
             Details
           </button>
-          <button
-            className="tab-button"
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "location"}
-            aria-controls="agent-location-tab"
-            onClick={() => setActiveTab("location")}
-          >
-            Location
-          </button>
           {photoFields.length > 0 ? (
             <button
               className="tab-button"
@@ -518,12 +388,15 @@ export default function AdminAgentDetailPage() {
         </div>
         {activeTab === "details" ? (
           <div id="agent-details-tab" role="tabpanel" className="grid gap-4 md:grid-cols-2">
-            {detailsFields.map((field) => renderEditableField(field))}
-          </div>
-        ) : null}
-        {activeTab === "location" ? (
-          <div id="agent-location-tab" role="tabpanel" className="grid gap-4 md:grid-cols-2">
-            {locationFields.map((field) => renderEditableField(field))}
+            {editableFields.map((field) => renderEditableField(field))}
+            {businessInfo ? (
+              <div className="space-y-1 md:col-span-2">
+                <label className="label">Business Location</label>
+                <p className="text-sm text-gray-700">
+                  {businessInfo.city} ({businessInfo.addressCode})
+                </p>
+              </div>
+            ) : null}
           </div>
         ) : null}
         {activeTab === "photos" ? (

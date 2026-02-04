@@ -19,11 +19,12 @@ export async function GET(request: Request) {
   }
 
   if (admin.role !== "FULL") {
-    where.addressRegionCode = { in: regionCodes };
+    where.business = { addressRegionCode: { in: regionCodes } };
   }
 
   const agents = await prisma.agent.findMany({
     where,
+    include: { business: true },
     orderBy: { createdAt: "desc" },
   });
 

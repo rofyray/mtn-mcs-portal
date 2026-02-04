@@ -15,11 +15,18 @@ export async function GET() {
 
   const agents = await prisma.agent.findMany({
     where: { partnerProfileId: result.profile.id },
+    include: { business: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const businesses = await prisma.business.findMany({
+    where: { partnerProfileId: result.profile.id },
     orderBy: { createdAt: "desc" },
   });
 
   return NextResponse.json({
     agents,
+    businesses,
     partnerBusinessName: result.profile.businessName ?? "",
   });
 }
@@ -37,6 +44,18 @@ export async function POST(request: Request) {
   const parsed = agentSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+  }
+
+  // Validate that the business belongs to this partner
+  const business = await prisma.business.findFirst({
+    where: {
+      id: parsed.data.businessId,
+      partnerProfileId: result.profile.id,
+    },
+  });
+
+  if (!business) {
+    return NextResponse.json({ error: "Invalid business" }, { status: 400 });
   }
 
   const { cpAppNumber, ...agentData } = parsed.data;
