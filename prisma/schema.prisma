@@ -66,6 +66,9 @@ enum AuditAction {
   BUSINESS_EDITED
   BUSINESS_EXPIRED
   ADMIN_REGION_ASSIGNED
+  ADMIN_REGION_REMOVED
+  ADMIN_ENABLED
+  ADMIN_DISABLED
   FORM_SENT
   FORM_SIGNED
 }
@@ -121,11 +124,20 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model PasswordResetToken {
+  identifier String   // User email (lowercase)
+  token      String   @unique // SHA-256 hash of raw token
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
 model Admin {
   id        String    @id @default(cuid())
   name      String
   email     String    @unique
   role      AdminRole @default(COORDINATOR)
+  enabled   Boolean   @default(true)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 

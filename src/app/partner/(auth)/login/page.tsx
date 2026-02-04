@@ -102,6 +102,11 @@ export default function LoginPage() {
                 onChange={(event) => setPassword(event.target.value)}
                 required
               />
+              <div className="text-right">
+                <a href="/auth/forgot-password" className="text-sm link-accent">
+                  Forgot password?
+                </a>
+              </div>
             </div>
             {error ? <p className="form-message form-message-error">{error}</p> : null}
             <button

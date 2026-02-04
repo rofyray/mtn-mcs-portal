@@ -28,6 +28,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Admin not found" }, { status: 404 });
   }
 
+  if (!admin.enabled) {
+    return NextResponse.json({ error: "Admin account is disabled" }, { status: 403 });
+  }
+
   const otp = await prisma.adminOtp.findFirst({
     where: {
       adminId: admin.id,

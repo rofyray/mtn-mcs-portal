@@ -12,6 +12,9 @@ const ACTION_LABELS: Record<string, string> = {
   BUSINESS_EDITED: "Business Edited",
   BUSINESS_EXPIRED: "Business Expired",
   ADMIN_REGION_ASSIGNED: "Admin Region Assigned",
+  ADMIN_REGION_REMOVED: "Admin Region Removed",
+  ADMIN_ENABLED: "Admin Enabled",
+  ADMIN_DISABLED: "Admin Disabled",
   FORM_SENT: "Form Sent",
   FORM_SIGNED: "Form Signed",
 };
@@ -30,6 +33,9 @@ const ACTION_AREAS: Record<string, string> = {
   BUSINESS_EDITED: "Business",
   BUSINESS_EXPIRED: "Business",
   ADMIN_REGION_ASSIGNED: "Admin",
+  ADMIN_REGION_REMOVED: "Admin",
+  ADMIN_ENABLED: "Admin",
+  ADMIN_DISABLED: "Admin",
   FORM_SENT: "Form",
   FORM_SIGNED: "Form",
 };
@@ -48,6 +54,9 @@ const ACTION_CATEGORIES: Record<string, "success" | "warning" | "error" | "info"
   BUSINESS_EDITED: "info",
   BUSINESS_EXPIRED: "warning",
   ADMIN_REGION_ASSIGNED: "info",
+  ADMIN_REGION_REMOVED: "warning",
+  ADMIN_ENABLED: "success",
+  ADMIN_DISABLED: "warning",
   FORM_SENT: "info",
   FORM_SIGNED: "success",
 };

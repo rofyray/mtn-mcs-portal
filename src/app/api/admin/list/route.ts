@@ -4,6 +4,7 @@ import prisma from "@/lib/db";
 
 export async function GET() {
   const admins = await prisma.admin.findMany({
+    where: { enabled: true },
     select: {
       id: true,
       name: true,

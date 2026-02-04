@@ -288,7 +288,8 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
     const isSeniorManager = adminRole === "SENIOR_MANAGER";
     return adminLinks.filter((link) => {
       if (link.fullOnly && !isFullAccess) return false;
-      if (link.seniorManagerOnly && !isFullAccess && !isSeniorManager) return false;
+      // seniorManagerOnly is exclusive - only senior managers can see it
+      if (link.seniorManagerOnly && !isSeniorManager) return false;
       return true;
     });
   }, [adminRole, isAdmin]);

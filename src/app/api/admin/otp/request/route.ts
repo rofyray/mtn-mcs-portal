@@ -28,6 +28,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Admin not found" }, { status: 404 });
   }
 
+  if (!admin.enabled) {
+    return NextResponse.json({ error: "Admin account is disabled" }, { status: 403 });
+  }
+
   const code = generateOtpCode();
   const codeHash = await bcrypt.hash(code, 10);
   const expiresAt = new Date(Date.now() + 1000 * 60 * 10);
