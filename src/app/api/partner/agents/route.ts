@@ -13,16 +13,17 @@ export async function GET() {
     return NextResponse.json({ error: "Partner not approved" }, { status: 403 });
   }
 
-  const agents = await prisma.agent.findMany({
-    where: { partnerProfileId: result.profile.id },
-    include: { business: true },
-    orderBy: { createdAt: "desc" },
-  });
-
-  const businesses = await prisma.business.findMany({
-    where: { partnerProfileId: result.profile.id },
-    orderBy: { createdAt: "desc" },
-  });
+  const [agents, businesses] = await Promise.all([
+    prisma.agent.findMany({
+      where: { partnerProfileId: result.profile.id },
+      include: { business: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.business.findMany({
+      where: { partnerProfileId: result.profile.id },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
 
   return NextResponse.json({
     agents,

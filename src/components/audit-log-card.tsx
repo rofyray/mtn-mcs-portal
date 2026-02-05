@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useMemo, useState } from "react";
 import Link from "next/link";
 
 import {
@@ -80,14 +80,19 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
   );
 }
 
-export function AuditLogCard({ log }: { log: EnrichedAuditLog }) {
+export const AuditLogCard = memo(function AuditLogCard({ log }: { log: EnrichedAuditLog }) {
   const [expanded, setExpanded] = useState(false);
 
-  const category = getActionCategory(log.action);
-  const area = getActionArea(log.action);
-  const label = getActionLabel(log.action);
-  const relativeTime = formatRelativeTime(log.createdAt);
-  const fullTime = formatGhanaDate(log.createdAt, { includeTime: true, includeSeconds: true });
+  const { category, area, label, relativeTime, fullTime } = useMemo(
+    () => ({
+      category: getActionCategory(log.action),
+      area: getActionArea(log.action),
+      label: getActionLabel(log.action),
+      relativeTime: formatRelativeTime(log.createdAt),
+      fullTime: formatGhanaDate(log.createdAt, { includeTime: true, includeSeconds: true }),
+    }),
+    [log.action, log.createdAt]
+  );
 
   const hasMetadata = log.metadata && Object.keys(log.metadata).length > 0;
   const denialReason = log.metadata?.reason as string | undefined;
@@ -219,4 +224,4 @@ export function AuditLogCard({ log }: { log: EnrichedAuditLog }) {
       )}
     </div>
   );
-}
+});

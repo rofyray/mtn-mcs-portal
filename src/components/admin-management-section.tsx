@@ -1,36 +1,41 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 
-import AdminRegionEditModal from "@/components/admin-region-edit-modal";
-import ConfirmModal from "@/components/confirm-modal";
 import { ghanaLocations } from "@/lib/ghana-locations";
+
+const AdminRegionEditModal = dynamic(() => import("@/components/admin-region-edit-modal"));
+const ConfirmModal = dynamic(() => import("@/components/confirm-modal"));
 
 type AdminData = {
   id: string;
   name: string;
   email: string;
-  role: "FULL" | "COORDINATOR" | "SENIOR_MANAGER";
+  role: "FULL" | "MANAGER" | "COORDINATOR" | "SENIOR_MANAGER";
   enabled: boolean;
   regionCodes: string[];
 };
 
 const ROLE_LABELS: Record<string, string> = {
   FULL: "Full Access",
+  MANAGER: "Manager",
   COORDINATOR: "Coordinator",
   SENIOR_MANAGER: "Senior Manager",
 };
 
 const ROLE_BADGE_CLASSES: Record<string, string> = {
   FULL: "badge-warning",
+  MANAGER: "badge-primary",
   COORDINATOR: "badge-info",
   SENIOR_MANAGER: "badge-success",
 };
 
-const ROLE_ORDER: AdminData["role"][] = ["FULL", "SENIOR_MANAGER", "COORDINATOR"];
+const ROLE_ORDER: AdminData["role"][] = ["FULL", "MANAGER", "SENIOR_MANAGER", "COORDINATOR"];
 
 const SECTION_TITLES: Record<string, string> = {
   FULL: "Full Access Admins",
+  MANAGER: "Managers",
   SENIOR_MANAGER: "Senior Managers",
   COORDINATOR: "Coordinators",
 };
@@ -82,14 +87,18 @@ export default function AdminManagementSection() {
     fetchAdmins();
   }, [fetchAdmins]);
 
-  async function handleToggleStatus(admin: AdminData) {
+  const handleToggleStatus = useCallback((admin: AdminData) => {
     setConfirmModal({
       open: true,
       adminId: admin.id,
       adminName: admin.name,
       action: admin.enabled ? "disable" : "enable",
     });
-  }
+  }, []);
+
+  const handleEditRegions = useCallback((admin: AdminData) => {
+    setEditingAdmin(admin);
+  }, []);
 
   async function confirmToggle() {
     const { adminId, action } = confirmModal;
@@ -194,8 +203,8 @@ export default function AdminManagementSection() {
                       key={admin.id}
                       admin={admin}
                       actionLoading={actionLoading === admin.id}
-                      onToggleStatus={() => handleToggleStatus(admin)}
-                      onEditRegions={() => setEditingAdmin(admin)}
+                      onToggleStatus={handleToggleStatus}
+                      onEditRegions={handleEditRegions}
                     />
                   ))}
                 </div>
@@ -233,11 +242,16 @@ export default function AdminManagementSection() {
 type AdminCardProps = {
   admin: AdminData;
   actionLoading: boolean;
-  onToggleStatus: () => void;
-  onEditRegions: () => void;
+  onToggleStatus: (admin: AdminData) => void;
+  onEditRegions: (admin: AdminData) => void;
 };
 
-function AdminCard({ admin, actionLoading, onToggleStatus, onEditRegions }: AdminCardProps) {
+const AdminCard = memo(function AdminCard({
+  admin,
+  actionLoading,
+  onToggleStatus,
+  onEditRegions,
+}: AdminCardProps) {
   const visibleRegions = admin.regionCodes.slice(0, MAX_VISIBLE_PILLS);
   const hiddenCount = admin.regionCodes.length - MAX_VISIBLE_PILLS;
 
@@ -260,19 +274,19 @@ function AdminCard({ admin, actionLoading, onToggleStatus, onEditRegions }: Admi
             type="checkbox"
             checked={admin.enabled}
             disabled={actionLoading}
-            onChange={onToggleStatus}
+            onChange={() => onToggleStatus(admin)}
           />
           <span className="toggle-ui" aria-hidden="true" />
           <span className="sr-only">{admin.enabled ? "Disable" : "Enable"} admin</span>
         </label>
       </div>
 
-      {admin.role !== "FULL" && (
+      {admin.role !== "FULL" && admin.role !== "MANAGER" && (
         <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
           <button
             type="button"
             className="w-full flex items-center gap-2 text-left hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md p-1.5 -m-1.5 transition-colors"
-            onClick={onEditRegions}
+            onClick={() => onEditRegions(admin)}
             disabled={actionLoading}
           >
             {admin.regionCodes.length > 0 ? (
@@ -301,11 +315,11 @@ function AdminCard({ admin, actionLoading, onToggleStatus, onEditRegions }: Admi
         </div>
       )}
 
-      {admin.role === "FULL" && (
+      {(admin.role === "FULL" || admin.role === "MANAGER") && (
         <p className="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700">
-          Full access admins have global access to all regions.
+          {admin.role === "FULL" ? "Full access admins" : "Managers"} have global access to all regions.
         </p>
       )}
     </div>
   );
-}
+});

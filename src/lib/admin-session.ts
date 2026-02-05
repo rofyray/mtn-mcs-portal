@@ -13,7 +13,15 @@ export async function getAdminSession() {
   const hashed = hashSessionToken(token);
   const session = await prisma.adminSession.findUnique({
     where: { sessionToken: hashed },
-    include: { admin: true },
+    include: {
+      admin: {
+        include: {
+          regions: {
+            select: { regionCode: true },
+          },
+        },
+      },
+    },
   });
 
   if (!session || session.expiresAt < new Date()) {

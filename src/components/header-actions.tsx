@@ -3,26 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
 
 import { storeToast } from "@/components/post-auth-toast";
 import ThemeToggle from "@/components/theme-toggle";
+import { useAdmin } from "@/contexts/admin-context";
+import { useNotificationCount } from "@/hooks/use-notification-count";
 
 export default function HeaderActions() {
   const pathname = usePathname();
   const { status } = useSession();
   const isPartnerRoute = pathname.startsWith("/partner") || pathname.startsWith("/onboarding");
   const isAdminRoute = pathname.startsWith("/admin");
-  const [adminRole, setAdminRole] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (isAdminRoute && pathname !== "/admin/login") {
-      fetch("/api/admin/me")
-        .then((res) => res.json())
-        .then((data) => setAdminRole(data.admin?.role ?? null))
-        .catch(() => setAdminRole(null));
-    }
-  }, [isAdminRoute, pathname]);
+  const { admin } = useAdmin();
+  const adminRole = admin?.role ?? null;
 
   const showMobileNavToggle =
     (isPartnerRoute &&
@@ -36,6 +29,8 @@ export default function HeaderActions() {
     isAdminRoute && pathname !== "/admin/login" && adminRole !== "SENIOR_MANAGER";
   const showAdminLogout = isAdminRoute && pathname !== "/admin/login";
   const showLogout = status === "authenticated" && isPartnerRoute && pathname !== "/partner/login";
+
+  const { count: notificationCount } = useNotificationCount(showAdminNotifications);
 
   return (
     <div className="header-actions">
@@ -90,7 +85,7 @@ export default function HeaderActions() {
       {showAdminNotifications ? (
         <Link
           href="/admin/notifications"
-          className="icon-button"
+          className="icon-button icon-button-with-badge"
           aria-label="Notifications"
           title="Notifications"
         >
@@ -108,6 +103,11 @@ export default function HeaderActions() {
             <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7Z" />
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
+          {notificationCount > 0 && (
+            <span className="notification-badge">
+              {notificationCount > 99 ? "99+" : notificationCount}
+            </span>
+          )}
         </Link>
       ) : null}
       <ThemeToggle />

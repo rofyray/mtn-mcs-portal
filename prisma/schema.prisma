@@ -9,6 +9,7 @@ datasource db {
 
 enum AdminRole {
   FULL
+  MANAGER
   COORDINATOR
   SENIOR_MANAGER
 }
@@ -215,6 +216,8 @@ model PartnerProfile {
   restockRequests RestockRequest[]
   feedbackItems Feedback[]
   formRequests FormRequest[]
+
+  @@index([status])
 }
 
 model Agent {
@@ -241,6 +244,9 @@ model Agent {
 
   partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
   business       Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([partnerProfileId])
+  @@index([status])
 }
 
 model Business {
@@ -267,6 +273,10 @@ model Business {
   partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
   restockRequests RestockRequest[]
   agents          Agent[]
+
+  @@index([partnerProfileId])
+  @@index([status])
+  @@index([addressRegionCode])
 }
 
 model Notification {
@@ -279,6 +289,10 @@ model Notification {
   category      NotificationCategory @default(INFO)
   readAt        DateTime?
   createdAt     DateTime             @default(now())
+
+  @@index([recipientAdminId])
+  @@index([recipientUserId])
+  @@index([recipientType, recipientAdminId, readAt])
 }
 
 model TrainingRequest {
@@ -326,6 +340,9 @@ model FormRequest {
 
   partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
   signature      FormSignature?
+
+  @@index([partnerProfileId])
+  @@index([status])
 }
 
 model FormSignature {
@@ -348,4 +365,7 @@ model AuditLog {
   createdAt     DateTime   @default(now())
 
   admin Admin? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([adminId])
+  @@index([createdAt])
 }

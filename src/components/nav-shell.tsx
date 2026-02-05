@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, memo, useCallback } from "react";
+
+import { useAdmin } from "@/contexts/admin-context";
 
 type NavLink = {
   href: string;
@@ -172,10 +174,42 @@ const adminLinks: AdminNavLink[] = [
 
 const navStorageKey = "nav-collapsed";
 
+type NavLinksProps = {
+  links: NavLink[];
+  pathname: string;
+  onLinkClick?: () => void;
+  showTooltip?: boolean;
+};
+
+const NavLinks = memo(function NavLinks({ links, pathname, onLinkClick, showTooltip = true }: NavLinksProps) {
+  return (
+    <nav className="nav-links">
+      {links.map((link) => {
+        const active = pathname === link.href;
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={`nav-link ${active ? "nav-link-active" : ""}`}
+            aria-label={link.label}
+            title={link.label}
+            onClick={onLinkClick}
+          >
+            <span className="nav-icon">{link.icon}</span>
+            <span className="nav-label">{link.label}</span>
+            {showTooltip && <span className="nav-tooltip">{link.label}</span>}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+});
+
 export default function NavShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [adminRole, setAdminRole] = useState<string | null>(null);
+  const { admin } = useAdmin();
+  const adminRole = admin?.role ?? null;
   const hideNav =
     pathname.startsWith("/auth") ||
     pathname === "/admin/login" ||
@@ -228,29 +262,6 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!pathname.startsWith("/admin") || pathname === "/admin/login") {
-      return;
-    }
-    let isMounted = true;
-
-    async function loadAdminRole() {
-      const response = await fetch("/api/admin/me");
-      if (!response.ok) {
-        return;
-      }
-      const data = await response.json().catch(() => ({}));
-      if (isMounted) {
-        setAdminRole(data.admin?.role ?? null);
-      }
-    }
-
-    loadAdminRole();
-    return () => {
-      isMounted = false;
-    };
-  }, [pathname]);
-
-  useEffect(() => {
     const media = window.matchMedia("(max-width: 900px)");
     function handleChange(event: MediaQueryListEvent) {
       if (!event.matches) {
@@ -268,15 +279,18 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
     };
   }, [mobileOpen]);
 
+  const closeMobileNav = useCallback(() => setMobileOpen(false), []);
+
   const isAdmin = pathname.startsWith("/admin");
   const links = useMemo(() => {
     if (!isAdmin) {
       return partnerLinks;
     }
     const isFullAccess = adminRole === "FULL";
+    const isManager = adminRole === "MANAGER";
     const isSeniorManager = adminRole === "SENIOR_MANAGER";
     return adminLinks.filter((link) => {
-      if (link.fullOnly && !isFullAccess) return false;
+      if (link.fullOnly && !isFullAccess && !isManager) return false;
       // seniorManagerOnly is exclusive - only senior managers can see it
       if (link.seniorManagerOnly && !isSeniorManager) return false;
       return true;
@@ -294,24 +308,7 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
           <p className="nav-title">{isAdmin ? "Admin Menu" : "Partner Menu"}</p>
         </div>
         <div className="nav-panel-divider" />
-        <nav className="nav-links">
-          {links.map((link) => {
-            const active = pathname === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`nav-link ${active ? "nav-link-active" : ""}`}
-                aria-label={link.label}
-                title={link.label}
-              >
-                <span className="nav-icon">{link.icon}</span>
-                <span className="nav-label">{link.label}</span>
-                <span className="nav-tooltip">{link.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+        <NavLinks links={links} pathname={pathname} showTooltip />
         <div className="nav-panel-footer">
           <div className="nav-panel-divider" />
           <button
@@ -329,7 +326,7 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
       {mobileOpen ? (
-        <div className="nav-overlay" onClick={() => setMobileOpen(false)} role="presentation">
+        <div className="nav-overlay" onClick={closeMobileNav} role="presentation">
           <aside
             className="nav-panel nav-panel-drawer"
             onClick={(event) => event.stopPropagation()}
@@ -339,7 +336,7 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
               <button
                 className="nav-collapse"
                 type="button"
-                onClick={() => setMobileOpen(false)}
+                onClick={closeMobileNav}
                 aria-label="Close menu"
                 title="Close menu"
               >
@@ -349,24 +346,7 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
               </button>
             </div>
             <div className="nav-panel-divider" />
-            <nav className="nav-links">
-              {links.map((link) => {
-                const active = pathname === link.href;
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`nav-link ${active ? "nav-link-active" : ""}`}
-                    aria-label={link.label}
-                    title={link.label}
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    <span className="nav-icon">{link.icon}</span>
-                    <span className="nav-label">{link.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
+            <NavLinks links={links} pathname={pathname} onLinkClick={closeMobileNav} showTooltip={false} />
           </aside>
         </div>
       ) : null}

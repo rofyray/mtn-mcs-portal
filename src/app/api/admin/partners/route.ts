@@ -24,7 +24,20 @@ export async function GET(request: Request) {
 
   const partners = await prisma.partnerProfile.findMany({
     where,
-    include: {
+    select: {
+      id: true,
+      userId: true,
+      status: true,
+      businessName: true,
+      partnerFirstName: true,
+      partnerSurname: true,
+      phoneNumber: true,
+      submittedAt: true,
+      approvedAt: true,
+      deniedAt: true,
+      denialReason: true,
+      createdAt: true,
+      updatedAt: true,
       user: {
         select: {
           id: true,
@@ -36,5 +49,7 @@ export async function GET(request: Request) {
     orderBy: { updatedAt: "desc" },
   });
 
-  return NextResponse.json({ partners, adminRole: admin.role });
+  const response = NextResponse.json({ partners, adminRole: admin.role });
+  response.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60");
+  return response;
 }

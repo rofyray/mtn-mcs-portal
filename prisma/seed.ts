@@ -67,15 +67,18 @@ const fullAccessAdmins = [
     regions: [],
   },
   {
-    name: "Enyonam Avevor",
-    email: "enyonam.avevor@mtn.com",
-    role: "FULL",
-    regions: [],
-  },
-  {
     name: "System Admin",
     email: "mtnadmin@grr.la",
     role: "FULL",
+    regions: [],
+  },
+];
+
+const managers = [
+  {
+    name: "Enyonam Avevor",
+    email: "enyonam.avevor@mtn.com",
+    role: "MANAGER",
     regions: [],
   },
 ];
@@ -114,7 +117,7 @@ const seniorManagers = [
 ];
 
 async function main() {
-  const admins = [...coordinators, ...fullAccessAdmins, ...seniorManagers];
+  const admins = [...coordinators, ...fullAccessAdmins, ...managers, ...seniorManagers];
 
   for (const admin of admins) {
     const normalizedEmail = admin.email.trim().toLowerCase();

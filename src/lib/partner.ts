@@ -9,21 +9,14 @@ export async function getPartnerProfile() {
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
+    include: { partnerProfile: true },
   });
 
-  if (!user) {
+  if (!user || !user.partnerProfile) {
     return null;
   }
 
-  const profile = await prisma.partnerProfile.findUnique({
-    where: { userId: user.id },
-  });
-
-  if (!profile) {
-    return null;
-  }
-
-  return { user, profile };
+  return { user, profile: user.partnerProfile };
 }
 
 export async function getApprovedPartnerProfile() {

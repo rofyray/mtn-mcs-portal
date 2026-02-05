@@ -19,7 +19,7 @@ export default async function AdminSettingsPage() {
           <p className="text-sm text-gray-600">Admin preferences and permissions.</p>
         </div>
 
-        {adminRole === "FULL" ? (
+        {adminRole === "FULL" || adminRole === "MANAGER" ? (
           <>
             <section className="card space-y-4">
               <div>
@@ -31,15 +31,17 @@ export default async function AdminSettingsPage() {
               <AdminActionsToggle />
             </section>
 
-            <section className="card space-y-4">
-              <div>
-                <h2 className="text-lg font-semibold">Admin Management</h2>
-                <p className="text-sm text-gray-600">
-                  Manage admin accounts, enable/disable access, and assign regions.
-                </p>
-              </div>
-              <AdminManagementSection />
-            </section>
+            {adminRole === "FULL" && (
+              <section className="card space-y-4">
+                <div>
+                  <h2 className="text-lg font-semibold">Admin Management</h2>
+                  <p className="text-sm text-gray-600">
+                    Manage admin accounts, enable/disable access, and assign regions.
+                  </p>
+                </div>
+                <AdminManagementSection />
+              </section>
+            )}
           </>
         ) : (
           <div className="card">

@@ -9,14 +9,13 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const notifications = await prisma.notification.findMany({
+  const count = await prisma.notification.count({
     where: {
       recipientType: "ADMIN",
       recipientAdminId: adminContext.admin.id,
+      readAt: null,
     },
-    orderBy: { createdAt: "desc" },
-    take: 50,
   });
 
-  return NextResponse.json({ notifications });
+  return NextResponse.json({ count });
 }

@@ -72,22 +72,20 @@ export async function PUT(
       },
     });
 
-    // Create audit logs for removals
-    for (const code of codesToRemove) {
-      await prisma.auditLog.create({
-        data: {
-          adminId: adminContext.admin.id,
-          action: "ADMIN_REGION_REMOVED",
-          targetType: "Admin",
-          targetId: id,
-          metadata: {
-            targetName: targetAdmin.name,
-            regionCode: code,
-            regionName: ghanaLocations[code]?.name ?? code,
-          },
+    // Create audit logs for removals (batched)
+    await prisma.auditLog.createMany({
+      data: codesToRemove.map((code) => ({
+        adminId: adminContext.admin.id,
+        action: "ADMIN_REGION_REMOVED" as const,
+        targetType: "Admin",
+        targetId: id,
+        metadata: {
+          targetName: targetAdmin.name,
+          regionCode: code,
+          regionName: ghanaLocations[code]?.name ?? code,
         },
-      });
-    }
+      })),
+    });
   }
 
   // Add new assignments
@@ -99,22 +97,20 @@ export async function PUT(
       })),
     });
 
-    // Create audit logs for additions
-    for (const code of codesToAdd) {
-      await prisma.auditLog.create({
-        data: {
-          adminId: adminContext.admin.id,
-          action: "ADMIN_REGION_ASSIGNED",
-          targetType: "Admin",
-          targetId: id,
-          metadata: {
-            targetName: targetAdmin.name,
-            regionCode: code,
-            regionName: ghanaLocations[code]?.name ?? code,
-          },
+    // Create audit logs for additions (batched)
+    await prisma.auditLog.createMany({
+      data: codesToAdd.map((code) => ({
+        adminId: adminContext.admin.id,
+        action: "ADMIN_REGION_ASSIGNED" as const,
+        targetType: "Admin",
+        targetId: id,
+        metadata: {
+          targetName: targetAdmin.name,
+          regionCode: code,
+          regionName: ghanaLocations[code]?.name ?? code,
         },
-      });
-    }
+      })),
+    });
   }
 
   return NextResponse.json({ regionCodes });

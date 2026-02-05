@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useMemo, useState } from "react";
 
 import { formatGhanaDate, formatRelativeTime } from "@/lib/date-format";
 
@@ -45,19 +45,23 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
   );
 }
 
-export function FeedbackCard({ item }: { item: FeedbackItem }) {
+export const FeedbackCard = memo(function FeedbackCard({ item }: { item: FeedbackItem }) {
   const [expanded, setExpanded] = useState(false);
 
-  const relativeTime = formatRelativeTime(item.createdAt);
-  const fullTime = formatGhanaDate(item.createdAt, { includeTime: true, includeSeconds: true });
-
-  const partnerName = item.partnerProfile
-    ? [item.partnerProfile.partnerFirstName, item.partnerProfile.partnerSurname]
-        .filter(Boolean)
-        .join(" ") || null
-    : null;
-  const businessName = item.partnerProfile?.businessName;
-  const location = item.partnerProfile?.city;
+  const { relativeTime, fullTime, partnerName, businessName, location } = useMemo(
+    () => ({
+      relativeTime: formatRelativeTime(item.createdAt),
+      fullTime: formatGhanaDate(item.createdAt, { includeTime: true, includeSeconds: true }),
+      partnerName: item.partnerProfile
+        ? [item.partnerProfile.partnerFirstName, item.partnerProfile.partnerSurname]
+            .filter(Boolean)
+            .join(" ") || null
+        : null,
+      businessName: item.partnerProfile?.businessName,
+      location: item.partnerProfile?.city,
+    }),
+    [item.createdAt, item.partnerProfile]
+  );
 
   return (
     <div className="feedback-card">
@@ -107,4 +111,4 @@ export function FeedbackCard({ item }: { item: FeedbackItem }) {
       )}
     </div>
   );
-}
+});

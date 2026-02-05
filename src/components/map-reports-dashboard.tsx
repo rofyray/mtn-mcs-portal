@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import GhanaMap, { type RegionStat } from "@/components/ghana-map";
 import RegionDrilldownPanel from "@/components/region-drilldown-panel";
+import { useDebounce } from "@/hooks/use-debounce";
 
 type MapStatsResponse = {
   assignedRegions: string[];
@@ -10,6 +11,7 @@ type MapStatsResponse = {
   totalPartners: number;
   totalBusinesses: number;
   totalAgents: number;
+  isFiltered?: boolean;
 };
 
 const iconProps = {
@@ -25,27 +27,35 @@ const iconProps = {
 export default function MapReportsDashboard() {
   const [data, setData] = useState<MapStatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 300);
+
+  const fetchStats = useCallback(async (searchQuery: string) => {
+    try {
+      setSearching(true);
+      const url = searchQuery
+        ? `/api/admin/map-stats?search=${encodeURIComponent(searchQuery)}`
+        : "/api/admin/map-stats";
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Failed to fetch stats");
+      }
+      const result = await response.json();
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setLoading(false);
+      setSearching(false);
+    }
+  }, []);
 
   useEffect(() => {
-    async function fetchStats() {
-      try {
-        const response = await fetch("/api/admin/map-stats");
-        if (!response.ok) {
-          throw new Error("Failed to fetch stats");
-        }
-        const result = await response.json();
-        setData(result);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchStats();
-  }, []);
+    fetchStats(debouncedSearch);
+  }, [debouncedSearch, fetchStats]);
 
   function handleRegionClick(regionCode: string) {
     setSelectedRegion(regionCode);
@@ -111,7 +121,9 @@ export default function MapReportsDashboard() {
           </div>
           <div className="summary-card-content">
             <span className="summary-card-value">{data?.totalPartners ?? 0}</span>
-            <span className="summary-card-label">Total Partners</span>
+            <span className="summary-card-label">
+              {data?.isFiltered ? "Matching Partners" : "Total Partners"}
+            </span>
           </div>
         </div>
 
@@ -126,7 +138,9 @@ export default function MapReportsDashboard() {
           </div>
           <div className="summary-card-content">
             <span className="summary-card-value">{data?.totalBusinesses ?? 0}</span>
-            <span className="summary-card-label">Total Businesses</span>
+            <span className="summary-card-label">
+              {data?.isFiltered ? "Matching Businesses" : "Total Businesses"}
+            </span>
           </div>
         </div>
 
@@ -141,7 +155,9 @@ export default function MapReportsDashboard() {
           </div>
           <div className="summary-card-content">
             <span className="summary-card-value">{data?.totalAgents ?? 0}</span>
-            <span className="summary-card-label">Total Agents</span>
+            <span className="summary-card-label">
+              {data?.isFiltered ? "Matching Agents" : "Total Agents"}
+            </span>
           </div>
         </div>
 
@@ -154,9 +170,11 @@ export default function MapReportsDashboard() {
           </div>
           <div className="summary-card-content">
             <span className="summary-card-value">
-              {data?.assignedRegions.length ?? 0}
+              {data?.isFiltered ? data?.stats.length ?? 0 : data?.assignedRegions.length ?? 0}
             </span>
-            <span className="summary-card-label">Assigned Regions</span>
+            <span className="summary-card-label">
+              {data?.isFiltered ? "Matching Regions" : "Assigned Regions"}
+            </span>
           </div>
         </div>
       </div>
@@ -174,32 +192,54 @@ export default function MapReportsDashboard() {
 
         <div className="map-reports-stats-panel">
           <h2 className="map-reports-stats-title">Region Statistics</h2>
-          <div className="map-reports-stats-list">
-            {data?.stats.map((stat) => (
-              <button
-                key={stat.regionCode}
-                type="button"
-                className="map-reports-stat-item"
-                onClick={() => handleRegionClick(stat.regionCode)}
-              >
-                <div className="map-reports-stat-header">
-                  <span className="map-reports-stat-code">{stat.regionCode}</span>
-                  <span className="map-reports-stat-name">{stat.regionName}</span>
-                </div>
-                <div className="map-reports-stat-values">
-                  <span className="map-reports-stat-value">
-                    <strong>{stat.partnerCount}</strong> partners
-                  </span>
-                  <span className="map-reports-stat-value">
-                    <strong>{stat.businessCount}</strong> businesses
-                  </span>
-                  <span className="map-reports-stat-value">
-                    <strong>{stat.agentCount}</strong> agents
-                  </span>
-                </div>
-              </button>
-            ))}
+
+          <div className="map-reports-stats-search">
+            <label className="label">Search</label>
+            <input
+              type="text"
+              className="input"
+              placeholder="Search partners, businesses, agents..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
+
+          {searching ? (
+            <div className="map-reports-stats-loading">
+              <div className="map-reports-spinner-small" />
+            </div>
+          ) : data?.stats.length === 0 ? (
+            <div className="map-reports-stats-empty">
+              No regions match your search
+            </div>
+          ) : (
+            <div className="map-reports-stats-list">
+              {data?.stats.map((stat) => (
+                <button
+                  key={stat.regionCode}
+                  type="button"
+                  className="map-reports-stat-item"
+                  onClick={() => handleRegionClick(stat.regionCode)}
+                >
+                  <div className="map-reports-stat-header">
+                    <span className="map-reports-stat-code">{stat.regionCode}</span>
+                    <span className="map-reports-stat-name">{stat.regionName}</span>
+                  </div>
+                  <div className="map-reports-stat-values">
+                    <span className="map-reports-stat-value">
+                      <strong>{stat.partnerCount}</strong> partners
+                    </span>
+                    <span className="map-reports-stat-value">
+                      <strong>{stat.businessCount}</strong> businesses
+                    </span>
+                    <span className="map-reports-stat-value">
+                      <strong>{stat.agentCount}</strong> agents
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

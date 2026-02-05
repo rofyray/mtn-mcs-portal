@@ -36,6 +36,9 @@ export async function POST(
     targetId: id,
   });
 
+  // Send emails in parallel
+  const emailPromises: Promise<void>[] = [];
+
   const partnerEmail = updated.partnerProfile.user?.email;
   if (partnerEmail) {
     const partnerMessage = buildEmailTemplate({
@@ -46,12 +49,14 @@ export async function POST(
         `Partner: ${updated.partnerProfile.businessName ?? "MTN Community Shop"}`,
       ],
     });
-    await sendEmail({
-      to: partnerEmail,
-      subject: "Agent submission approved",
-      text: partnerMessage.text,
-      html: partnerMessage.html,
-    });
+    emailPromises.push(
+      sendEmail({
+        to: partnerEmail,
+        subject: "Agent submission approved",
+        text: partnerMessage.text,
+        html: partnerMessage.html,
+      })
+    );
   }
 
   const adminRecipients = Array.from(
@@ -66,12 +71,16 @@ export async function POST(
       `Partner: ${updated.partnerProfile.businessName ?? "Unknown"}`,
     ],
   });
-  await sendEmail({
-    to: adminRecipients,
-    subject: "Agent submission approved",
-    text: adminMessage.text,
-    html: adminMessage.html,
-  });
+  emailPromises.push(
+    sendEmail({
+      to: adminRecipients,
+      subject: "Agent submission approved",
+      text: adminMessage.text,
+      html: adminMessage.html,
+    })
+  );
+
+  await Promise.all(emailPromises);
 
   return NextResponse.json({ agent: updated });
 }

@@ -1,4 +1,3 @@
-import prisma from "@/lib/db";
 import { getAdminSession } from "@/lib/admin-session";
 
 export async function requireAdmin() {
@@ -8,13 +7,9 @@ export async function requireAdmin() {
   }
 
   const admin = session.admin;
-  const regions = await prisma.adminRegionAssignment.findMany({
-    where: { adminId: admin.id },
-    select: { regionCode: true },
-  });
 
   return {
     admin,
-    regionCodes: regions.map((region) => region.regionCode),
+    regionCodes: admin.regions.map((region) => region.regionCode),
   };
 }

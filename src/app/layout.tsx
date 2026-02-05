@@ -42,7 +42,7 @@ export default function RootLayout({
               try {
                 var stored = localStorage.getItem("mtn-theme");
                 var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-                var theme = stored || (prefersDark ? "dark" : "dark");
+                var theme = stored || (prefersDark ? "dark" : "light");
                 document.documentElement.classList.toggle("theme-dark", theme === "dark");
                 document.documentElement.classList.toggle("theme-light", theme === "light");
               } catch (e) {}
