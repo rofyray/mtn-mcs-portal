@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 import { storeToast } from "@/components/post-auth-toast";
 import ThemeToggle from "@/components/theme-toggle";
@@ -12,6 +13,17 @@ export default function HeaderActions() {
   const { status } = useSession();
   const isPartnerRoute = pathname.startsWith("/partner") || pathname.startsWith("/onboarding");
   const isAdminRoute = pathname.startsWith("/admin");
+  const [adminRole, setAdminRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isAdminRoute && pathname !== "/admin/login") {
+      fetch("/api/admin/me")
+        .then((res) => res.json())
+        .then((data) => setAdminRole(data.admin?.role ?? null))
+        .catch(() => setAdminRole(null));
+    }
+  }, [isAdminRoute, pathname]);
+
   const showMobileNavToggle =
     (isPartnerRoute &&
       status === "authenticated" &&
@@ -20,7 +32,8 @@ export default function HeaderActions() {
     (isAdminRoute && pathname !== "/admin/login");
   const showPartnerNotifications =
     status === "authenticated" && isPartnerRoute && pathname !== "/partner/login";
-  const showAdminNotifications = isAdminRoute && pathname !== "/admin/login";
+  const showAdminNotifications =
+    isAdminRoute && pathname !== "/admin/login" && adminRole !== "SENIOR_MANAGER";
   const showAdminLogout = isAdminRoute && pathname !== "/admin/login";
   const showLogout = status === "authenticated" && isPartnerRoute && pathname !== "/partner/login";
 
