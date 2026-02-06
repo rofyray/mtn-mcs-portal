@@ -11,6 +11,10 @@ export default async function AdminHomePage() {
     redirect("/admin/login");
   }
 
+  if (session.admin.role === "LEGAL") {
+    redirect("/admin/data-requests");
+  }
+
   return (
     <main className="min-h-screen px-6 py-10">
       <PostAuthToast />

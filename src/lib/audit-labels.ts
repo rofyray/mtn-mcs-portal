@@ -17,6 +17,12 @@ const ACTION_LABELS: Record<string, string> = {
   ADMIN_DISABLED: "Admin Disabled",
   FORM_SENT: "Form Sent",
   FORM_SIGNED: "Form Signed",
+  DATA_REQUEST_CREATED: "Data Request Created",
+  DATA_REQUEST_SUBMITTED_TO_MANAGER: "Data Request Sent to Manager",
+  DATA_REQUEST_SUBMITTED_TO_SENIOR_MANAGER: "Data Request Sent to Senior Manager",
+  DATA_REQUEST_SUBMITTED_TO_LEGAL: "Data Request Sent to Legal",
+  DATA_REQUEST_APPROVED: "Data Request Approved",
+  DATA_REQUEST_DENIED: "Data Request Denied",
 };
 
 const ACTION_AREAS: Record<string, string> = {
@@ -38,6 +44,12 @@ const ACTION_AREAS: Record<string, string> = {
   ADMIN_DISABLED: "Admin",
   FORM_SENT: "Form",
   FORM_SIGNED: "Form",
+  DATA_REQUEST_CREATED: "Data Request",
+  DATA_REQUEST_SUBMITTED_TO_MANAGER: "Data Request",
+  DATA_REQUEST_SUBMITTED_TO_SENIOR_MANAGER: "Data Request",
+  DATA_REQUEST_SUBMITTED_TO_LEGAL: "Data Request",
+  DATA_REQUEST_APPROVED: "Data Request",
+  DATA_REQUEST_DENIED: "Data Request",
 };
 
 const ACTION_CATEGORIES: Record<string, "success" | "warning" | "error" | "info"> = {
@@ -59,6 +71,12 @@ const ACTION_CATEGORIES: Record<string, "success" | "warning" | "error" | "info"
   ADMIN_DISABLED: "warning",
   FORM_SENT: "info",
   FORM_SIGNED: "success",
+  DATA_REQUEST_CREATED: "info",
+  DATA_REQUEST_SUBMITTED_TO_MANAGER: "info",
+  DATA_REQUEST_SUBMITTED_TO_SENIOR_MANAGER: "info",
+  DATA_REQUEST_SUBMITTED_TO_LEGAL: "info",
+  DATA_REQUEST_APPROVED: "success",
+  DATA_REQUEST_DENIED: "error",
 };
 
 export function getActionLabel(action: string): string {

@@ -12,6 +12,7 @@ enum AdminRole {
   MANAGER
   COORDINATOR
   SENIOR_MANAGER
+  LEGAL
 }
 
 enum AdminOtpStatus {
@@ -72,6 +73,21 @@ enum AuditAction {
   ADMIN_DISABLED
   FORM_SENT
   FORM_SIGNED
+  DATA_REQUEST_CREATED
+  DATA_REQUEST_SUBMITTED_TO_MANAGER
+  DATA_REQUEST_SUBMITTED_TO_SENIOR_MANAGER
+  DATA_REQUEST_SUBMITTED_TO_LEGAL
+  DATA_REQUEST_APPROVED
+  DATA_REQUEST_DENIED
+}
+
+enum DataRequestStatus {
+  DRAFT
+  PENDING_MANAGER
+  PENDING_SENIOR_MANAGER
+  PENDING_LEGAL
+  APPROVED
+  DENIED
 }
 
 model User {
@@ -146,6 +162,8 @@ model Admin {
   sessions   AdminSession[]
   regions    AdminRegionAssignment[]
   auditLogs  AuditLog[]
+  dataRequestsCreated  DataRequestForm[]
+  dataRequestApprovals DataRequestApproval[]
 }
 
 model AdminOtp {
@@ -368,4 +386,65 @@ model AuditLog {
 
   @@index([adminId])
   @@index([createdAt])
+}
+
+model DataRequestForm {
+  id                    String             @id @default(cuid())
+  status                DataRequestStatus  @default(DRAFT)
+  createdByAdminId      String
+  regionCode            String
+
+  // Company details
+  businessName          String
+  dateOfIncorporation   DateTime?
+  businessType          String?
+  businessTypeOther     String?
+  registeredNature      String?
+  registrationCertNo    String?
+  mainOfficeLocation    String?
+  tinNumber             String?
+  postalAddress         String?
+  physicalAddress       String?
+  companyPhone          String?
+  digitalPostAddress    String?
+
+  // Authorized signatory & contact person (JSON: { name, designation, phone, email, date })
+  authorizedSignatory   Json?
+  contactPerson         Json?
+
+  // PEP declaration (JSON: { q1, q2, q2Timeframe, q3, q3Details })
+  pepDeclaration        Json?
+
+  // Photos (up to 5)
+  imageUrls             String[]
+
+  completionDate        DateTime?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  createdByAdmin        Admin              @relation(fields: [createdByAdminId], references: [id], onDelete: Cascade)
+  approvals             DataRequestApproval[]
+
+  @@index([status])
+  @@index([regionCode])
+  @@index([createdByAdminId])
+}
+
+model DataRequestApproval {
+  id                 String   @id @default(cuid())
+  dataRequestFormId  String
+  adminId            String
+  role               AdminRole
+  action             String   // "SUBMITTED" | "APPROVED" | "DENIED"
+  comments           String?
+  signatureUrl       String?
+  signatureDate      DateTime?
+  legalScore         Int?     // 1-100, only for LEGAL
+  createdAt          DateTime @default(now())
+
+  dataRequestForm    DataRequestForm @relation(fields: [dataRequestFormId], references: [id], onDelete: Cascade)
+  admin              Admin           @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([dataRequestFormId])
+  @@index([adminId])
 }

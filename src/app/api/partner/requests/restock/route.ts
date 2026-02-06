@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import prisma from "@/lib/db";
 import { sendEmail } from "@/lib/email";
+import { broadcastAdminNotification } from "@/lib/notifications";
 import { buildEmailTemplate } from "@/lib/email-template";
 import { requiredEnv } from "@/lib/env";
 import { getApprovedPartnerProfile } from "@/lib/partner";
@@ -53,13 +54,10 @@ export async function POST(request: Request) {
 
   const locationInfo = `${business.businessName} (${business.city})`;
 
-  await prisma.notification.create({
-    data: {
-      recipientType: "ADMIN",
-      title: "Restock request",
-      message: `${result.profile.businessName ?? "Partner"} requested restock for ${locationInfo}: ${parsed.data.items.join(", ")}.`,
-      category: "INFO",
-    },
+  await broadcastAdminNotification({
+    title: "Restock request",
+    message: `${result.profile.businessName ?? "Partner"} requested restock for ${locationInfo}: ${parsed.data.items.join(", ")}.`,
+    category: "INFO",
   });
 
   const email = buildEmailTemplate({

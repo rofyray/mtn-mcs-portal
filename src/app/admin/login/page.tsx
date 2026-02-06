@@ -40,6 +40,10 @@ export default function AdminLoginPage() {
     () => admins.filter((admin) => admin.role === "MANAGER"),
     [admins]
   );
+  const legalAdmins = useMemo(
+    () => admins.filter((admin) => admin.role === "LEGAL"),
+    [admins]
+  );
 
   useEffect(() => {
     const root = document.documentElement;
@@ -187,6 +191,15 @@ export default function AdminLoginPage() {
               {seniorManagers.length > 0 ? (
                 <optgroup label="Senior Managers">
                   {seniorManagers.map((admin) => (
+                    <option key={admin.id} value={admin.email}>
+                      {admin.name} ({admin.email})
+                    </option>
+                  ))}
+                </optgroup>
+              ) : null}
+              {legalAdmins.length > 0 ? (
+                <optgroup label="Legal">
+                  {legalAdmins.map((admin) => (
                     <option key={admin.id} value={admin.email}>
                       {admin.name} ({admin.email})
                     </option>

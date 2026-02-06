@@ -12,21 +12,25 @@ import { useNotificationCount } from "@/hooks/use-notification-count";
 export default function HeaderActions() {
   const pathname = usePathname();
   const { status } = useSession();
-  const isPartnerRoute = pathname.startsWith("/partner") || pathname.startsWith("/onboarding");
-  const isAdminRoute = pathname.startsWith("/admin");
   const { admin } = useAdmin();
   const adminRole = admin?.role ?? null;
+  const isPartnerRoute = pathname.startsWith("/partner") || pathname.startsWith("/onboarding");
+  const isAdminRoute = pathname.startsWith("/admin");
 
+  const noSidebar = adminRole === "LEGAL" || adminRole === "SENIOR_MANAGER";
   const showMobileNavToggle =
     (isPartnerRoute &&
       status === "authenticated" &&
       pathname !== "/partner/login" &&
       pathname !== "/onboarding") ||
-    (isAdminRoute && pathname !== "/admin/login");
+    (isAdminRoute && pathname !== "/admin/login" && !noSidebar);
   const showPartnerNotifications =
     status === "authenticated" && isPartnerRoute && pathname !== "/partner/login";
   const showAdminNotifications =
-    isAdminRoute && pathname !== "/admin/login" && adminRole !== "SENIOR_MANAGER";
+    isAdminRoute && pathname !== "/admin/login";
+  const showSeniorMapReports =
+    isAdminRoute && adminRole === "SENIOR_MANAGER" &&
+    pathname !== "/admin/login" && pathname !== "/admin/map-reports";
   const showAdminLogout = isAdminRoute && pathname !== "/admin/login";
   const showLogout = status === "authenticated" && isPartnerRoute && pathname !== "/partner/login";
 
@@ -79,6 +83,29 @@ export default function HeaderActions() {
           >
             <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7Z" />
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+        </Link>
+      ) : null}
+      {showSeniorMapReports ? (
+        <Link
+          href="/admin/map-reports"
+          className="icon-button icon-button-accent"
+          aria-label="Map Reports"
+          title="Map Reports"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z" />
+            <path d="M8 2v16M16 6v16" />
           </svg>
         </Link>
       ) : null}

@@ -83,6 +83,15 @@ const managers = [
   },
 ];
 
+const legalAdmins = [
+  {
+    name: "System Legal",
+    email: "mtnlegal@grr.la",
+    role: "LEGAL",
+    regions: [],
+  },
+];
+
 const seniorManagers = [
   {
     name: "Janet Quarshie",
@@ -117,7 +126,7 @@ const seniorManagers = [
 ];
 
 async function main() {
-  const admins = [...coordinators, ...fullAccessAdmins, ...managers, ...seniorManagers];
+  const admins = [...coordinators, ...fullAccessAdmins, ...managers, ...seniorManagers, ...legalAdmins];
 
   for (const admin of admins) {
     const normalizedEmail = admin.email.trim().toLowerCase();

@@ -12,7 +12,7 @@ type AdminData = {
   id: string;
   name: string;
   email: string;
-  role: "FULL" | "MANAGER" | "COORDINATOR" | "SENIOR_MANAGER";
+  role: "FULL" | "MANAGER" | "COORDINATOR" | "SENIOR_MANAGER" | "LEGAL";
   enabled: boolean;
   regionCodes: string[];
 };
@@ -22,6 +22,7 @@ const ROLE_LABELS: Record<string, string> = {
   MANAGER: "Manager",
   COORDINATOR: "Coordinator",
   SENIOR_MANAGER: "Senior Manager",
+  LEGAL: "Legal",
 };
 
 const ROLE_BADGE_CLASSES: Record<string, string> = {
@@ -29,14 +30,16 @@ const ROLE_BADGE_CLASSES: Record<string, string> = {
   MANAGER: "badge-primary",
   COORDINATOR: "badge-info",
   SENIOR_MANAGER: "badge-success",
+  LEGAL: "badge-warning",
 };
 
-const ROLE_ORDER: AdminData["role"][] = ["FULL", "MANAGER", "SENIOR_MANAGER", "COORDINATOR"];
+const ROLE_ORDER: AdminData["role"][] = ["FULL", "MANAGER", "SENIOR_MANAGER", "LEGAL", "COORDINATOR"];
 
 const SECTION_TITLES: Record<string, string> = {
   FULL: "Full Access Admins",
   MANAGER: "Managers",
   SENIOR_MANAGER: "Senior Managers",
+  LEGAL: "Legal",
   COORDINATOR: "Coordinators",
 };
 

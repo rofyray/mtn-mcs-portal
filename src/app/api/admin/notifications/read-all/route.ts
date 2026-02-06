@@ -12,6 +12,7 @@ export async function POST() {
   const result = await prisma.notification.updateMany({
     where: {
       recipientType: "ADMIN",
+      recipientAdminId: adminContext.admin.id,
       readAt: null,
     },
     data: { readAt: new Date() },

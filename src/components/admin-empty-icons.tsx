@@ -72,6 +72,16 @@ export function AdminBusinessesEmptyIcon() {
   );
 }
 
+export function AdminDataRequestsEmptyIcon() {
+  return (
+    <svg aria-hidden="true" {...iconProps}>
+      <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" />
+      <path d="M14 2v6h6" />
+      <path d="M9 15l2 2 4-4" />
+    </svg>
+  );
+}
+
 export function AdminFormsEmptyIcon() {
   return (
     <svg aria-hidden="true" {...iconProps}>

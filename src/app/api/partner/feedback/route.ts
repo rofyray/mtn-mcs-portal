@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import prisma from "@/lib/db";
+import { broadcastAdminNotification } from "@/lib/notifications";
 import { getApprovedPartnerProfile } from "@/lib/partner";
 
 const feedbackSchema = z.object({
@@ -32,13 +33,10 @@ export async function POST(request: Request) {
     },
   });
 
-  await prisma.notification.create({
-    data: {
-      recipientType: "ADMIN",
-      title: `Feedback: ${parsed.data.title}`,
-      message: parsed.data.message,
-      category: "INFO",
-    },
+  await broadcastAdminNotification({
+    title: `Feedback: ${parsed.data.title}`,
+    message: parsed.data.message,
+    category: "INFO",
   });
 
   return NextResponse.json({ feedback });

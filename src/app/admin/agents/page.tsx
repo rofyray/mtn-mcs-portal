@@ -319,12 +319,19 @@ export default function AdminAgentsPage() {
             ))}
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 stagger">
+          <div className="grid gap-4 md:grid-cols-3 justify-items-start stagger">
             {filteredAgents.map((agent) => (
-              <div key={agent.id} className="rounded border p-4 space-y-3">
+              <div key={agent.id} className="card grid-card space-y-3">
                 <div>
-                  <p className="text-xs text-gray-500">{agent.status}</p>
-                  <p className="text-sm font-medium">
+                  <span className={`badge badge-${
+                    agent.status === "APPROVED" ? "success"
+                      : agent.status === "DENIED" ? "error"
+                      : agent.status === "EXPIRED" ? "warning"
+                      : "info"
+                  }`}>
+                    {agent.status}
+                  </span>
+                  <p className="text-lg font-semibold">
                     {agent.firstName} {agent.surname}
                   </p>
                   <p className="text-xs text-gray-600">{agent.phoneNumber}</p>

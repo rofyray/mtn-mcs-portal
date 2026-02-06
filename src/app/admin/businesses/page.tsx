@@ -389,12 +389,19 @@ export default function AdminBusinessesPage() {
             ))}
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 stagger">
+          <div className="grid gap-4 md:grid-cols-3 justify-items-start stagger">
             {filteredBusinesses.map((business) => (
-              <div key={business.id} className="rounded border p-4 space-y-3">
+              <div key={business.id} className="card grid-card space-y-3">
                 <div>
-                  <p className="text-xs text-gray-500">{business.status}</p>
-                  <p className="text-sm font-medium">{business.businessName}</p>
+                  <span className={`badge badge-${
+                    business.status === "APPROVED" ? "success"
+                      : business.status === "DENIED" ? "error"
+                      : business.status === "EXPIRED" ? "warning"
+                      : "info"
+                  }`}>
+                    {business.status}
+                  </span>
+                  <p className="text-lg font-semibold">{business.businessName}</p>
                   <p className="text-xs text-gray-600">{business.city}</p>
                   {business.addressRegionCode && business.addressDistrictCode ? (
                     <>

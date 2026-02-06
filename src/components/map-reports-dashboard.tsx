@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import GhanaMap, { type RegionStat } from "@/components/ghana-map";
 import RegionDrilldownPanel from "@/components/region-drilldown-panel";
@@ -177,6 +178,21 @@ export default function MapReportsDashboard() {
             </span>
           </div>
         </div>
+
+        <Link href="/admin/data-requests" className="summary-card summary-card-action">
+          <div className="summary-card-icon summary-card-icon-accent">
+            <svg viewBox="0 0 24 24" {...iconProps}>
+              <path d="M9 2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z" />
+              <path d="M9 14H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Z" />
+              <path d="M14 4h7M14 9h5M14 16h7M14 21h5" />
+              <path d="M21 12l-3 3-2-2" />
+            </svg>
+          </div>
+          <div className="summary-card-content">
+            <span className="summary-card-value" style={{ fontSize: "1.15rem" }}>Data Requests</span>
+            <span className="summary-card-label">View &amp; manage requests</span>
+          </div>
+        </Link>
       </div>
 
       <div className="map-reports-map-section">

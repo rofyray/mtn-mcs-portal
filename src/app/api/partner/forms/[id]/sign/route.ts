@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import prisma from "@/lib/db";
 import { logAuditEvent } from "@/lib/audit";
+import { broadcastAdminNotification } from "@/lib/notifications";
 import { getApprovedPartnerProfile } from "@/lib/partner";
 
 const signSchema = z.object({
@@ -57,13 +58,10 @@ export async function POST(
     },
   });
 
-  await prisma.notification.create({
-    data: {
-      recipientType: "ADMIN",
-      title: "Form signed",
-      message: `${parsed.data.signerName} signed "${formRequest.title}".`,
-      category: "SUCCESS",
-    },
+  await broadcastAdminNotification({
+    title: "Form signed",
+    message: `${parsed.data.signerName} signed "${formRequest.title}".`,
+    category: "SUCCESS",
   });
 
   await logAuditEvent({

@@ -88,5 +88,6 @@ export function useAdminRole() {
     isManager: admin?.role === "MANAGER",
     isCoordinator: admin?.role === "COORDINATOR",
     isSeniorManager: admin?.role === "SENIOR_MANAGER",
+    isLegal: admin?.role === "LEGAL",
   };
 }

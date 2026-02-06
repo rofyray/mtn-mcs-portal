@@ -26,6 +26,9 @@ const mtnBrighterSans = localFont({
 export const metadata: Metadata = {
   title: "MTN Community Shop",
   description: "Partner management platform",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default function RootLayout({

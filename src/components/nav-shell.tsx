@@ -138,6 +138,18 @@ const adminLinks: AdminNavLink[] = [
     ),
   },
   {
+    href: "/admin/data-requests",
+    label: "Data Requests",
+    icon: (
+      <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
+        <path d="M9 2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z" />
+        <path d="M9 14H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Z" />
+        <path d="M14 4h7M14 9h5M14 16h7M14 21h5" />
+        <path d="M21 12l-3 3-2-2" />
+      </svg>
+    ),
+  },
+  {
     href: "/admin/feedback",
     label: "Feedback",
     fullOnly: true,
@@ -215,7 +227,9 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
     pathname === "/admin/login" ||
     pathname === "/partner/login" ||
     pathname === "/onboarding" ||
-    pathname === "/admin/map-reports";
+    pathname === "/admin/map-reports" ||
+    adminRole === "LEGAL" ||
+    adminRole === "SENIOR_MANAGER";
 
   const collapsed = useSyncExternalStore(
     (callback) => {
@@ -283,16 +297,11 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
 
   const isAdmin = pathname.startsWith("/admin");
   const links = useMemo(() => {
-    if (!isAdmin) {
-      return partnerLinks;
-    }
+    if (!isAdmin) return partnerLinks;
     const isFullAccess = adminRole === "FULL";
     const isManager = adminRole === "MANAGER";
-    const isSeniorManager = adminRole === "SENIOR_MANAGER";
     return adminLinks.filter((link) => {
       if (link.fullOnly && !isFullAccess && !isManager) return false;
-      // seniorManagerOnly is exclusive - only senior managers can see it
-      if (link.seniorManagerOnly && !isSeniorManager) return false;
       return true;
     });
   }, [adminRole, isAdmin]);

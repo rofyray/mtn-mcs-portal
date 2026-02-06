@@ -242,7 +242,7 @@ export default function AdminPartnersPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-3 justify-items-start stagger">
             {partners.map((partner) => (
-              <div key={partner.id} className="card partner-card space-y-3">
+              <div key={partner.id} className="card grid-card space-y-3">
                 <div className="space-y-1">
                   <span
                     className={`badge badge-${
