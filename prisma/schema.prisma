@@ -12,7 +12,7 @@ enum AdminRole {
   MANAGER
   COORDINATOR
   SENIOR_MANAGER
-  LEGAL
+  GOVERNANCE_CHECK
 }
 
 enum AdminOtpStatus {
@@ -73,19 +73,21 @@ enum AuditAction {
   ADMIN_DISABLED
   FORM_SENT
   FORM_SIGNED
-  DATA_REQUEST_CREATED
-  DATA_REQUEST_SUBMITTED_TO_MANAGER
-  DATA_REQUEST_SUBMITTED_TO_SENIOR_MANAGER
-  DATA_REQUEST_SUBMITTED_TO_LEGAL
-  DATA_REQUEST_APPROVED
-  DATA_REQUEST_DENIED
+  ONBOARD_REQUEST_CREATED
+  ONBOARD_REQUEST_SUBMITTED_TO_MANAGER
+  ONBOARD_REQUEST_SUBMITTED_TO_SENIOR_MANAGER
+  ONBOARD_REQUEST_SUBMITTED_TO_GOVERNANCE_CHECK
+  ONBOARD_REQUEST_APPROVED
+  ONBOARD_REQUEST_DENIED
+  ONBOARD_REQUEST_PUBLIC_SUBMITTED
 }
 
-enum DataRequestStatus {
+enum OnboardRequestStatus {
+  PENDING_COORDINATOR
   DRAFT
   PENDING_MANAGER
   PENDING_SENIOR_MANAGER
-  PENDING_LEGAL
+  PENDING_GOVERNANCE_CHECK
   APPROVED
   DENIED
 }
@@ -162,8 +164,8 @@ model Admin {
   sessions   AdminSession[]
   regions    AdminRegionAssignment[]
   auditLogs  AuditLog[]
-  dataRequestsCreated  DataRequestForm[]
-  dataRequestApprovals DataRequestApproval[]
+  onboardRequestsCreated  OnboardRequestForm[]
+  onboardRequestApprovals OnboardRequestApproval[]
 }
 
 model AdminOtp {
@@ -252,6 +254,8 @@ model Agent {
   phoneNumber        String
   email              String
   cpAppNumber        String?
+  agentUsername       String?
+  minervaReferralCode String?
   ghanaCardNumber    String
   ghanaCardFrontUrl  String?
   ghanaCardBackUrl   String?
@@ -388,11 +392,16 @@ model AuditLog {
   @@index([createdAt])
 }
 
-model DataRequestForm {
-  id                    String             @id @default(cuid())
-  status                DataRequestStatus  @default(DRAFT)
-  createdByAdminId      String
+model OnboardRequestForm {
+  id                    String               @id @default(cuid())
+  status                OnboardRequestStatus @default(DRAFT)
+  createdByAdminId      String?
   regionCode            String
+
+  // Submitter info (public form submissions)
+  submitterName         String?
+  submitterEmail        String?
+  submitterPhone        String?
 
   // Company details
   businessName          String
@@ -422,29 +431,29 @@ model DataRequestForm {
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
 
-  createdByAdmin        Admin              @relation(fields: [createdByAdminId], references: [id], onDelete: Cascade)
-  approvals             DataRequestApproval[]
+  createdByAdmin        Admin?             @relation(fields: [createdByAdminId], references: [id], onDelete: SetNull)
+  approvals             OnboardRequestApproval[]
 
   @@index([status])
   @@index([regionCode])
   @@index([createdByAdminId])
 }
 
-model DataRequestApproval {
-  id                 String   @id @default(cuid())
-  dataRequestFormId  String
-  adminId            String
-  role               AdminRole
-  action             String   // "SUBMITTED" | "APPROVED" | "DENIED"
-  comments           String?
-  signatureUrl       String?
-  signatureDate      DateTime?
-  legalScore         Int?     // 1-100, only for LEGAL
-  createdAt          DateTime @default(now())
+model OnboardRequestApproval {
+  id                    String   @id @default(cuid())
+  onboardRequestFormId  String
+  adminId               String
+  role                  AdminRole
+  action                String   // "SUBMITTED" | "APPROVED" | "DENIED"
+  comments              String?
+  signatureUrl          String?
+  signatureDate         DateTime?
+  governanceScore       Int?     // 1-100, only for GOVERNANCE_CHECK
+  createdAt             DateTime @default(now())
 
-  dataRequestForm    DataRequestForm @relation(fields: [dataRequestFormId], references: [id], onDelete: Cascade)
-  admin              Admin           @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  onboardRequestForm    OnboardRequestForm @relation(fields: [onboardRequestFormId], references: [id], onDelete: Cascade)
+  admin                 Admin              @relation(fields: [adminId], references: [id], onDelete: Cascade)
 
-  @@index([dataRequestFormId])
+  @@index([onboardRequestFormId])
   @@index([adminId])
 }

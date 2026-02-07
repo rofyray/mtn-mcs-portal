@@ -131,8 +131,13 @@ export default function AdminPartnerDetailPage() {
             className="input"
             inputMode="numeric"
             pattern="\\d*"
+            maxLength={field.key === "mifiImei" ? 15 : undefined}
             value={form[field.key] ?? ""}
-            onChange={(event) => updateField(field.key, event.target.value.replace(/\D/g, ""))}
+            onChange={(event) => {
+              let digits = event.target.value.replace(/\D/g, "");
+              if (field.key === "mifiImei") digits = digits.slice(0, 15);
+              updateField(field.key, digits);
+            }}
             disabled={!canEdit}
           />
         ) : (
@@ -345,7 +350,7 @@ export default function AdminPartnerDetailPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold">Partner Details</h1>
-            <p className="text-sm text-gray-600">Review and edit onboarding info.</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Review and edit onboarding info.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button

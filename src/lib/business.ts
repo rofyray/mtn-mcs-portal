@@ -9,21 +9,21 @@ const optionalString = z.preprocess(
 );
 
 export const businessSchema = z.object({
-  businessName: z.string().trim().min(1),
-  addressRegionCode: z.string().trim().min(1),
-  addressDistrictCode: z.string().trim().min(1),
-  addressCode: z.string().trim().min(1),
+  businessName: z.string().trim().min(1, "Business name is required"),
+  addressRegionCode: z.string().trim().min(1, "Region is required"),
+  addressDistrictCode: z.string().trim().min(1, "District is required"),
+  addressCode: z.string().trim().min(1, "Digital address code is required"),
   gpsLatitude: optionalString,
   gpsLongitude: optionalString,
-  city: z.string().trim().min(1),
+  city: z.string().trim().min(1, "City is required"),
   landmark: optionalString,
-  storeFrontUrl: z.string().url(),
-  storeInsideUrl: z.string().url(),
+  storeFrontUrl: z.string().url("Store front photo is required"),
+  storeInsideUrl: z.string().url("Store inside photo is required"),
 });
 
 export type BusinessInput = z.infer<typeof businessSchema>;
 
 export const businessUpdateSchema = businessSchema.partial().extend({
-  storeFrontUrl: z.string().url().nullable().optional(),
-  storeInsideUrl: z.string().url().nullable().optional(),
+  storeFrontUrl: z.string().url("Store front photo is required").nullable().optional(),
+  storeInsideUrl: z.string().url("Store inside photo is required").nullable().optional(),
 });

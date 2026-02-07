@@ -40,8 +40,8 @@ export default function AdminLoginPage() {
     () => admins.filter((admin) => admin.role === "MANAGER"),
     [admins]
   );
-  const legalAdmins = useMemo(
-    () => admins.filter((admin) => admin.role === "LEGAL"),
+  const governanceCheckAdmins = useMemo(
+    () => admins.filter((admin) => admin.role === "GOVERNANCE_CHECK"),
     [admins]
   );
 
@@ -135,8 +135,12 @@ export default function AdminLoginPage() {
         message: "Admin access granted.",
         kind: "success",
       });
-      const redirectPath = data.role === "SENIOR_MANAGER" ? "/admin/map-reports" : "/admin";
-      window.location.href = redirectPath;
+      function getAdminHome(role: string) {
+        if (role === "SENIOR_MANAGER") return "/admin/map-reports";
+        if (role === "GOVERNANCE_CHECK") return "/admin/onboard-requests";
+        return "/admin";
+      }
+      window.location.href = getAdminHome(data.role ?? "");
     }
 
     setLoading(false);
@@ -148,7 +152,7 @@ export default function AdminLoginPage() {
         <div className="w-full max-w-md space-y-6 glass-panel p-6 page-animate pointer-events-auto">
           <div>
           <h1 className="text-2xl font-semibold">Admin Login</h1>
-          <p className="text-sm text-gray-600">Select your name to receive an OTP.</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Select your name to receive an OTP.</p>
         </div>
 
         <div className="space-y-4">
@@ -197,9 +201,9 @@ export default function AdminLoginPage() {
                   ))}
                 </optgroup>
               ) : null}
-              {legalAdmins.length > 0 ? (
-                <optgroup label="Legal">
-                  {legalAdmins.map((admin) => (
+              {governanceCheckAdmins.length > 0 ? (
+                <optgroup label="Governance">
+                  {governanceCheckAdmins.map((admin) => (
                     <option key={admin.id} value={admin.email}>
                       {admin.name} ({admin.email})
                     </option>

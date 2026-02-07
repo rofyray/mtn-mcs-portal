@@ -7,10 +7,11 @@ import { sendEmail } from "@/lib/email";
 import { buildEmailTemplate } from "@/lib/email-template";
 import { requiredEnv } from "@/lib/env";
 import { generateToken, hashToken } from "@/lib/tokens";
+import { formatZodError } from "@/lib/validation";
 
 const signupSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
+  email: z.string().email("A valid email is required"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export async function POST(request: Request) {
@@ -18,7 +19,7 @@ export async function POST(request: Request) {
   const parsed = signupSchema.safeParse(body);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
 
   const { email: rawEmail, password } = parsed.data;

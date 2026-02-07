@@ -161,7 +161,7 @@ export default function AdminAgentsPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold">Agent Submissions</h1>
-            <p className="text-sm text-gray-600">Review and approve agent requests.</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Review and approve agent requests.</p>
           </div>
         </div>
         {loading ? <span className="panel-spinner" aria-label="Loading" /> : null}
@@ -198,7 +198,7 @@ export default function AdminAgentsPage() {
           </div>
           <div className="admin-filter-field">
             <label className="label" htmlFor="agent-business">
-              Business
+              Location
             </label>
             <select
               id="agent-business"
@@ -206,7 +206,7 @@ export default function AdminAgentsPage() {
               value={selectedBusiness}
               onChange={(event) => setSelectedBusiness(event.target.value)}
             >
-              <option value="">All businesses</option>
+              <option value="">All locations</option>
               {businessOptions.map((business) => (
                 <option key={business} value={business}>
                   {business}
@@ -235,7 +235,7 @@ export default function AdminAgentsPage() {
               }
               description={
                 searchQuery.trim() || selectedBusiness
-                  ? "Try adjusting the search, status, or business filter."
+                  ? "Try adjusting the search, status, or location filter."
                   : status === "SUBMITTED"
                     ? "Agent onboarding requests will appear here."
                     : `Once agents are ${statusLabelLower}, they'll appear here.`
@@ -250,7 +250,7 @@ export default function AdminAgentsPage() {
               <span>Name</span>
               <span>Phone</span>
               <span>Email</span>
-              <span>Business</span>
+              <span>Location</span>
               <span>Actions</span>
             </div>
             {filteredAgents.map((agent) => (
@@ -279,7 +279,7 @@ export default function AdminAgentsPage() {
                 <span className="submission-list-cell submission-list-cell-muted" data-label="Email">
                   {agent.email}
                 </span>
-                <span className="submission-list-cell submission-list-cell-muted" data-label="Business">
+                <span className="submission-list-cell submission-list-cell-muted" data-label="Location">
                   {agent.businessName ?? "-"}
                 </span>
                 <div className="submission-list-actions" data-label="Actions">
@@ -334,10 +334,10 @@ export default function AdminAgentsPage() {
                   <p className="text-lg font-semibold">
                     {agent.firstName} {agent.surname}
                   </p>
-                  <p className="text-xs text-gray-600">{agent.phoneNumber}</p>
-                  <p className="text-xs text-gray-600">{agent.email}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">{agent.phoneNumber}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">{agent.email}</p>
                   {agent.business ? (
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
                       Location: {agent.business.city} ({agent.business.addressCode})
                     </p>
                   ) : null}

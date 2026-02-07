@@ -5,10 +5,11 @@ import prisma from "@/lib/db";
 import { logAuditEvent } from "@/lib/audit";
 import { broadcastAdminNotification } from "@/lib/notifications";
 import { getApprovedPartnerProfile } from "@/lib/partner";
+import { formatZodError } from "@/lib/validation";
 
 const signSchema = z.object({
-  signerName: z.string().trim().min(1),
-  signatureUrl: z.string().url(),
+  signerName: z.string().trim().min(1, "Signer name is required"),
+  signatureUrl: z.string().url("Signature is required"),
 });
 
 export async function POST(
@@ -39,7 +40,7 @@ export async function POST(
   const body = await request.json();
   const parsed = signSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
 
   const signature = await prisma.formSignature.create({

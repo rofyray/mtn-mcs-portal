@@ -11,84 +11,27 @@ import { ghanaLocations } from "@/lib/ghana-locations";
 import { uploadFile } from "@/lib/storage/upload-client";
 import UploadField from "@/components/upload-field";
 import { IMAGE_ACCEPT } from "@/lib/storage/accepts";
+import {
+  type OnboardRequestFormData,
+  INITIAL_FORM,
+  BUSINESS_TYPES,
+  REGISTERED_NATURES,
+} from "@/lib/onboard-request-constants";
 
 const SignaturePad = dynamic(() => import("@/components/signature-pad"));
 
-type FormData = {
-  businessName: string;
-  dateOfIncorporation: string;
-  businessType: string;
-  businessTypeOther: string;
-  registeredNature: string;
-  registrationCertNo: string;
-  mainOfficeLocation: string;
-  regionCode: string;
-  tinNumber: string;
-  postalAddress: string;
-  physicalAddress: string;
-  companyPhone: string;
-  digitalPostAddress: string;
-  authorizedSignatory: {
-    name: string;
-    designation: string;
-    phone: string;
-    email: string;
-    date: string;
-  };
-  contactPerson: {
-    name: string;
-    designation: string;
-    phone: string;
-    email: string;
-    date: string;
-  };
-  pepDeclaration: {
-    q1: string;
-    q2: string;
-    q2Timeframe: string;
-    q3: string;
-    q3Name: string;
-    q3Position: string;
-    q3Year: string;
-    q3Relationship: string;
-  };
-  imageUrls: string[];
-  completionDate: string;
-  comments: string;
-  signatureUrl: string;
-};
+const phonePrefix = "+233";
 
-const INITIAL_FORM: FormData = {
-  businessName: "",
-  dateOfIncorporation: "",
-  businessType: "",
-  businessTypeOther: "",
-  registeredNature: "",
-  registrationCertNo: "",
-  mainOfficeLocation: "",
-  regionCode: "",
-  tinNumber: "",
-  postalAddress: "",
-  physicalAddress: "",
-  companyPhone: "",
-  digitalPostAddress: "",
-  authorizedSignatory: { name: "", designation: "", phone: "", email: "", date: "" },
-  contactPerson: { name: "", designation: "", phone: "", email: "", date: "" },
-  pepDeclaration: {
-    q1: "",
-    q2: "",
-    q2Timeframe: "",
-    q3: "",
-    q3Name: "",
-    q3Position: "",
-    q3Year: "",
-    q3Relationship: "",
-  },
-  imageUrls: [],
-  completionDate: "",
-  comments: "",
-  signatureUrl: "",
-};
+function formatPhoneForStorage(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 9);
+  return digits ? `${phonePrefix}${digits}` : "";
+}
+
+function formatPhoneForDisplay(value?: string) {
+  const digits = (value ?? "").replace(/\D/g, "");
+  const withoutPrefix = digits.startsWith("233") ? digits.slice(3) : digits;
+  return withoutPrefix.length > 9 ? withoutPrefix.slice(-9) : withoutPrefix;
+}
 
 const STEPS = [
   { label: "Company Details", icon: "building" },
@@ -97,22 +40,6 @@ const STEPS = [
   { label: "Photos", icon: "camera" },
   { label: "Review & Sign", icon: "clipboard" },
 ] as const;
-
-const BUSINESS_TYPES = [
-  "Sole Proprietorship",
-  "Partnership",
-  "Limited Liability Company",
-  "Other",
-];
-
-const REGISTERED_NATURES = [
-  "Retail",
-  "Wholesale",
-  "Distribution",
-  "Telecommunications",
-  "Financial Services",
-  "Other",
-];
 
 function StepIcon({ type }: { type: string }) {
   const props = {
@@ -222,7 +149,7 @@ function SectionIcon({ type }: { type: string }) {
   }
 }
 
-export default function NewDataRequestPageWrapper() {
+export default function NewOnboardRequestPageWrapper() {
   return (
     <Suspense
       fallback={
@@ -233,19 +160,26 @@ export default function NewDataRequestPageWrapper() {
         </main>
       }
     >
-      <NewDataRequestPage />
+      <NewOnboardRequestPage />
     </Suspense>
   );
 }
 
-function NewDataRequestPage() {
+function NewOnboardRequestPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
   const { admin } = useAdmin();
+
+  // Redirect if accessed without an edit ID (coordinators no longer create forms from scratch)
+  useEffect(() => {
+    if (!editId) {
+      router.replace("/admin/onboard-requests");
+    }
+  }, [editId, router]);
   const { notify } = useToast();
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<FormData>(INITIAL_FORM);
+  const [form, setForm] = useState<OnboardRequestFormData>(INITIAL_FORM);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -254,10 +188,12 @@ function NewDataRequestPage() {
 
   const regionOptions = useMemo(() => {
     if (!admin) return [];
-    return Object.entries(ghanaLocations).map(([code, region]) => ({
-      value: code,
-      label: region.name,
-    }));
+    return Object.entries(ghanaLocations)
+      .map(([code, region]) => ({
+        value: code,
+        label: region.name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, [admin]);
 
   // Load existing draft if editing
@@ -266,7 +202,7 @@ function NewDataRequestPage() {
     async function loadForm() {
       setLoading(true);
       try {
-        const response = await fetch(`/api/admin/data-requests/${editId}`);
+        const response = await fetch(`/api/admin/onboard-requests/${editId}`);
         if (!response.ok) throw new Error();
         const data = await response.json();
         const f = data.form;
@@ -305,7 +241,7 @@ function NewDataRequestPage() {
     loadForm();
   }, [editId]);
 
-  const updateField = useCallback((key: keyof FormData, value: unknown) => {
+  const updateField = useCallback((key: keyof OnboardRequestFormData, value: unknown) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   }, []);
 
@@ -346,7 +282,7 @@ function NewDataRequestPage() {
     }
     setUploading((prev) => ({ ...prev, photos: true }));
     try {
-      const pathname = `data-requests/photos/${Date.now()}-${file.name}`;
+      const pathname = `onboard-requests/photos/${Date.now()}-${file.name}`;
       const result = await uploadFile({ file, pathname, contentType: file.type });
       setForm((prev) => ({ ...prev, imageUrls: [...prev.imageUrls, result.url] }));
     } catch {
@@ -377,8 +313,8 @@ function NewDataRequestPage() {
       };
       const method = editId ? "PUT" : "POST";
       const url = editId
-        ? `/api/admin/data-requests/${editId}`
-        : "/api/admin/data-requests";
+        ? `/api/admin/onboard-requests/${editId}`
+        : "/api/admin/onboard-requests";
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -391,7 +327,7 @@ function NewDataRequestPage() {
       const data = await response.json();
       notify({ title: "Draft saved", message: "Form saved as draft.", kind: "success" });
       if (!editId) {
-        router.replace(`/admin/data-requests/new?id=${data.form.id}`);
+        router.replace(`/admin/onboard-requests/new?id=${data.form.id}`);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Save failed");
@@ -416,8 +352,8 @@ function NewDataRequestPage() {
       };
       const method = editId ? "PUT" : "POST";
       const saveUrl = editId
-        ? `/api/admin/data-requests/${editId}`
-        : "/api/admin/data-requests";
+        ? `/api/admin/onboard-requests/${editId}`
+        : "/api/admin/onboard-requests";
       const saveResponse = await fetch(saveUrl, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -432,7 +368,7 @@ function NewDataRequestPage() {
 
       // Then submit
       const submitResponse = await fetch(
-        `/api/admin/data-requests/${formId}/submit`,
+        `/api/admin/onboard-requests/${formId}/submit`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -450,10 +386,10 @@ function NewDataRequestPage() {
 
       notify({
         title: "Submitted",
-        message: "Data request submitted to manager for review.",
+        message: "Onboard request submitted to manager for review.",
         kind: "success",
       });
-      router.push("/admin/data-requests");
+      router.push("/admin/onboard-requests");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Submit failed");
     } finally {
@@ -476,10 +412,10 @@ function NewDataRequestPage() {
       <div className="mx-auto w-full max-w-4xl space-y-6 glass-panel p-6 page-animate">
         <div>
           <h1 className="text-2xl font-semibold">
-            {editId ? "Edit Data Request" : "New Data Request"}
+            {editId ? "Edit Onboard Request" : "New Onboard Request"}
           </h1>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            MCS Partner Data Request Form
+            MCS Partner Onboard Request Form
           </p>
         </div>
 
@@ -508,7 +444,7 @@ function NewDataRequestPage() {
             </span>
             <h2 className="text-lg font-semibold">{STEPS[step].label}</h2>
           </div>
-          <p className="text-xs uppercase tracking-[0.2em] text-gray-500 ml-12">
+          <p className="text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 ml-12">
             Step {step + 1} of {STEPS.length}
           </p>
         </div>
@@ -648,12 +584,18 @@ function NewDataRequestPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="label">Company Phone</label>
-                <input
-                  className="input"
-                  value={form.companyPhone}
-                  onChange={(e) => updateField("companyPhone", e.target.value)}
-                  placeholder="Phone number"
-                />
+                <div className="input-prefix-wrap">
+                  <span className="input-prefix">{phonePrefix}</span>
+                  <input
+                    className="input input-prefix-field"
+                    inputMode="numeric"
+                    pattern="\d{9}"
+                    maxLength={9}
+                    value={formatPhoneForDisplay(form.companyPhone)}
+                    onChange={(e) => updateField("companyPhone", formatPhoneForStorage(e.target.value))}
+                    placeholder="24xxxxxxx"
+                  />
+                </div>
               </div>
               <div className="space-y-1">
                 <label className="label">Digital Post Address</label>
@@ -694,11 +636,18 @@ function NewDataRequestPage() {
                 </div>
                 <div className="space-y-1">
                   <label className="label">Phone</label>
-                  <input
-                    className="input"
-                    value={form.authorizedSignatory.phone}
-                    onChange={(e) => updateSignatory("phone", e.target.value)}
-                  />
+                  <div className="input-prefix-wrap">
+                    <span className="input-prefix">{phonePrefix}</span>
+                    <input
+                      className="input input-prefix-field"
+                      inputMode="numeric"
+                      pattern="\d{9}"
+                      maxLength={9}
+                      value={formatPhoneForDisplay(form.authorizedSignatory.phone)}
+                      onChange={(e) => updateSignatory("phone", formatPhoneForStorage(e.target.value))}
+                      placeholder="24xxxxxxx"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <label className="label">Email</label>
@@ -744,11 +693,18 @@ function NewDataRequestPage() {
                 </div>
                 <div className="space-y-1">
                   <label className="label">Phone</label>
-                  <input
-                    className="input"
-                    value={form.contactPerson.phone}
-                    onChange={(e) => updateContact("phone", e.target.value)}
-                  />
+                  <div className="input-prefix-wrap">
+                    <span className="input-prefix">{phonePrefix}</span>
+                    <input
+                      className="input input-prefix-field"
+                      inputMode="numeric"
+                      pattern="\d{9}"
+                      maxLength={9}
+                      value={formatPhoneForDisplay(form.contactPerson.phone)}
+                      onChange={(e) => updateContact("phone", formatPhoneForStorage(e.target.value))}
+                      placeholder="24xxxxxxx"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <label className="label">Email</label>
@@ -884,11 +840,11 @@ function NewDataRequestPage() {
                       onChange={(e) => updatePep("q3Relationship", e.target.value)}
                     >
                       <option value="">Select relationship</option>
-                      <option value="Spouse">Spouse</option>
                       <option value="Child">Child</option>
+                      <option value="Close Associate">Close Associate</option>
                       <option value="Parent">Parent</option>
                       <option value="Sibling">Sibling</option>
-                      <option value="Close Associate">Close Associate</option>
+                      <option value="Spouse">Spouse</option>
                       <option value="Other">Other</option>
                     </select>
                   </div>
@@ -945,21 +901,21 @@ function NewDataRequestPage() {
             <div className="card-flat p-4 space-y-3">
               <h3 className="text-sm font-semibold">Company Details</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                <span className="text-gray-500">Business Name</span>
+                <span className="text-gray-500 dark:text-gray-400">Business Name</span>
                 <span>{form.businessName || "—"}</span>
-                <span className="text-gray-500">Region</span>
+                <span className="text-gray-500 dark:text-gray-400">Region</span>
                 <span>{ghanaLocations[form.regionCode]?.name ?? (form.regionCode || "—")}</span>
-                <span className="text-gray-500">Business Type</span>
+                <span className="text-gray-500 dark:text-gray-400">Business Type</span>
                 <span>
                   {form.businessType === "Other"
                     ? form.businessTypeOther || "Other"
                     : form.businessType || "—"}
                 </span>
-                <span className="text-gray-500">Registration No.</span>
+                <span className="text-gray-500 dark:text-gray-400">Registration No.</span>
                 <span>{form.registrationCertNo || "—"}</span>
-                <span className="text-gray-500">TIN</span>
+                <span className="text-gray-500 dark:text-gray-400">TIN</span>
                 <span>{form.tinNumber || "—"}</span>
-                <span className="text-gray-500">Company Phone</span>
+                <span className="text-gray-500 dark:text-gray-400">Company Phone</span>
                 <span>{form.companyPhone || "—"}</span>
               </div>
             </div>
@@ -967,13 +923,13 @@ function NewDataRequestPage() {
             <div className="card-flat p-4 space-y-3">
               <h3 className="text-sm font-semibold">Authorized Signatory</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                <span className="text-gray-500">Name</span>
+                <span className="text-gray-500 dark:text-gray-400">Name</span>
                 <span>{form.authorizedSignatory.name || "—"}</span>
-                <span className="text-gray-500">Designation</span>
+                <span className="text-gray-500 dark:text-gray-400">Designation</span>
                 <span>{form.authorizedSignatory.designation || "—"}</span>
-                <span className="text-gray-500">Phone</span>
+                <span className="text-gray-500 dark:text-gray-400">Phone</span>
                 <span>{form.authorizedSignatory.phone || "—"}</span>
-                <span className="text-gray-500">Email</span>
+                <span className="text-gray-500 dark:text-gray-400">Email</span>
                 <span>{form.authorizedSignatory.email || "—"}</span>
               </div>
             </div>
@@ -981,11 +937,11 @@ function NewDataRequestPage() {
             <div className="card-flat p-4 space-y-3">
               <h3 className="text-sm font-semibold">PEP Declaration</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                <span className="text-gray-500">Q1: Is PEP</span>
+                <span className="text-gray-500 dark:text-gray-400">Q1: Is PEP</span>
                 <span>{form.pepDeclaration.q1 || "—"}</span>
-                <span className="text-gray-500">Q2: Held public position</span>
+                <span className="text-gray-500 dark:text-gray-400">Q2: Held public position</span>
                 <span>{form.pepDeclaration.q2 || "—"}</span>
-                <span className="text-gray-500">Q3: Related to PEP</span>
+                <span className="text-gray-500 dark:text-gray-400">Q3: Related to PEP</span>
                 <span>{form.pepDeclaration.q3 || "—"}</span>
               </div>
             </div>

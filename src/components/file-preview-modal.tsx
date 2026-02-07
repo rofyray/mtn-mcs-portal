@@ -64,7 +64,7 @@ export default function FilePreviewModal({
         <div className="modal-header">
           <div>
             <h2 className="text-lg font-semibold">{label}</h2>
-            <p className="text-xs text-gray-600">Preview</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Preview</p>
           </div>
           <button className="modal-close" type="button" onClick={onClose} aria-label="Close preview">
             ×

@@ -46,7 +46,7 @@ const partnerLinks: NavLink[] = [
   },
   {
     href: "/partner/businesses",
-    label: "Businesses",
+    label: "Locations",
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
         <path d="M3 11h18" />
@@ -116,7 +116,7 @@ const adminLinks: AdminNavLink[] = [
   },
   {
     href: "/admin/businesses",
-    label: "Businesses",
+    label: "Locations",
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
         <path d="M3 11h18" />
@@ -138,8 +138,8 @@ const adminLinks: AdminNavLink[] = [
     ),
   },
   {
-    href: "/admin/data-requests",
-    label: "Data Requests",
+    href: "/admin/onboard-requests",
+    label: "Onboard Requests",
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
         <path d="M9 2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z" />
@@ -220,16 +220,19 @@ const NavLinks = memo(function NavLinks({ links, pathname, onLinkClick, showTool
 export default function NavShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { admin } = useAdmin();
+  const { admin, isLoading } = useAdmin();
   const adminRole = admin?.role ?? null;
+  const isAdminRoute = pathname.startsWith("/admin") && pathname !== "/admin/login";
   const hideNav =
     pathname.startsWith("/auth") ||
+    pathname.startsWith("/onboard-request") ||
     pathname === "/admin/login" ||
     pathname === "/partner/login" ||
     pathname === "/onboarding" ||
     pathname === "/admin/map-reports" ||
-    adminRole === "LEGAL" ||
-    adminRole === "SENIOR_MANAGER";
+    adminRole === "GOVERNANCE_CHECK" ||
+    adminRole === "SENIOR_MANAGER" ||
+    (isAdminRoute && isLoading);
 
   const collapsed = useSyncExternalStore(
     (callback) => {

@@ -4,9 +4,10 @@ import { z } from "zod";
 import prisma from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-guard";
 import { ghanaLocations } from "@/lib/ghana-locations";
+import { formatZodError } from "@/lib/validation";
 
 const updateRegionsSchema = z.object({
-  regionCodes: z.array(z.string()),
+  regionCodes: z.array(z.string(), { error: "Region codes are required" }),
 });
 
 export async function PUT(
@@ -44,7 +45,7 @@ export async function PUT(
   const parsed = updateRegionsSchema.safeParse(body);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
 
   const { regionCodes } = parsed.data;

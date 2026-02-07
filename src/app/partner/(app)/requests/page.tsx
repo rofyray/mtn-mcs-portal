@@ -89,7 +89,7 @@ export default function PartnerRequestsPage() {
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       setError(data.error ?? "Unable to submit training request.");
-      notify({ title: "Training request failed", message: data.error, kind: "error" });
+      notify({ title: "Training request failed", message: data.error ?? "Unable to submit training request.", kind: "error" });
       return;
     }
 
@@ -124,7 +124,7 @@ export default function PartnerRequestsPage() {
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       setError(data.error ?? "Unable to submit restock request.");
-      notify({ title: "Restock request failed", message: data.error, kind: "error" });
+      notify({ title: "Restock request failed", message: data.error ?? "Unable to submit restock request.", kind: "error" });
       return;
     }
 
@@ -148,7 +148,7 @@ export default function PartnerRequestsPage() {
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       setError(data.error ?? "Unable to send feedback.");
-      notify({ title: "Feedback failed", message: data.error, kind: "error" });
+      notify({ title: "Feedback failed", message: data.error ?? "Unable to send feedback.", kind: "error" });
       return;
     }
 
@@ -163,12 +163,12 @@ export default function PartnerRequestsPage() {
       <div className="mx-auto w-full max-w-5xl space-y-10 glass-panel p-6 page-animate">
         <div>
           <h1 className="text-2xl font-semibold">Requests & Feedback</h1>
-          <p className="text-sm text-gray-600">Send operational requests to the MTN admin team.</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Send operational requests to the MTN admin team.</p>
         </div>
 
         <section className="card space-y-4">
           <h2 className="text-lg font-semibold">Training request</h2>
-          <p className="text-sm text-gray-600">Select agents who need training.</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Select agents who need training.</p>
           {agents.length === 0 ? (
             <EmptyState
               icon={trainingEmptyIcon}
@@ -211,7 +211,7 @@ export default function PartnerRequestsPage() {
 
         <section className="card space-y-4">
           <h2 className="text-lg font-semibold">Restock request</h2>
-          <p className="text-sm text-gray-600">Request inventory for a business location.</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Request inventory for a business location.</p>
           {businesses.length === 0 ? (
             <EmptyState
               icon={

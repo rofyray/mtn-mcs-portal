@@ -56,10 +56,12 @@ export default function PartnerBusinessesPage() {
   useAutoDismiss(status, setStatus);
 
   const regionOptions = useMemo(() => {
-    return Object.values(ghanaLocations).map((region) => ({
-      value: region.code,
-      label: region.name,
-    }));
+    return Object.values(ghanaLocations)
+      .map((region) => ({
+        value: region.code,
+        label: region.name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, []);
 
   const districtOptions = useMemo(() => {
@@ -67,10 +69,12 @@ export default function PartnerBusinessesPage() {
     if (!regionCode || !ghanaLocations[regionCode]) {
       return [];
     }
-    return ghanaLocations[regionCode].districts.map((district) => ({
-      value: district.code,
-      label: district.name,
-    }));
+    return ghanaLocations[regionCode].districts
+      .map((district) => ({
+        value: district.code,
+        label: district.name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, [form.addressRegionCode]);
 
   async function loadBusinesses() {
@@ -130,19 +134,19 @@ export default function PartnerBusinessesPage() {
 
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
-      setError(data.error ?? "Unable to submit business.");
+      setError(data.error ?? "Unable to submit location.");
       notify({
         title: "Submission failed",
-        message: data.error ?? "Unable to submit business.",
+        message: data.error ?? "Unable to submit location.",
         kind: "error",
       });
       setLoading(false);
       return;
     }
 
-    setStatus("Business submitted for approval.");
+    setStatus("Location submitted for approval.");
     notify({
-      title: "Business submitted",
+      title: "Location submitted",
       message: "Your submission is pending approval.",
       kind: "success",
     });
@@ -165,13 +169,13 @@ export default function PartnerBusinessesPage() {
     <main className="min-h-screen px-6 py-10">
       <div className="mx-auto w-full max-w-5xl space-y-8 glass-panel p-6 page-animate">
         <div>
-          <h1 className="text-2xl font-semibold">Businesses</h1>
-          <p className="text-sm text-gray-600">Add additional locations for approval.</p>
+          <h1 className="text-2xl font-semibold">Locations</h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Add additional locations for approval.</p>
         </div>
 
         <div className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold">Submitted Businesses</h2>
+            <h2 className="text-lg font-semibold">Submitted Locations</h2>
             <button
               className="btn btn-primary"
               type="button"
@@ -180,14 +184,14 @@ export default function PartnerBusinessesPage() {
                 setShowForm(true);
               }}
             >
-              Add Business
+              Add Location
             </button>
           </div>
           {businesses.length === 0 ? (
             <EmptyState
               icon={businessesEmptyIcon}
-              title="No businesses submitted yet"
-              description="Submit a business location to start the approval workflow."
+              title="No locations submitted yet"
+              description="Submit a location to start the approval workflow."
             />
           ) : (
             <div className="grid gap-3 md:grid-cols-2 stagger">
@@ -207,7 +211,7 @@ export default function PartnerBusinessesPage() {
                     {business.status}
                   </span>
                   <p className="text-sm font-medium">{business.businessName}</p>
-                  <p className="text-xs text-gray-600">{business.city}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">{business.city}</p>
                 </div>
               ))}
             </div>
@@ -218,7 +222,7 @@ export default function PartnerBusinessesPage() {
         <div className="modal-backdrop">
           <div className="modal-card">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold">Add Business</h2>
+              <h2 className="text-lg font-semibold">Add Location</h2>
               <button className="btn btn-ghost" type="button" onClick={() => setShowForm(false)}>
                 Close
               </button>
@@ -227,12 +231,12 @@ export default function PartnerBusinessesPage() {
               <div className="space-y-1">
                 <label className="label">Business Name</label>
                 <input
-                  className="input bg-gray-100 cursor-not-allowed"
+                  className="input bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
                   value={form.businessName}
                   readOnly
                   disabled
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   This is your registered business name from onboarding.
                 </p>
               </div>
@@ -392,7 +396,7 @@ export default function PartnerBusinessesPage() {
 
               <div className="md:col-span-2 flex flex-wrap gap-3">
                 <button className="btn btn-primary" type="submit" disabled={loading}>
-                  {loading ? "Submitting..." : "Submit business"}
+                  {loading ? "Submitting..." : "Submit location"}
                 </button>
                 {error ? <p className="form-message form-message-error">{error}</p> : null}
                 {status ? <p className="form-message form-message-success">{status}</p> : null}

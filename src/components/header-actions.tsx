@@ -12,12 +12,12 @@ import { useNotificationCount } from "@/hooks/use-notification-count";
 export default function HeaderActions() {
   const pathname = usePathname();
   const { status } = useSession();
-  const { admin } = useAdmin();
+  const { admin, isLoading } = useAdmin();
   const adminRole = admin?.role ?? null;
   const isPartnerRoute = pathname.startsWith("/partner") || pathname.startsWith("/onboarding");
   const isAdminRoute = pathname.startsWith("/admin");
 
-  const noSidebar = adminRole === "LEGAL" || adminRole === "SENIOR_MANAGER";
+  const noSidebar = adminRole === "GOVERNANCE_CHECK" || adminRole === "SENIOR_MANAGER" || isLoading;
   const showMobileNavToggle =
     (isPartnerRoute &&
       status === "authenticated" &&

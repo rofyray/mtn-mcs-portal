@@ -4,10 +4,11 @@ import { z } from "zod";
 import prisma from "@/lib/db";
 import { broadcastAdminNotification } from "@/lib/notifications";
 import { getApprovedPartnerProfile } from "@/lib/partner";
+import { formatZodError } from "@/lib/validation";
 
 const feedbackSchema = z.object({
-  title: z.string().trim().min(1),
-  message: z.string().trim().min(1),
+  title: z.string().trim().min(1, "Title is required"),
+  message: z.string().trim().min(1, "Message is required"),
 });
 
 export async function POST(request: Request) {
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
   const body = await request.json();
   const parsed = feedbackSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
 
   const feedback = await prisma.feedback.create({

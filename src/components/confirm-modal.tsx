@@ -80,7 +80,7 @@ export default function ConfirmModal({
         <div className="modal-header">
           <div>
             <h2 className="text-lg font-semibold">{title}</h2>
-            {description ? <p className="text-sm text-gray-600">{description}</p> : null}
+            {description ? <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p> : null}
           </div>
           <button className="modal-close" type="button" onClick={onCancel} aria-label="Close confirmation">
             ×

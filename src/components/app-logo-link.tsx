@@ -5,11 +5,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-function resolveHomeHref(pathname: string) {
+import { useAdminRole } from "@/contexts/admin-context";
+
+function resolveHomeHref(pathname: string, adminRole?: string) {
   if (pathname.startsWith("/admin")) {
     if (pathname === "/admin/login") {
       return "/admin/login";
     }
+    if (adminRole === "SENIOR_MANAGER") return "/admin/map-reports";
+    if (adminRole === "GOVERNANCE_CHECK") return "/admin/onboard-requests";
     return "/admin";
   }
   if (pathname.startsWith("/partner")) {
@@ -27,7 +31,8 @@ function resolveHomeHref(pathname: string) {
 export default function AppLogoLink() {
   const pathname = usePathname();
   const { status } = useSession();
-  const homeHref = resolveHomeHref(pathname);
+  const { role: adminRole } = useAdminRole();
+  const homeHref = resolveHomeHref(pathname, adminRole ?? undefined);
   const isPartnerRoute = pathname.startsWith("/partner") || pathname.startsWith("/onboarding");
   const isAdminRoute = pathname.startsWith("/admin");
   const showCompactLogo =

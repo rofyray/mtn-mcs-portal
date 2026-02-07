@@ -6,12 +6,13 @@ import { getAdminSession } from "@/lib/admin-session";
 import { logAuditEvent } from "@/lib/audit";
 import { NotificationCategory } from "@prisma/client";
 import { sendAdminNotification, notifyAdminsByRole } from "@/lib/notifications";
+import { formatZodError } from "@/lib/validation";
 
 const submitSchema = z.object({
   comments: z.string().optional(),
   signatureUrl: z.string().optional(),
   signatureDate: z.string().optional(),
-  legalScore: z.number().min(1).max(100).optional(),
+  governanceScore: z.number().min(1).max(100).optional(),
 });
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const admin = session.admin;
   const { id } = await context.params;
 
-  const form = await prisma.dataRequestForm.findUnique({
+  const form = await prisma.onboardRequestForm.findUnique({
     where: { id },
     include: {
       createdByAdmin: { select: { id: true, name: true } },
@@ -43,13 +44,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const parsed = submitSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Validation failed", details: parsed.error.flatten() },
+      { error: formatZodError(parsed.error), details: parsed.error.flatten() },
       { status: 400 }
     );
   }
 
-  const { comments, signatureUrl, signatureDate, legalScore } = parsed.data;
-  const notificationTitle = `Data Request: ${form.businessName}`;
+  const { comments, signatureUrl, signatureDate, governanceScore } = parsed.data;
+  const notificationTitle = `Onboard Request: ${form.businessName}`;
 
   let newStatus: string;
   let auditAction: string;
@@ -57,6 +58,26 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   // State machine
   switch (form.status) {
+    case "PENDING_COORDINATOR": {
+      // COORDINATOR submits public form to MANAGER
+      if (admin.role !== "COORDINATOR") {
+        return NextResponse.json(
+          { error: "Only coordinators can submit at this stage" },
+          { status: 403 }
+        );
+      }
+      const coordRegions = admin.regions.map((r) => r.regionCode);
+      if (!coordRegions.includes(form.regionCode)) {
+        return NextResponse.json(
+          { error: "This form is not in your assigned region" },
+          { status: 403 }
+        );
+      }
+      newStatus = "PENDING_MANAGER";
+      auditAction = "ONBOARD_REQUEST_SUBMITTED_TO_MANAGER";
+      approvalAction = "SUBMITTED";
+      break;
+    }
     case "DRAFT": {
       // COORDINATOR submits to MANAGER
       if (admin.role !== "COORDINATOR" || form.createdByAdminId !== admin.id) {
@@ -66,24 +87,24 @@ export async function POST(request: NextRequest, context: RouteContext) {
         );
       }
       newStatus = "PENDING_MANAGER";
-      auditAction = "DATA_REQUEST_SUBMITTED_TO_MANAGER";
+      auditAction = "ONBOARD_REQUEST_SUBMITTED_TO_MANAGER";
       approvalAction = "SUBMITTED";
       break;
     }
     case "PENDING_MANAGER": {
-      if (admin.role !== "MANAGER" && admin.role !== "FULL") {
+      if (admin.role !== "MANAGER") {
         return NextResponse.json(
           { error: "Only managers can approve at this stage" },
           { status: 403 }
         );
       }
       newStatus = "PENDING_SENIOR_MANAGER";
-      auditAction = "DATA_REQUEST_SUBMITTED_TO_SENIOR_MANAGER";
+      auditAction = "ONBOARD_REQUEST_SUBMITTED_TO_SENIOR_MANAGER";
       approvalAction = "APPROVED";
       break;
     }
     case "PENDING_SENIOR_MANAGER": {
-      if (admin.role !== "SENIOR_MANAGER" && admin.role !== "FULL") {
+      if (admin.role !== "SENIOR_MANAGER") {
         return NextResponse.json(
           { error: "Only senior managers can approve at this stage" },
           { status: 403 }
@@ -99,26 +120,26 @@ export async function POST(request: NextRequest, context: RouteContext) {
           );
         }
       }
-      newStatus = "PENDING_LEGAL";
-      auditAction = "DATA_REQUEST_SUBMITTED_TO_LEGAL";
+      newStatus = "PENDING_GOVERNANCE_CHECK";
+      auditAction = "ONBOARD_REQUEST_SUBMITTED_TO_GOVERNANCE_CHECK";
       approvalAction = "APPROVED";
       break;
     }
-    case "PENDING_LEGAL": {
-      if (admin.role !== "LEGAL" && admin.role !== "FULL") {
+    case "PENDING_GOVERNANCE_CHECK": {
+      if (admin.role !== "GOVERNANCE_CHECK") {
         return NextResponse.json(
-          { error: "Only legal can approve at this stage" },
+          { error: "Only governance check admins can approve at this stage" },
           { status: 403 }
         );
       }
-      if (legalScore === undefined) {
+      if (governanceScore === undefined) {
         return NextResponse.json(
-          { error: "Legal score is required for final approval" },
+          { error: "Governance score is required for final approval" },
           { status: 400 }
         );
       }
       newStatus = "APPROVED";
-      auditAction = "DATA_REQUEST_APPROVED";
+      auditAction = "ONBOARD_REQUEST_APPROVED";
       approvalAction = "APPROVED";
       break;
     }
@@ -130,21 +151,28 @@ export async function POST(request: NextRequest, context: RouteContext) {
   }
 
   // Update form status and create approval record
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const formUpdateData: any = { status: newStatus as never };
+  // Claim the form when transitioning from PENDING_COORDINATOR
+  if (form.status === "PENDING_COORDINATOR" && !form.createdByAdminId) {
+    formUpdateData.createdByAdminId = admin.id;
+  }
+
   const [updatedForm] = await Promise.all([
-    prisma.dataRequestForm.update({
+    prisma.onboardRequestForm.update({
       where: { id },
-      data: { status: newStatus as never },
+      data: formUpdateData,
     }),
-    prisma.dataRequestApproval.create({
+    prisma.onboardRequestApproval.create({
       data: {
-        dataRequestFormId: id,
+        onboardRequestFormId: id,
         adminId: admin.id,
         role: admin.role,
         action: approvalAction,
         comments: comments ?? null,
         signatureUrl: signatureUrl ?? null,
         signatureDate: signatureDate ? new Date(signatureDate) : null,
-        legalScore: legalScore ?? null,
+        governanceScore: governanceScore ?? null,
       },
     }),
   ]);
@@ -153,13 +181,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
   await logAuditEvent({
     adminId: admin.id,
     action: auditAction,
-    targetType: "DataRequestForm",
+    targetType: "OnboardRequestForm",
     targetId: id,
     metadata: {
       businessName: form.businessName,
       from: form.status,
       to: newStatus,
-      legalScore: legalScore ?? undefined,
+      governanceScore: governanceScore ?? undefined,
     },
   });
 
@@ -172,32 +200,38 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   switch (newStatus) {
     case "PENDING_MANAGER":
-      msg.message = `A new data request for "${form.businessName}" has been submitted for your review.`;
+      msg.message = `A new onboard request for "${form.businessName}" has been submitted for your review.`;
       await notifyAdminsByRole(msg, ["MANAGER"]);
       break;
     case "PENDING_SENIOR_MANAGER":
-      msg.message = `Data request for "${form.businessName}" has been approved by a manager and needs your review.`;
+      msg.message = `Onboard request for "${form.businessName}" has been approved by a manager and needs your review.`;
       await notifyAdminsByRole(msg, ["SENIOR_MANAGER"], form.regionCode);
-      await sendAdminNotification(form.createdByAdminId, {
-        ...msg,
-        message: `Your data request for "${form.businessName}" has been approved by a manager.`,
-        category: "SUCCESS",
-      });
+      if (form.createdByAdminId) {
+        await sendAdminNotification(form.createdByAdminId, {
+          ...msg,
+          message: `Your onboard request for "${form.businessName}" has been approved by a manager.`,
+          category: "SUCCESS",
+        });
+      }
       break;
-    case "PENDING_LEGAL":
-      msg.message = `Data request for "${form.businessName}" has been approved by senior management and needs legal review.`;
-      await notifyAdminsByRole(msg, ["LEGAL"]);
-      await sendAdminNotification(form.createdByAdminId, {
-        ...msg,
-        message: `Your data request for "${form.businessName}" has been approved by senior management.`,
-        category: "SUCCESS",
-      });
+    case "PENDING_GOVERNANCE_CHECK":
+      msg.message = `Onboard request for "${form.businessName}" has been approved by senior management and needs governance review.`;
+      await notifyAdminsByRole(msg, ["GOVERNANCE_CHECK"]);
+      if (form.createdByAdminId) {
+        await sendAdminNotification(form.createdByAdminId, {
+          ...msg,
+          message: `Your onboard request for "${form.businessName}" has been approved by senior management.`,
+          category: "SUCCESS",
+        });
+      }
       break;
     case "APPROVED":
-      msg.message = `Data request for "${form.businessName}" has been fully approved by legal with a score of ${legalScore}%.`;
+      msg.message = `Onboard request for "${form.businessName}" has been fully approved after governance check with a score of ${governanceScore}%.`;
       msg.category = "SUCCESS";
       // Notify the coordinator
-      await sendAdminNotification(form.createdByAdminId, msg);
+      if (form.createdByAdminId) {
+        await sendAdminNotification(form.createdByAdminId, msg);
+      }
       // Notify all previous approvers
       for (const approval of form.approvals) {
         if (approval.adminId !== admin.id && approval.adminId !== form.createdByAdminId) {

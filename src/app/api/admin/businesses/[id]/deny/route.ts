@@ -7,9 +7,10 @@ import { logAuditEvent } from "@/lib/audit";
 import { sendEmail } from "@/lib/email";
 import { buildEmailTemplate } from "@/lib/email-template";
 import { requiredEnv } from "@/lib/env";
+import { formatZodError } from "@/lib/validation";
 
 const denialSchema = z.object({
-  reason: z.string().trim().min(1),
+  reason: z.string().trim().min(1, "Denial reason is required"),
 });
 
 export async function POST(
@@ -26,7 +27,7 @@ export async function POST(
   const body = await request.json();
   const parsed = denialSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
 
   const updated = await prisma.business.update({

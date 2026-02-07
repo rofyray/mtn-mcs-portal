@@ -7,6 +7,9 @@ import dynamic from "next/dynamic";
 import { useAdmin, useAdminRole } from "@/contexts/admin-context";
 import { useToast } from "@/components/toast";
 import { ghanaLocations } from "@/lib/ghana-locations";
+import { uploadFile } from "@/lib/storage/upload-client";
+import UploadField from "@/components/upload-field";
+import { IMAGE_ACCEPT } from "@/lib/storage/accepts";
 
 const SignaturePad = dynamic(() => import("@/components/signature-pad"));
 const ConfirmModal = dynamic(() => import("@/components/confirm-modal"));
@@ -19,7 +22,7 @@ type Approval = {
   comments: string | null;
   signatureUrl: string | null;
   signatureDate: string | null;
-  legalScore: number | null;
+  governanceScore: number | null;
   createdAt: string;
   admin: { id: string; name: string; role: string };
 };
@@ -27,7 +30,7 @@ type Approval = {
 type FormDetail = {
   id: string;
   status: string;
-  createdByAdminId: string;
+  createdByAdminId: string | null;
   regionCode: string;
   businessName: string;
   dateOfIncorporation: string | null;
@@ -47,7 +50,10 @@ type FormDetail = {
   imageUrls: string[];
   completionDate: string | null;
   createdAt: string;
-  createdByAdmin: { id: string; name: string; role: string };
+  createdByAdmin: { id: string; name: string; role: string } | null;
+  submitterName: string | null;
+  submitterEmail: string | null;
+  submitterPhone: string | null;
   approvals: Approval[];
 };
 
@@ -56,7 +62,14 @@ const ROLE_LABELS: Record<string, string> = {
   MANAGER: "Manager",
   COORDINATOR: "Coordinator",
   SENIOR_MANAGER: "Senior Manager",
-  LEGAL: "Legal",
+  GOVERNANCE_CHECK: "Governance",
+};
+
+const ROLE_BADGE_CLASSES: Record<string, string> = {
+  COORDINATOR: "badge-yellow-light",
+  MANAGER: "badge-primary",
+  SENIOR_MANAGER: "badge-blue-light",
+  GOVERNANCE_CHECK: "badge-blue",
 };
 
 function formatDate(dateStr: string | null) {
@@ -76,9 +89,10 @@ function getStatusClass(status: string) {
   switch (status) {
     case "DRAFT":
       return "dr-status dr-status-draft";
+    case "PENDING_COORDINATOR":
     case "PENDING_MANAGER":
     case "PENDING_SENIOR_MANAGER":
-    case "PENDING_LEGAL":
+    case "PENDING_GOVERNANCE_CHECK":
       return "dr-status dr-status-pending";
     case "APPROVED":
       return "dr-status dr-status-approved";
@@ -89,7 +103,7 @@ function getStatusClass(status: string) {
   }
 }
 
-export default function DataRequestDetailPage() {
+export default function OnboardRequestDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { admin } = useAdmin();
@@ -104,7 +118,14 @@ export default function DataRequestDetailPage() {
   const [comments, setComments] = useState("");
   const [signatureUrl, setSignatureUrl] = useState("");
   const [signatureDate, setSignatureDate] = useState("");
-  const [legalScore, setLegalScore] = useState("");
+  const [governanceScore, setGovernanceScore] = useState("");
+
+  // Coordinator review state
+  const [coordImageUrls, setCoordImageUrls] = useState<string[]>([]);
+  const [coordComments, setCoordComments] = useState("");
+  const [coordCompletionDate, setCoordCompletionDate] = useState("");
+  const [coordSignatureUrl, setCoordSignatureUrl] = useState("");
+  const [coordUploading, setCoordUploading] = useState(false);
 
   // Confirm modal
   const [confirmAction, setConfirmAction] = useState<"approve" | "deny" | null>(null);
@@ -112,7 +133,7 @@ export default function DataRequestDetailPage() {
   const fetchForm = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/data-requests/${params.id}`);
+      const response = await fetch(`/api/admin/onboard-requests/${params.id}`);
       if (!response.ok) throw new Error();
       const data = await response.json();
       setForm(data.form);
@@ -131,12 +152,9 @@ export default function DataRequestDetailPage() {
   const canAct =
     form &&
     admin &&
-    ((form.status === "PENDING_MANAGER" &&
-      (admin.role === "MANAGER" || admin.role === "FULL")) ||
-      (form.status === "PENDING_SENIOR_MANAGER" &&
-        (admin.role === "SENIOR_MANAGER" || admin.role === "FULL")) ||
-      (form.status === "PENDING_LEGAL" &&
-        (admin.role === "LEGAL" || admin.role === "FULL")));
+    ((form.status === "PENDING_MANAGER" && admin.role === "MANAGER") ||
+      (form.status === "PENDING_SENIOR_MANAGER" && admin.role === "SENIOR_MANAGER") ||
+      (form.status === "PENDING_GOVERNANCE_CHECK" && admin.role === "GOVERNANCE_CHECK"));
 
   const canEditDenied =
     form &&
@@ -144,7 +162,14 @@ export default function DataRequestDetailPage() {
     form.status === "DENIED" &&
     form.createdByAdminId === admin?.id;
 
-  const isLegalStage = form?.status === "PENDING_LEGAL";
+  const canCoordinatorAct =
+    form &&
+    admin &&
+    form.status === "PENDING_COORDINATOR" &&
+    admin.role === "COORDINATOR" &&
+    admin.regions.some((r: { regionCode: string }) => r.regionCode === form.regionCode);
+
+  const isGovernanceStage = form?.status === "PENDING_GOVERNANCE_CHECK";
 
   async function handleApprove() {
     if (!form) return;
@@ -155,18 +180,18 @@ export default function DataRequestDetailPage() {
         signatureUrl: signatureUrl || undefined,
         signatureDate: signatureDate || new Date().toISOString(),
       };
-      if (isLegalStage) {
-        const score = Number(legalScore);
+      if (isGovernanceStage) {
+        const score = Number(governanceScore);
         if (!score || score < 1 || score > 100) {
-          notify({ title: "Invalid score", message: "Legal score must be 1-100.", kind: "error" });
+          notify({ title: "Invalid score", message: "Governance score must be 1-100.", kind: "error" });
           setActionLoading(false);
           setConfirmAction(null);
           return;
         }
-        body.legalScore = score;
+        body.governanceScore = score;
       }
 
-      const response = await fetch(`/api/admin/data-requests/${form.id}/submit`, {
+      const response = await fetch(`/api/admin/onboard-requests/${form.id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -179,9 +204,9 @@ export default function DataRequestDetailPage() {
 
       notify({
         title: "Approved",
-        message: isLegalStage
-          ? "Data request has been fully approved."
-          : "Data request forwarded to next stage.",
+        message: isGovernanceStage
+          ? "Onboard request has been fully approved."
+          : "Onboard request forwarded to next stage.",
         kind: "success",
       });
       fetchForm();
@@ -210,7 +235,7 @@ export default function DataRequestDetailPage() {
     }
     setActionLoading(true);
     try {
-      const response = await fetch(`/api/admin/data-requests/${form.id}/deny`, {
+      const response = await fetch(`/api/admin/onboard-requests/${form.id}/deny`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -224,7 +249,7 @@ export default function DataRequestDetailPage() {
         throw new Error(data.error ?? "Denial failed");
       }
 
-      notify({ title: "Denied", message: "Data request has been denied.", kind: "warning" });
+      notify({ title: "Denied", message: "Onboard request has been denied.", kind: "warning" });
       fetchForm();
     } catch (err) {
       notify({
@@ -252,7 +277,7 @@ export default function DataRequestDetailPage() {
     return (
       <main className="min-h-screen px-6 py-10">
         <div className="mx-auto w-full max-w-4xl glass-panel p-6 page-animate">
-          <p className="text-sm text-red-500">Data request not found.</p>
+          <p className="text-sm text-red-500">Onboard request not found.</p>
         </div>
       </main>
     );
@@ -266,7 +291,12 @@ export default function DataRequestDetailPage() {
           <h1 className="text-2xl font-semibold">{form.businessName}</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             {ghanaLocations[form.regionCode]?.name ?? form.regionCode} &middot;{" "}
-            Created by {form.createdByAdmin.name} &middot; {formatDate(form.createdAt)}
+            {form.createdByAdmin
+              ? `Created by ${form.createdByAdmin.name}`
+              : form.submitterName
+              ? `Submitted by ${form.submitterName}`
+              : "Public submission"}{" "}
+            &middot; {formatDate(form.createdAt)}
           </p>
         </div>
         <span className={getStatusClass(form.status)}>
@@ -278,41 +308,64 @@ export default function DataRequestDetailPage() {
         <button
           type="button"
           className="btn btn-primary text-sm"
-          onClick={() => router.push(`/admin/data-requests/new?id=${form.id}`)}
+          onClick={() => router.push(`/admin/onboard-requests/new?id=${form.id}`)}
         >
           Edit &amp; Resubmit
         </button>
+      )}
+
+      {/* Submitter Information */}
+      {form.submitterName && (
+        <section className="card-flat p-4 space-y-3">
+          <h3 className="text-sm font-semibold">Submitter Information</h3>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+            <span className="text-gray-500 dark:text-gray-400">Name</span>
+            <span>{form.submitterName}</span>
+            {form.submitterPhone && (
+              <>
+                <span className="text-gray-500 dark:text-gray-400">Phone</span>
+                <span>{form.submitterPhone}</span>
+              </>
+            )}
+            {form.submitterEmail && (
+              <>
+                <span className="text-gray-500 dark:text-gray-400">Email</span>
+                <span>{form.submitterEmail}</span>
+              </>
+            )}
+          </div>
+        </section>
       )}
 
       {/* Company Details */}
       <section className="card-flat p-4 space-y-3">
         <h3 className="text-sm font-semibold">Company Details</h3>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-          <span className="text-gray-500">Business Name</span>
+          <span className="text-gray-500 dark:text-gray-400">Business Name</span>
           <span>{form.businessName}</span>
-          <span className="text-gray-500">Date of Incorporation</span>
+          <span className="text-gray-500 dark:text-gray-400">Date of Incorporation</span>
           <span>{formatDate(form.dateOfIncorporation)}</span>
-          <span className="text-gray-500">Business Type</span>
+          <span className="text-gray-500 dark:text-gray-400">Business Type</span>
           <span>
             {form.businessType === "Other"
               ? form.businessTypeOther ?? "Other"
               : form.businessType ?? "—"}
           </span>
-          <span className="text-gray-500">Registered Nature</span>
+          <span className="text-gray-500 dark:text-gray-400">Registered Nature</span>
           <span>{form.registeredNature ?? "—"}</span>
-          <span className="text-gray-500">Registration No.</span>
+          <span className="text-gray-500 dark:text-gray-400">Registration No.</span>
           <span>{form.registrationCertNo ?? "—"}</span>
-          <span className="text-gray-500">Main Office</span>
+          <span className="text-gray-500 dark:text-gray-400">Main Office</span>
           <span>{form.mainOfficeLocation ?? "—"}</span>
-          <span className="text-gray-500">TIN</span>
+          <span className="text-gray-500 dark:text-gray-400">TIN</span>
           <span>{form.tinNumber ?? "—"}</span>
-          <span className="text-gray-500">Postal Address</span>
+          <span className="text-gray-500 dark:text-gray-400">Postal Address</span>
           <span>{form.postalAddress ?? "—"}</span>
-          <span className="text-gray-500">Physical Address</span>
+          <span className="text-gray-500 dark:text-gray-400">Physical Address</span>
           <span>{form.physicalAddress ?? "—"}</span>
-          <span className="text-gray-500">Phone</span>
+          <span className="text-gray-500 dark:text-gray-400">Phone</span>
           <span>{form.companyPhone ?? "—"}</span>
-          <span className="text-gray-500">Digital Post Address</span>
+          <span className="text-gray-500 dark:text-gray-400">Digital Post Address</span>
           <span>{form.digitalPostAddress ?? "—"}</span>
         </div>
       </section>
@@ -322,15 +375,15 @@ export default function DataRequestDetailPage() {
         <section className="card-flat p-4 space-y-3">
           <h3 className="text-sm font-semibold">Authorized Signatory</h3>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            <span className="text-gray-500">Name</span>
+            <span className="text-gray-500 dark:text-gray-400">Name</span>
             <span>{form.authorizedSignatory.name || "—"}</span>
-            <span className="text-gray-500">Designation</span>
+            <span className="text-gray-500 dark:text-gray-400">Designation</span>
             <span>{form.authorizedSignatory.designation || "—"}</span>
-            <span className="text-gray-500">Phone</span>
+            <span className="text-gray-500 dark:text-gray-400">Phone</span>
             <span>{form.authorizedSignatory.phone || "—"}</span>
-            <span className="text-gray-500">Email</span>
+            <span className="text-gray-500 dark:text-gray-400">Email</span>
             <span>{form.authorizedSignatory.email || "—"}</span>
-            <span className="text-gray-500">Date</span>
+            <span className="text-gray-500 dark:text-gray-400">Date</span>
             <span>{form.authorizedSignatory.date || "—"}</span>
           </div>
         </section>
@@ -341,15 +394,15 @@ export default function DataRequestDetailPage() {
         <section className="card-flat p-4 space-y-3">
           <h3 className="text-sm font-semibold">Contact Person</h3>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            <span className="text-gray-500">Name</span>
+            <span className="text-gray-500 dark:text-gray-400">Name</span>
             <span>{form.contactPerson.name || "—"}</span>
-            <span className="text-gray-500">Designation</span>
+            <span className="text-gray-500 dark:text-gray-400">Designation</span>
             <span>{form.contactPerson.designation || "—"}</span>
-            <span className="text-gray-500">Phone</span>
+            <span className="text-gray-500 dark:text-gray-400">Phone</span>
             <span>{form.contactPerson.phone || "—"}</span>
-            <span className="text-gray-500">Email</span>
+            <span className="text-gray-500 dark:text-gray-400">Email</span>
             <span>{form.contactPerson.email || "—"}</span>
-            <span className="text-gray-500">Date</span>
+            <span className="text-gray-500 dark:text-gray-400">Date</span>
             <span>{form.contactPerson.date || "—"}</span>
           </div>
         </section>
@@ -360,27 +413,27 @@ export default function DataRequestDetailPage() {
         <section className="card-flat p-4 space-y-3">
           <h3 className="text-sm font-semibold">PEP Declaration</h3>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            <span className="text-gray-500">Q1: Is PEP</span>
+            <span className="text-gray-500 dark:text-gray-400">Q1: Is PEP</span>
             <span>{form.pepDeclaration.q1 || "—"}</span>
-            <span className="text-gray-500">Q2: Held public position</span>
+            <span className="text-gray-500 dark:text-gray-400">Q2: Held public position</span>
             <span>{form.pepDeclaration.q2 || "—"}</span>
             {form.pepDeclaration.q2 === "Yes" && (
               <>
-                <span className="text-gray-500">Q2: Timeframe</span>
+                <span className="text-gray-500 dark:text-gray-400">Q2: Timeframe</span>
                 <span>{form.pepDeclaration.q2Timeframe || "—"}</span>
               </>
             )}
-            <span className="text-gray-500">Q3: Related to PEP</span>
+            <span className="text-gray-500 dark:text-gray-400">Q3: Related to PEP</span>
             <span>{form.pepDeclaration.q3 || "—"}</span>
             {form.pepDeclaration.q3 === "Yes" && (
               <>
-                <span className="text-gray-500">Q3: PEP Name</span>
+                <span className="text-gray-500 dark:text-gray-400">Q3: PEP Name</span>
                 <span>{form.pepDeclaration.q3Name || "—"}</span>
-                <span className="text-gray-500">Q3: Position</span>
+                <span className="text-gray-500 dark:text-gray-400">Q3: Position</span>
                 <span>{form.pepDeclaration.q3Position || "—"}</span>
-                <span className="text-gray-500">Q3: Year</span>
+                <span className="text-gray-500 dark:text-gray-400">Q3: Year</span>
                 <span>{form.pepDeclaration.q3Year || "—"}</span>
-                <span className="text-gray-500">Q3: Relationship</span>
+                <span className="text-gray-500 dark:text-gray-400">Q3: Relationship</span>
                 <span>{form.pepDeclaration.q3Relationship || "—"}</span>
               </>
             )}
@@ -416,9 +469,171 @@ export default function DataRequestDetailPage() {
       {form.completionDate && (
         <section className="card-flat p-4">
           <div className="text-sm">
-            <span className="text-gray-500">Completion Date: </span>
+            <span className="text-gray-500 dark:text-gray-400">Completion Date: </span>
             <span>{formatDate(form.completionDate)}</span>
           </div>
+        </section>
+      )}
+
+      {/* Coordinator Review Panel */}
+      {canCoordinatorAct && (
+        <section className="card-flat p-4 space-y-4 border-2 border-[var(--momo-blue)]">
+          <h3 className="text-sm font-semibold">Coordinator Review</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Upload photos, add comments, and sign before submitting to the manager.
+          </p>
+
+          {/* Image upload */}
+          <div className="space-y-3">
+            <label className="label">Business Photos (up to 5)</label>
+            {coordImageUrls.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {coordImageUrls.map((url, i) => (
+                  <div key={i} className="relative group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={url}
+                      alt={`Photo ${i + 1}`}
+                      className="w-full h-32 object-cover rounded-lg border border-[var(--border)]"
+                    />
+                    <button
+                      type="button"
+                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() =>
+                        setCoordImageUrls((prev) => prev.filter((_, idx) => idx !== i))
+                      }
+                    >
+                      x
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {coordImageUrls.length < 5 && (
+              <UploadField
+                label="Business Photo"
+                accept={IMAGE_ACCEPT}
+                uploading={coordUploading}
+                onSelect={async (file: File) => {
+                  setCoordUploading(true);
+                  try {
+                    const pathname = `onboard-requests/photos/${Date.now()}-${file.name}`;
+                    const result = await uploadFile({
+                      file,
+                      pathname,
+                      contentType: file.type,
+                    });
+                    setCoordImageUrls((prev) => [...prev, result.url]);
+                  } catch {
+                    notify({
+                      title: "Upload failed",
+                      message: "Failed to upload image.",
+                      kind: "error",
+                    });
+                  } finally {
+                    setCoordUploading(false);
+                  }
+                }}
+                helperText={`${coordImageUrls.length}/5 photos uploaded`}
+              />
+            )}
+          </div>
+
+          <div className="space-y-1">
+            <label className="label">Comments</label>
+            <textarea
+              className="input"
+              rows={3}
+              value={coordComments}
+              onChange={(e) => setCoordComments(e.target.value)}
+              placeholder="Add your comments..."
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="label">Completion Date</label>
+            <input
+              className="input"
+              type="date"
+              value={coordCompletionDate}
+              onChange={(e) => setCoordCompletionDate(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="label">Signature</label>
+            <SignaturePad
+              existingSignatureUrl={coordSignatureUrl || undefined}
+              onSignatureReady={setCoordSignatureUrl}
+              onClear={() => setCoordSignatureUrl("")}
+              disabled={actionLoading}
+            />
+          </div>
+
+          <button
+            type="button"
+            className="btn btn-primary text-sm"
+            onClick={async () => {
+              setActionLoading(true);
+              try {
+                // Save images/completionDate to the form first
+                const saveResponse = await fetch(
+                  `/api/admin/onboard-requests/${form.id}`,
+                  {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      imageUrls: coordImageUrls,
+                      completionDate: coordCompletionDate || undefined,
+                    }),
+                  }
+                );
+                if (!saveResponse.ok) {
+                  const data = await saveResponse.json().catch(() => ({}));
+                  throw new Error(data.error ?? "Save failed");
+                }
+
+                // Then submit to manager
+                const submitResponse = await fetch(
+                  `/api/admin/onboard-requests/${form.id}/submit`,
+                  {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      comments: coordComments || undefined,
+                      signatureUrl: coordSignatureUrl || undefined,
+                      signatureDate:
+                        coordCompletionDate || new Date().toISOString(),
+                    }),
+                  }
+                );
+                if (!submitResponse.ok) {
+                  const data = await submitResponse.json().catch(() => ({}));
+                  throw new Error(data.error ?? "Submit failed");
+                }
+
+                notify({
+                  title: "Submitted",
+                  message:
+                    "Onboard request submitted to manager for review.",
+                  kind: "success",
+                });
+                fetchForm();
+              } catch (err) {
+                notify({
+                  title: "Error",
+                  message:
+                    err instanceof Error ? err.message : "Action failed",
+                  kind: "error",
+                });
+              } finally {
+                setActionLoading(false);
+              }
+            }}
+            disabled={actionLoading}
+          >
+            {actionLoading ? "Submitting..." : "Submit to Manager"}
+          </button>
         </section>
       )}
 
@@ -450,7 +665,7 @@ export default function DataRequestDetailPage() {
                 </div>
                 <div className="approval-step-header">
                   <span className="font-medium text-sm">{approval.admin.name}</span>
-                  <span className="badge badge-muted text-xs">
+                  <span className={`badge ${ROLE_BADGE_CLASSES[approval.role] ?? "badge-muted"} text-xs`}>
                     {ROLE_LABELS[approval.role] ?? approval.role}
                   </span>
                   <span
@@ -466,10 +681,10 @@ export default function DataRequestDetailPage() {
                   </span>
                 </div>
                 <p className="approval-step-meta">{formatDate(approval.createdAt)}</p>
-                {approval.legalScore !== null && (
+                {approval.governanceScore !== null && (
                   <p className="text-xs mt-1">
-                    <span className="text-gray-500">Legal Score: </span>
-                    <span className="font-semibold">{approval.legalScore}%</span>
+                    <span className="text-gray-500 dark:text-gray-400">Governance Score: </span>
+                    <span className="font-semibold">{approval.governanceScore}%</span>
                   </p>
                 )}
                 {approval.comments && (
@@ -503,16 +718,16 @@ export default function DataRequestDetailPage() {
             />
           </div>
 
-          {isLegalStage && (
+          {isGovernanceStage && (
             <div className="space-y-1">
-              <label className="label">Legal Score (1-100%)</label>
+              <label className="label">Governance Score (1-100%)</label>
               <input
                 className="input"
                 type="number"
                 min={1}
                 max={100}
-                value={legalScore}
-                onChange={(e) => setLegalScore(e.target.value)}
+                value={governanceScore}
+                onChange={(e) => setGovernanceScore(e.target.value)}
                 placeholder="Enter score percentage"
               />
             </div>
@@ -545,7 +760,7 @@ export default function DataRequestDetailPage() {
               onClick={() => setConfirmAction("approve")}
               disabled={actionLoading}
             >
-              {isLegalStage ? "Approve" : "Approve & Forward"}
+              {isGovernanceStage ? "Approve" : "Approve & Forward"}
             </button>
             <button
               type="button"
@@ -561,13 +776,13 @@ export default function DataRequestDetailPage() {
 
       <ConfirmModal
         open={confirmAction === "approve"}
-        title={isLegalStage ? "Approve Data Request" : "Approve & Forward"}
+        title={isGovernanceStage ? "Approve Onboard Request" : "Approve & Forward"}
         description={
-          isLegalStage
-            ? `Approve data request for "${form.businessName}" with a legal score of ${legalScore || "?"}%?`
-            : `Approve and forward data request for "${form.businessName}" to the next stage?`
+          isGovernanceStage
+            ? `Approve onboard request for "${form.businessName}" with a governance score of ${governanceScore || "?"}%?`
+            : `Approve and forward onboard request for "${form.businessName}" to the next stage?`
         }
-        confirmLabel={isLegalStage ? "Approve" : "Approve & Forward"}
+        confirmLabel={isGovernanceStage ? "Approve" : "Approve & Forward"}
         confirmVariant="primary"
         onConfirm={handleApprove}
         onCancel={() => setConfirmAction(null)}
@@ -575,8 +790,8 @@ export default function DataRequestDetailPage() {
 
       <ConfirmModal
         open={confirmAction === "deny"}
-        title="Deny Data Request"
-        description={`Deny data request for "${form.businessName}"? The coordinator will be notified.`}
+        title="Deny Onboard Request"
+        description={`Deny onboard request for "${form.businessName}"? The coordinator will be notified.`}
         confirmLabel="Deny"
         confirmVariant="danger"
         onConfirm={handleDeny}

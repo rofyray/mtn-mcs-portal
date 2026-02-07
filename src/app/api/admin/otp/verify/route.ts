@@ -4,10 +4,11 @@ import { z } from "zod";
 
 import prisma from "@/lib/db";
 import { generateSessionToken, hashSessionToken } from "@/lib/admin-auth";
+import { formatZodError } from "@/lib/validation";
 
 const verifySchema = z.object({
-  email: z.string().email(),
-  code: z.string().length(6),
+  email: z.string().email("A valid email is required"),
+  code: z.string().length(6, "OTP code must be 6 characters"),
 });
 
 export async function POST(request: Request) {
@@ -15,7 +16,7 @@ export async function POST(request: Request) {
   const parsed = verifySchema.safeParse(body);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
 
   const { email, code } = parsed.data;

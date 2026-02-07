@@ -42,7 +42,7 @@ export default function PartnerNotificationsPage() {
       <div className="mx-auto w-full max-w-3xl space-y-6 glass-panel p-6">
         <div>
           <h1 className="text-2xl font-semibold">Notifications</h1>
-          <p className="text-sm text-gray-600">Updates from the admin team.</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Updates from the admin team.</p>
         </div>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
@@ -57,9 +57,9 @@ export default function PartnerNotificationsPage() {
           ) : (
             notifications.map((notification) => (
               <div key={notification.id} className="rounded border p-3">
-                <p className="text-xs text-gray-500">{notification.category}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{notification.category}</p>
                 <h2 className="text-sm font-semibold">{notification.title}</h2>
-                <p className="text-sm text-gray-700">{notification.message}</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300">{notification.message}</p>
               </div>
             ))
           )}

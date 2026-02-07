@@ -104,7 +104,7 @@ export default function MapReportsDashboard() {
               <h1 className="map-reports-title">Regional Overview</h1>
             </div>
             <p className="map-reports-subtitle">
-              Click on an assigned region to view detailed partner, business, and agent
+              Click on an assigned region to view detailed partner, location, and agent
               information.
             </p>
           </div>
@@ -140,7 +140,7 @@ export default function MapReportsDashboard() {
           <div className="summary-card-content">
             <span className="summary-card-value">{data?.totalBusinesses ?? 0}</span>
             <span className="summary-card-label">
-              {data?.isFiltered ? "Matching Businesses" : "Total Businesses"}
+              {data?.isFiltered ? "Matching Locations" : "Total Locations"}
             </span>
           </div>
         </div>
@@ -179,7 +179,7 @@ export default function MapReportsDashboard() {
           </div>
         </div>
 
-        <Link href="/admin/data-requests" className="summary-card summary-card-action">
+        <Link href="/admin/onboard-requests" className="summary-card summary-card-action">
           <div className="summary-card-icon summary-card-icon-accent">
             <svg viewBox="0 0 24 24" {...iconProps}>
               <path d="M9 2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z" />
@@ -189,7 +189,7 @@ export default function MapReportsDashboard() {
             </svg>
           </div>
           <div className="summary-card-content">
-            <span className="summary-card-value" style={{ fontSize: "1.15rem" }}>Data Requests</span>
+            <span className="summary-card-value" style={{ fontSize: "1.15rem" }}>Onboard Requests</span>
             <span className="summary-card-label">View &amp; manage requests</span>
           </div>
         </Link>
@@ -214,7 +214,7 @@ export default function MapReportsDashboard() {
             <input
               type="text"
               className="input"
-              placeholder="Search partners, businesses, agents..."
+              placeholder="Search partners, locations, agents..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -246,7 +246,7 @@ export default function MapReportsDashboard() {
                       <strong>{stat.partnerCount}</strong> partners
                     </span>
                     <span className="map-reports-stat-value">
-                      <strong>{stat.businessCount}</strong> businesses
+                      <strong>{stat.businessCount}</strong> locations
                     </span>
                     <span className="map-reports-stat-value">
                       <strong>{stat.agentCount}</strong> agents

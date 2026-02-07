@@ -83,11 +83,11 @@ const managers = [
   },
 ];
 
-const legalAdmins = [
+const governanceCheckAdmins = [
   {
-    name: "System Legal",
+    name: "System Governance",
     email: "mtnlegal@grr.la",
-    role: "LEGAL",
+    role: "GOVERNANCE_CHECK",
     regions: [],
   },
 ];
@@ -126,7 +126,7 @@ const seniorManagers = [
 ];
 
 async function main() {
-  const admins = [...coordinators, ...fullAccessAdmins, ...managers, ...seniorManagers, ...legalAdmins];
+  const admins = [...coordinators, ...fullAccessAdmins, ...managers, ...seniorManagers, ...governanceCheckAdmins];
 
   for (const admin of admins) {
     const normalizedEmail = admin.email.trim().toLowerCase();

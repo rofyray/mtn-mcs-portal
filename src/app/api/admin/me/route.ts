@@ -14,6 +14,9 @@ export async function GET() {
       name: adminContext.admin.name,
       email: adminContext.admin.email,
       role: adminContext.admin.role,
+      regions: adminContext.admin.regions.map((r) => ({
+        regionCode: r.regionCode,
+      })),
     },
   });
 }

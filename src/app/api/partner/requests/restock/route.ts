@@ -7,12 +7,13 @@ import { broadcastAdminNotification } from "@/lib/notifications";
 import { buildEmailTemplate } from "@/lib/email-template";
 import { requiredEnv } from "@/lib/env";
 import { getApprovedPartnerProfile } from "@/lib/partner";
+import { formatZodError } from "@/lib/validation";
 
 const itemOptions = ["SIM Cards", "Y'ello Biz", "Y'ello Cameras"] as const;
 
 const restockSchema = z.object({
-  businessId: z.string().min(1),
-  items: z.array(z.enum(itemOptions)).min(1),
+  businessId: z.string().min(1, "Business location is required"),
+  items: z.array(z.enum(itemOptions)).min(1, "At least one item is required"),
   message: z.string().trim().optional(),
 });
 
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
   const body = await request.json();
   const parsed = restockSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
 
   const business = await prisma.business.findFirst({

@@ -148,7 +148,7 @@ export default function AdminFormsPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold">Forms</h1>
-            <p className="text-sm text-gray-600">Track and send onboarding documents.</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Track and send onboarding documents.</p>
           </div>
           <button className="btn btn-primary" type="button" onClick={() => setShowFormModal(true)}>
             Send a form
@@ -173,7 +173,7 @@ export default function AdminFormsPage() {
                     {form.status}
                   </span>
                   <p className="text-sm font-semibold">{form.title}</p>
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
                     {form.partnerProfile.businessName ?? "Partner"}
                   </p>
                   <a className="text-xs link-accent" href={form.documentUrl} target="_blank" rel="noreferrer">
@@ -198,7 +198,7 @@ export default function AdminFormsPage() {
             <div className="modal-header">
               <div>
                 <h2 className="text-lg font-semibold">New form</h2>
-                <p className="text-sm text-gray-600">Send documents to partners for signature.</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Send documents to partners for signature.</p>
               </div>
               <button
                 type="button"

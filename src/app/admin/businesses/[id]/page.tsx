@@ -92,10 +92,12 @@ export default function AdminBusinessDetailPage() {
   const photoFields = fileFields.filter((field) => field.kind === "image");
 
   const regionOptions = useMemo(() => {
-    return Object.values(ghanaLocations).map((region) => ({
-      value: region.code,
-      label: region.name,
-    }));
+    return Object.values(ghanaLocations)
+      .map((region) => ({
+        value: region.code,
+        label: region.name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, []);
 
   const districtOptions = useMemo(() => {
@@ -103,10 +105,12 @@ export default function AdminBusinessDetailPage() {
     if (!regionCode || !ghanaLocations[regionCode]) {
       return [];
     }
-    return ghanaLocations[regionCode].districts.map((district) => ({
-      value: district.code,
-      label: district.name,
-    }));
+    return ghanaLocations[regionCode].districts
+      .map((district) => ({
+        value: district.code,
+        label: district.name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, [form.addressRegionCode]);
 
   function updateField(key: string, value: string) {
@@ -137,7 +141,7 @@ export default function AdminBusinessDetailPage() {
               ))}
             </select>
             {form.addressRegionCode ? (
-              <p className="text-xs text-gray-500">Code: {form.addressRegionCode}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Code: {form.addressRegionCode}</p>
             ) : null}
           </div>
         ) : field.key === "addressDistrictCode" ? (
@@ -159,7 +163,7 @@ export default function AdminBusinessDetailPage() {
               ))}
             </select>
             {form.addressDistrictCode ? (
-              <p className="text-xs text-gray-500">Code: {form.addressDistrictCode}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Code: {form.addressDistrictCode}</p>
             ) : null}
           </div>
         ) : field.key === "addressCode" ? (
@@ -363,7 +367,7 @@ export default function AdminBusinessDetailPage() {
     }
     const confirmed = await confirm({
       title: "Approve submission?",
-      description: "This will mark the business as approved.",
+      description: "This will mark the location as approved.",
       confirmLabel: "Approve",
       confirmVariant: "primary",
     });
@@ -377,7 +381,7 @@ export default function AdminBusinessDetailPage() {
       return;
     }
     setStatus("Submission approved.");
-    notify({ title: "Submission approved", message: "Business is now approved.", kind: "success" });
+    notify({ title: "Submission approved", message: "Location is now approved.", kind: "success" });
     setBusinessStatus("APPROVED");
   }
 
@@ -412,7 +416,7 @@ export default function AdminBusinessDetailPage() {
       return;
     }
     setStatus("Submission denied.");
-    notify({ title: "Submission denied", message: "Business submission denied.", kind: "warning" });
+    notify({ title: "Submission denied", message: "Location submission denied.", kind: "warning" });
     setBusinessStatus("DENIED");
   }
 
@@ -421,8 +425,8 @@ export default function AdminBusinessDetailPage() {
       <div className="mx-auto w-full max-w-4xl space-y-6 glass-panel p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold">Business Details</h1>
-            <p className="text-sm text-gray-600">Review and edit business info.</p>
+            <h1 className="text-2xl font-semibold">Location Details</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Review and edit location info.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button className="btn btn-secondary" type="button" onClick={() => router.back()}>

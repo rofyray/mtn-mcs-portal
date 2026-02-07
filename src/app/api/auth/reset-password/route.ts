@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import prisma from "@/lib/db";
 import { hashToken } from "@/lib/tokens";
+import { formatZodError } from "@/lib/validation";
 
 const schema = z.object({
   email: z.string().email().transform((e) => e.toLowerCase().trim()),
@@ -18,7 +19,7 @@ export async function POST(request: Request) {
 
     if (!result.success) {
       return NextResponse.json(
-        { error: result.error.issues[0]?.message || "Invalid input" },
+        { error: formatZodError(result.error) },
         { status: 400 }
       );
     }

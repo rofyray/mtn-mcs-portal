@@ -12,7 +12,7 @@ type AdminData = {
   id: string;
   name: string;
   email: string;
-  role: "FULL" | "MANAGER" | "COORDINATOR" | "SENIOR_MANAGER" | "LEGAL";
+  role: "FULL" | "MANAGER" | "COORDINATOR" | "SENIOR_MANAGER" | "GOVERNANCE_CHECK";
   enabled: boolean;
   regionCodes: string[];
 };
@@ -22,7 +22,7 @@ const ROLE_LABELS: Record<string, string> = {
   MANAGER: "Manager",
   COORDINATOR: "Coordinator",
   SENIOR_MANAGER: "Senior Manager",
-  LEGAL: "Legal",
+  GOVERNANCE_CHECK: "Governance",
 };
 
 const ROLE_BADGE_CLASSES: Record<string, string> = {
@@ -30,25 +30,27 @@ const ROLE_BADGE_CLASSES: Record<string, string> = {
   MANAGER: "badge-primary",
   COORDINATOR: "badge-info",
   SENIOR_MANAGER: "badge-success",
-  LEGAL: "badge-warning",
+  GOVERNANCE_CHECK: "badge-warning",
 };
 
-const ROLE_ORDER: AdminData["role"][] = ["FULL", "MANAGER", "SENIOR_MANAGER", "LEGAL", "COORDINATOR"];
+const ROLE_ORDER: AdminData["role"][] = ["FULL", "MANAGER", "SENIOR_MANAGER", "GOVERNANCE_CHECK", "COORDINATOR"];
 
 const SECTION_TITLES: Record<string, string> = {
   FULL: "Full Access Admins",
   MANAGER: "Managers",
   SENIOR_MANAGER: "Senior Managers",
-  LEGAL: "Legal",
+  GOVERNANCE_CHECK: "Governance",
   COORDINATOR: "Coordinators",
 };
 
 const MAX_VISIBLE_PILLS = 3;
 
-const regionOptions = Object.entries(ghanaLocations).map(([code, region]) => ({
-  value: code,
-  label: region.name,
-}));
+const regionOptions = Object.entries(ghanaLocations)
+  .map(([code, region]) => ({
+    value: code,
+    label: region.name,
+  }))
+  .sort((a, b) => a.label.localeCompare(b.label));
 
 export default function AdminManagementSection() {
   const [admins, setAdmins] = useState<AdminData[]>([]);
@@ -171,7 +173,7 @@ export default function AdminManagementSection() {
   );
 
   if (loading) {
-    return <p className="text-sm text-gray-600">Loading admins...</p>;
+    return <p className="text-sm text-gray-600 dark:text-gray-400">Loading admins...</p>;
   }
 
   if (error) {
@@ -189,7 +191,7 @@ export default function AdminManagementSection() {
     <>
       <div className="space-y-6">
         {admins.length === 0 ? (
-          <p className="text-sm text-gray-600">No admins found.</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">No admins found.</p>
         ) : (
           ROLE_ORDER.map((role) => {
             const roleAdmins = adminsByRole[role];

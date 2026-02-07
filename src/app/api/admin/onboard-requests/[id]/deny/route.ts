@@ -5,6 +5,7 @@ import prisma from "@/lib/db";
 import { getAdminSession } from "@/lib/admin-session";
 import { logAuditEvent } from "@/lib/audit";
 import { sendAdminNotification } from "@/lib/notifications";
+import { formatZodError } from "@/lib/validation";
 
 const denySchema = z.object({
   comments: z.string().min(1, "Comments are required when denying"),
@@ -22,15 +23,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const admin = session.admin;
   const { id } = await context.params;
 
-  // Only MANAGER, SENIOR_MANAGER, LEGAL, or FULL can deny
-  if (!["MANAGER", "SENIOR_MANAGER", "LEGAL", "FULL"].includes(admin.role)) {
+  // Only MANAGER, SENIOR_MANAGER, or GOVERNANCE_CHECK can deny
+  if (!["MANAGER", "SENIOR_MANAGER", "GOVERNANCE_CHECK"].includes(admin.role)) {
     return NextResponse.json(
-      { error: "You do not have permission to deny data requests" },
+      { error: "You do not have permission to deny onboard requests" },
       { status: 403 }
     );
   }
 
-  const form = await prisma.dataRequestForm.findUnique({
+  const form = await prisma.onboardRequestForm.findUnique({
     where: { id },
     include: {
       createdByAdmin: { select: { id: true, name: true } },
@@ -48,8 +49,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const allowedStatuses: Record<string, string[]> = {
     MANAGER: ["PENDING_MANAGER"],
     SENIOR_MANAGER: ["PENDING_SENIOR_MANAGER"],
-    LEGAL: ["PENDING_LEGAL"],
-    FULL: ["PENDING_MANAGER", "PENDING_SENIOR_MANAGER", "PENDING_LEGAL"],
+    GOVERNANCE_CHECK: ["PENDING_GOVERNANCE_CHECK"],
   };
 
   const allowed = allowedStatuses[admin.role] ?? [];
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const parsed = denySchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Validation failed", details: parsed.error.flatten() },
+      { error: formatZodError(parsed.error), details: parsed.error.flatten() },
       { status: 400 }
     );
   }
@@ -73,13 +73,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   // Update status and create approval record
   const [updatedForm] = await Promise.all([
-    prisma.dataRequestForm.update({
+    prisma.onboardRequestForm.update({
       where: { id },
       data: { status: "DENIED" },
     }),
-    prisma.dataRequestApproval.create({
+    prisma.onboardRequestApproval.create({
       data: {
-        dataRequestFormId: id,
+        onboardRequestFormId: id,
         adminId: admin.id,
         role: admin.role,
         action: "DENIED",
@@ -91,8 +91,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   await logAuditEvent({
     adminId: admin.id,
-    action: "DATA_REQUEST_DENIED",
-    targetType: "DataRequestForm",
+    action: "ONBOARD_REQUEST_DENIED",
+    targetType: "OnboardRequestForm",
     targetId: id,
     metadata: {
       businessName: form.businessName,
@@ -103,21 +103,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   // Notify the coordinator
   const notif = {
-    title: `Data Request Denied: ${form.businessName}`,
-    message: `Your data request for "${form.businessName}" has been denied. Reason: ${comments}`,
+    title: `Onboard Request Denied: ${form.businessName}`,
+    message: `Your onboard request for "${form.businessName}" has been denied. Reason: ${comments}`,
     category: "WARNING" as const,
   };
 
-  await sendAdminNotification(form.createdByAdminId, notif);
+  if (form.createdByAdminId) {
+    await sendAdminNotification(form.createdByAdminId, notif);
+  }
 
   // Notify all previous approvers
-  const notified = new Set([admin.id, form.createdByAdminId]);
+  const notified = new Set([admin.id, ...(form.createdByAdminId ? [form.createdByAdminId] : [])]);
   for (const approval of form.approvals) {
     if (!notified.has(approval.adminId)) {
       notified.add(approval.adminId);
       await sendAdminNotification(approval.adminId, {
         title: notif.title,
-        message: `Data request for "${form.businessName}" has been denied.`,
+        message: `Onboard request for "${form.businessName}" has been denied.`,
         category: "WARNING",
       });
     }

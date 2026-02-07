@@ -11,8 +11,12 @@ export default async function AdminHomePage() {
     redirect("/admin/login");
   }
 
-  if (session.admin.role === "LEGAL") {
-    redirect("/admin/data-requests");
+  if (session.admin.role === "GOVERNANCE_CHECK") {
+    redirect("/admin/onboard-requests");
+  }
+
+  if (session.admin.role === "SENIOR_MANAGER") {
+    redirect("/admin/map-reports");
   }
 
   return (
@@ -35,7 +39,7 @@ export default async function AdminHomePage() {
               Review agents
             </Link>
             <Link className="btn btn-secondary" href="/admin/businesses">
-              Review businesses
+              Review locations
             </Link>
             <Link className="btn btn-secondary" href="/admin/forms">
               Manage forms
@@ -47,7 +51,7 @@ export default async function AdminHomePage() {
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-xl font-semibold">Modules coming next</h2>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 These tiles will light up as data flows in.
               </p>
             </div>
@@ -63,7 +67,7 @@ export default async function AdminHomePage() {
                 </svg>
               </div>
               <h3 className="text-sm font-semibold">Pending approvals</h3>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-gray-600 dark:text-gray-400">
                 Quick queue for partners, agents, and businesses awaiting review.
               </p>
             </div>
@@ -75,7 +79,7 @@ export default async function AdminHomePage() {
                 </svg>
               </div>
               <h3 className="text-sm font-semibold">Recent activity</h3>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-gray-600 dark:text-gray-400">
                 Live feed of the latest actions and approvals across the platform.
               </p>
             </div>
@@ -88,7 +92,7 @@ export default async function AdminHomePage() {
                 </svg>
               </div>
               <h3 className="text-sm font-semibold">Audit highlights</h3>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-gray-600 dark:text-gray-400">
                 Top audit events and compliance signals summarized in one view.
               </p>
             </div>
@@ -100,7 +104,7 @@ export default async function AdminHomePage() {
                 </svg>
               </div>
               <h3 className="text-sm font-semibold">Form status</h3>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-gray-600 dark:text-gray-400">
                 Track who has signed onboarding forms and what is still pending.
               </p>
             </div>

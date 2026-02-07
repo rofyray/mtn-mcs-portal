@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { onboardingSchema } from "@/lib/onboarding";
 import { getPartnerSession } from "@/lib/session";
+import { formatZodError } from "@/lib/validation";
 
 export async function GET() {
   const session = await getPartnerSession();
@@ -42,7 +43,7 @@ export async function PUT(request: Request) {
   const body = await request.json();
   const parsed = onboardingSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
 
   const existing = await prisma.partnerProfile.findUnique({

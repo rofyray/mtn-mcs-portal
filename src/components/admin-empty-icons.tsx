@@ -72,7 +72,7 @@ export function AdminBusinessesEmptyIcon() {
   );
 }
 
-export function AdminDataRequestsEmptyIcon() {
+export function AdminOnboardRequestsEmptyIcon() {
   return (
     <svg aria-hidden="true" {...iconProps}>
       <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" />

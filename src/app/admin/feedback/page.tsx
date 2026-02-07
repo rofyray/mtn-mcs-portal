@@ -29,7 +29,7 @@ export default function AdminFeedbackPage() {
       <div className="mx-auto w-full max-w-4xl space-y-6 glass-panel p-6">
         <div>
           <h1 className="text-2xl font-semibold">Partner Feedback</h1>
-          <p className="text-sm text-gray-600">Messages submitted by partners.</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Messages submitted by partners.</p>
         </div>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}

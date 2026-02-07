@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import prisma from "@/lib/db";
 import { getAdminSession } from "@/lib/admin-session";
+import { formatZodError } from "@/lib/validation";
 
 const updateSchema = z.object({
   businessName: z.string().min(1).optional(),
@@ -35,7 +36,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 
   const { id } = await context.params;
 
-  const form = await prisma.dataRequestForm.findUnique({
+  const form = await prisma.onboardRequestForm.findUnique({
     where: { id },
     include: {
       createdByAdmin: { select: { id: true, name: true, role: true } },
@@ -64,7 +65,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   const admin = session.admin;
   const { id } = await context.params;
 
-  const form = await prisma.dataRequestForm.findUnique({
+  const form = await prisma.onboardRequestForm.findUnique({
     where: { id },
   });
 
@@ -72,16 +73,38 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  if (form.createdByAdminId !== admin.id) {
+  // For PENDING_COORDINATOR forms, allow any coordinator whose region matches
+  if (form.status === "PENDING_COORDINATOR") {
+    if (admin.role !== "COORDINATOR") {
+      return NextResponse.json(
+        { error: "Only coordinators can edit pending submissions" },
+        { status: 403 }
+      );
+    }
+    const coordRegions = admin.regions.map((r) => r.regionCode);
+    if (!coordRegions.includes(form.regionCode)) {
+      return NextResponse.json(
+        { error: "This form is not in your assigned region" },
+        { status: 403 }
+      );
+    }
+    // Race condition guard: if already claimed by another admin, reject
+    if (form.createdByAdminId && form.createdByAdminId !== admin.id) {
+      return NextResponse.json(
+        { error: "This form has already been claimed by another coordinator" },
+        { status: 409 }
+      );
+    }
+  } else if (form.status === "DRAFT" || form.status === "DENIED") {
+    if (form.createdByAdminId !== admin.id) {
+      return NextResponse.json(
+        { error: "Only the creator can edit this form" },
+        { status: 403 }
+      );
+    }
+  } else {
     return NextResponse.json(
-      { error: "Only the creator can edit this form" },
-      { status: 403 }
-    );
-  }
-
-  if (form.status !== "DRAFT" && form.status !== "DENIED") {
-    return NextResponse.json(
-      { error: "Can only edit draft or denied forms" },
+      { error: "Can only edit draft, denied, or pending coordinator forms" },
       { status: 400 }
     );
   }
@@ -90,7 +113,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   const parsed = updateSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Validation failed", details: parsed.error.flatten() },
+      { error: formatZodError(parsed.error), details: parsed.error.flatten() },
       { status: 400 }
     );
   }
@@ -141,7 +164,12 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     updateData.status = "DRAFT";
   }
 
-  const updated = await prisma.dataRequestForm.update({
+  // If coordinator is editing a PENDING_COORDINATOR form, claim it
+  if (form.status === "PENDING_COORDINATOR" && !form.createdByAdminId) {
+    updateData.createdByAdminId = admin.id;
+  }
+
+  const updated = await prisma.onboardRequestForm.update({
     where: { id },
     data: updateData,
   });

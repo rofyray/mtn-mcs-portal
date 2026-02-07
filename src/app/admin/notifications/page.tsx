@@ -148,7 +148,7 @@ export default function AdminNotificationsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold">Admin Notifications</h1>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               System alerts and partner requests.
               {unreadCount > 0 && (
                 <span className="notification-unread-count ml-2">
@@ -183,7 +183,7 @@ export default function AdminNotificationsPage() {
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         {/* Loading */}
-        {loading && <p className="text-sm text-gray-500">Loading...</p>}
+        {loading && <p className="text-sm text-gray-500 dark:text-gray-400">Loading...</p>}
 
         {/* Empty State */}
         {!loading && notifications.length === 0 && (

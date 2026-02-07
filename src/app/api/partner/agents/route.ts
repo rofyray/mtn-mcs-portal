@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { agentSchema } from "@/lib/agent";
 import { getApprovedPartnerProfile } from "@/lib/partner";
+import { formatZodError } from "@/lib/validation";
 
 export async function GET() {
   const result = await getApprovedPartnerProfile();
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
   const body = await request.json();
   const parsed = agentSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
 
   // Validate that the business belongs to this partner
@@ -59,12 +60,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid business" }, { status: 400 });
   }
 
-  const { cpAppNumber, ...agentData } = parsed.data;
+  const { cpAppNumber, agentUsername, minervaReferralCode, ...agentData } = parsed.data;
   const agent = await prisma.agent.create({
     data: {
       partnerProfileId: result.profile.id,
       ...agentData,
       ...(cpAppNumber ? { cpAppNumber } : {}),
+      ...(agentUsername ? { agentUsername } : {}),
+      ...(minervaReferralCode ? { minervaReferralCode } : {}),
     },
   });
 

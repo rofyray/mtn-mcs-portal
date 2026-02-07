@@ -165,7 +165,7 @@ export default function PartnerFormsPage() {
       <div className="mx-auto w-full max-w-5xl space-y-8 glass-panel p-6 page-animate">
         <div>
           <h1 className="text-2xl font-semibold">Forms</h1>
-          <p className="text-sm text-gray-600">Sign and submit forms from admins.</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Sign and submit forms from admins.</p>
         </div>
 
         {forms.length === 0 ? (
@@ -208,7 +208,7 @@ export default function PartnerFormsPage() {
             </div>
             <div className="space-y-2">
               <label className="label">Draw Your Signature</label>
-              <div className="rounded border bg-white p-2">
+              <div className="rounded border bg-white dark:bg-gray-900 p-2">
                 <canvas
                   ref={canvasRef}
                   width={500}

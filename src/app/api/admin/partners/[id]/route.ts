@@ -4,6 +4,7 @@ import prisma from "@/lib/db";
 import { getAdminAndProfile } from "@/lib/admin-access";
 import { logAuditEvent } from "@/lib/audit";
 import { onboardingSchema } from "@/lib/onboarding";
+import { formatZodError } from "@/lib/validation";
 
 export async function PUT(
   request: Request,
@@ -20,7 +21,7 @@ export async function PUT(
   const body = await request.json();
   const parsed = onboardingSchema.partial().safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
 
   const updated = await prisma.partnerProfile.update({

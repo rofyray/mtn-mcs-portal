@@ -72,11 +72,11 @@ export default function AdminBusinessesPage() {
     }
     const response = await fetch(`/api/admin/businesses/${id}/approve`, { method: "POST" });
     if (!response.ok) {
-      setError("Unable to approve business.");
-      notify({ title: "Approval failed", message: "Unable to approve business.", kind: "error" });
+      setError("Unable to approve location.");
+      notify({ title: "Approval failed", message: "Unable to approve location.", kind: "error" });
       return;
     }
-    notify({ title: "Business approved", message: "Business status updated.", kind: "success" });
+    notify({ title: "Location approved", message: "Location status updated.", kind: "success" });
     loadBusinesses(status);
   }
 
@@ -103,11 +103,11 @@ export default function AdminBusinessesPage() {
       body: JSON.stringify({ reason }),
     });
     if (!response.ok) {
-      setError("Unable to deny business.");
-      notify({ title: "Denial failed", message: "Unable to deny business.", kind: "error" });
+      setError("Unable to deny location.");
+      notify({ title: "Denial failed", message: "Unable to deny location.", kind: "error" });
       return;
     }
-    notify({ title: "Business denied", message: "Business status updated.", kind: "warning" });
+    notify({ title: "Location denied", message: "Location status updated.", kind: "warning" });
     loadBusinesses(status);
   }
 
@@ -117,20 +117,24 @@ export default function AdminBusinessesPage() {
   }, [status]);
 
   const regionOptions = useMemo(() => {
-    return Object.values(ghanaLocations).map((region) => ({
-      value: region.code,
-      label: region.name,
-    }));
+    return Object.values(ghanaLocations)
+      .map((region) => ({
+        value: region.code,
+        label: region.name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, []);
 
   const allDistrictOptions = useMemo(() => {
-    return Object.values(ghanaLocations).flatMap((region) =>
-      region.districts.map((district) => ({
-        value: district.code,
-        label: `${district.name} (${region.name})`,
-        regionCode: region.code,
-      }))
-    );
+    return Object.values(ghanaLocations)
+      .flatMap((region) =>
+        region.districts.map((district) => ({
+          value: district.code,
+          label: `${district.name} (${region.name})`,
+          regionCode: region.code,
+        }))
+      )
+      .sort((a, b) => a.label.localeCompare(b.label));
   }, []);
 
   const districtOptions = useMemo(() => {
@@ -203,8 +207,8 @@ export default function AdminBusinessesPage() {
       <div className="mx-auto w-full max-w-5xl space-y-6 glass-panel p-6 page-animate panel-loading">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold">Business Submissions</h1>
-            <p className="text-sm text-gray-600">Review and approve new locations.</p>
+            <h1 className="text-2xl font-semibold">Location Submissions</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Review and approve new locations.</p>
           </div>
         </div>
         {loading ? <span className="panel-spinner" aria-label="Loading" /> : null}
@@ -219,7 +223,7 @@ export default function AdminBusinessesPage() {
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Name or city"
-              aria-label="Search businesses"
+              aria-label="Search locations"
             />
           </div>
           <div className="admin-filter-field admin-filter-span-2">
@@ -295,10 +299,10 @@ export default function AdminBusinessesPage() {
                 selectedCity ||
                 selectedRegions.length > 0 ||
                 selectedDistricts.length > 0
-                  ? `No ${statusLabelLower} businesses match those filters`
+                  ? `No ${statusLabelLower} locations match those filters`
                   : status === "SUBMITTED"
-                    ? "No businesses submitted yet"
-                    : `No ${statusLabelLower} businesses yet`
+                    ? "No locations submitted yet"
+                    : `No ${statusLabelLower} locations yet`
               }
               description={
                 searchQuery.trim() ||
@@ -307,8 +311,8 @@ export default function AdminBusinessesPage() {
                 selectedDistricts.length > 0
                   ? "Try adjusting the search or location filters."
                   : status === "SUBMITTED"
-                    ? "New business submissions will appear here."
-                    : `Once businesses are ${statusLabelLower}, they'll appear here.`
+                    ? "New location submissions will appear here."
+                    : `Once locations are ${statusLabelLower}, they'll appear here.`
               }
               variant="inset"
             />
@@ -402,14 +406,14 @@ export default function AdminBusinessesPage() {
                     {business.status}
                   </span>
                   <p className="text-lg font-semibold">{business.businessName}</p>
-                  <p className="text-xs text-gray-600">{business.city}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">{business.city}</p>
                   {business.addressRegionCode && business.addressDistrictCode ? (
                     <>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
                         {getRegionName(business.addressRegionCode) ?? "Region"} ·{" "}
                         {getDistrictName(business.addressRegionCode, business.addressDistrictCode) ?? "District"}
                       </p>
-                      <p className="text-[11px] text-gray-500">
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
                         Codes: {business.addressRegionCode} · {business.addressDistrictCode}
                       </p>
                     </>

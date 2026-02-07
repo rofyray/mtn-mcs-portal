@@ -120,7 +120,7 @@ export default function AdminPartnersPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold">Partner Submissions</h1>
-            <p className="text-sm text-gray-600">Review and manage onboarding submissions.</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Review and manage onboarding submissions.</p>
           </div>
         </div>
         {loading ? <span className="panel-spinner" aria-label="Loading" /> : null}
@@ -263,7 +263,7 @@ export default function AdminPartnersPage() {
                   <p className="text-sm">
                     {partner.partnerFirstName} {partner.partnerSurname}
                   </p>
-                  <p className="text-sm text-gray-600">{partner.phoneNumber}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{partner.phoneNumber}</p>
                 </div>
 
                 {adminRole ? (

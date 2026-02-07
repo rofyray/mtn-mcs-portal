@@ -18,6 +18,8 @@ const editableFields = [
   { key: "phoneNumber", label: "Phone Number" },
   { key: "email", label: "Email" },
   { key: "cpAppNumber", label: "CP App Number" },
+  { key: "agentUsername", label: "Agent Username" },
+  { key: "minervaReferralCode", label: "Minerva Referral Code" },
   { key: "ghanaCardNumber", label: "Ghana Card Number" },
   { key: "businessName", label: "Business Name" },
 ];
@@ -335,7 +337,7 @@ export default function AdminAgentDetailPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold">Agent Details</h1>
-            <p className="text-sm text-gray-600">Review and edit agent info.</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Review and edit agent info.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button className="btn btn-secondary" type="button" onClick={() => router.back()}>
@@ -391,8 +393,8 @@ export default function AdminAgentDetailPage() {
             {editableFields.map((field) => renderEditableField(field))}
             {businessInfo ? (
               <div className="space-y-1 md:col-span-2">
-                <label className="label">Business Location</label>
-                <p className="text-sm text-gray-700">
+                <label className="label">Location</label>
+                <p className="text-sm text-gray-700 dark:text-gray-300">
                   {businessInfo.city} ({businessInfo.addressCode})
                 </p>
               </div>

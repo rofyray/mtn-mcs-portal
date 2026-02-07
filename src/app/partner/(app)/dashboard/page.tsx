@@ -63,28 +63,28 @@ export default async function PartnerDashboardPage() {
       <div className="mx-auto w-full max-w-5xl space-y-8 glass-panel p-6 page-animate">
         <div>
           <h1 className="text-2xl font-semibold">Partner Dashboard</h1>
-          <p className="text-sm text-gray-600">Overview of your onboarding progress and requests.</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Overview of your onboarding progress and requests.</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
           <div className="card space-y-2">
-            <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Agents</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Agents</p>
             <p className="text-2xl font-semibold">{agentsTotal}</p>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
               {agentsApproved} approved • {agentsSubmitted} pending • {agentsDenied} denied
             </p>
           </div>
           <div className="card space-y-2">
-            <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Businesses</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Locations</p>
             <p className="text-2xl font-semibold">{businessesTotal}</p>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
               {businessesApproved} approved • {businessesSubmitted} pending • {businessesDenied} denied
             </p>
           </div>
           <div className="card space-y-2">
-            <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Forms</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Forms</p>
             <p className="text-2xl font-semibold">{formsTotal}</p>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
               {formsSigned} signed • {formsSent} pending • {formsRejected} rejected
             </p>
           </div>
@@ -92,25 +92,25 @@ export default async function PartnerDashboardPage() {
 
         <div className="grid gap-4 md:grid-cols-3">
           <div className="card space-y-2">
-            <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Requests</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Requests</p>
             <p className="text-2xl font-semibold">{trainingRequests + restockRequests}</p>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
               {trainingRequests} training • {restockRequests} restock
             </p>
           </div>
           <div className="card space-y-2">
-            <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Feedback</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Feedback</p>
             <p className="text-2xl font-semibold">{feedbackItems}</p>
-            <p className="text-xs text-gray-600">Messages submitted to admins.</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Messages submitted to admins.</p>
           </div>
           <div className="card space-y-2">
-            <p className="text-xs uppercase tracking-[0.2em] text-gray-500">Quick Actions</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">Quick Actions</p>
             <div className="flex flex-wrap gap-2">
               <Link className="btn btn-secondary" href="/partner/agents">
                 Add Agent
               </Link>
               <Link className="btn btn-secondary" href="/partner/businesses">
-                Add Business
+                Add Location
               </Link>
               <Link className="btn btn-secondary" href="/partner/requests">
                 New Request

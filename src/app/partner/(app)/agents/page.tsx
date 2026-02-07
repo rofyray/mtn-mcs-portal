@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import dynamic from "next/dynamic";
+
 import PostAuthToast from "@/components/post-auth-toast";
 import { useToast } from "@/components/toast";
 import EmptyState from "@/components/empty-state";
@@ -11,6 +13,11 @@ import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
 import { IMAGE_ACCEPT } from "@/lib/storage/accepts";
 import { uploadFile } from "@/lib/storage/upload-client";
 
+const AgentCredentialsModal = dynamic(
+  () => import("@/components/agent-credentials-modal"),
+  { ssr: false }
+);
+
 type Agent = {
   id: string;
   firstName: string;
@@ -19,6 +26,8 @@ type Agent = {
   email: string;
   status: string;
   cpAppNumber?: string | null;
+  agentUsername?: string | null;
+  minervaReferralCode?: string | null;
   businessId: string;
   business?: Business;
   createdAt: string;
@@ -63,8 +72,7 @@ export default function PartnerAgentsPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [cpAppAgentId, setCpAppAgentId] = useState<string | null>(null);
-  const [cpAppNumber, setCpAppNumber] = useState("");
+  const [credentialsAgent, setCredentialsAgent] = useState<Agent | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -155,40 +163,14 @@ export default function PartnerAgentsPage() {
     setLoading(false);
   }
 
-  async function saveCpAppNumber() {
-    if (!cpAppAgentId || !cpAppNumber.trim()) {
-      setError("Enter a CP app number to continue.");
-      return;
-    }
-    setLoading(true);
-    setError(null);
-
-    const response = await fetch(`/api/partner/agents/${cpAppAgentId}/cp-app`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cpAppNumber }),
+  function handleCredentialsSaved() {
+    setCredentialsAgent(null);
+    notify({
+      title: "Credentials saved",
+      message: "Agent details have been updated.",
+      kind: "success",
     });
-
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      setError(data.error ?? "Unable to save CP app number.");
-      notify({
-        title: "Save failed",
-        message: data.error ?? "Unable to save CP app number.",
-        kind: "error",
-      });
-    } else {
-      notify({
-        title: "CP app number saved",
-        message: "Agent verification can now continue.",
-        kind: "success",
-      });
-      setCpAppAgentId(null);
-      setCpAppNumber("");
-      loadAgents();
-    }
-
-    setLoading(false);
+    loadAgents();
   }
 
   const agentsEmptyIcon = (
@@ -206,7 +188,7 @@ export default function PartnerAgentsPage() {
       <div className="mx-auto w-full max-w-5xl space-y-8 glass-panel p-6 page-animate">
         <div>
           <h1 className="text-2xl font-semibold">Agents</h1>
-          <p className="text-sm text-gray-600">Add agents for approval and track their status.</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Add agents for approval and track their status.</p>
         </div>
 
         <div className="space-y-3">
@@ -250,25 +232,34 @@ export default function PartnerAgentsPage() {
                     <p className="text-sm font-medium">
                       {agent.firstName} {agent.surname}
                     </p>
-                    <p className="text-xs text-gray-600">{agent.phoneNumber}</p>
-                    <p className="text-xs text-gray-600">{agent.email}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">{agent.phoneNumber}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">{agent.email}</p>
                     {agent.business ? (
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
                         Location: {agent.business.city} ({agent.business.addressCode})
                       </p>
                     ) : null}
                   </div>
                   {agent.cpAppNumber ? (
-                    <p className="text-xs text-gray-600">CP App Number: {agent.cpAppNumber}</p>
-                  ) : (
+                    <p className="text-xs text-gray-600 dark:text-gray-400">CP App Number: {agent.cpAppNumber}</p>
+                  ) : null}
+                  {agent.agentUsername ? (
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Username: {agent.agentUsername}</p>
+                  ) : null}
+                  {agent.minervaReferralCode ? (
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Minerva Code: {agent.minervaReferralCode}</p>
+                  ) : null}
+                  {(!agent.cpAppNumber || !agent.agentUsername || !agent.minervaReferralCode) ? (
                     <button
                       className="btn btn-secondary"
                       type="button"
-                      onClick={() => setCpAppAgentId(agent.id)}
+                      onClick={() => setCredentialsAgent(agent)}
                     >
-                      Add CP App Number
+                      {agent.cpAppNumber || agent.agentUsername || agent.minervaReferralCode
+                        ? "Update Agent Info"
+                        : "Add Agent Details"}
                     </button>
-                  )}
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -292,8 +283,8 @@ export default function PartnerAgentsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 10l4-6h10l4 6" />
                   </svg>
                 }
-                title="No businesses available yet"
-                description="Add at least one business before adding an agent."
+                title="No locations available yet"
+                description="Add at least one location before adding an agent."
               />
             ) : (
             <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit} noValidate>
@@ -339,12 +330,12 @@ export default function PartnerAgentsPage() {
               <div className="space-y-1">
                 <label className="label">Business Name</label>
                 <input
-                  className="input bg-gray-100 cursor-not-allowed"
+                  className="input bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
                   value={form.businessName}
                   readOnly
                   disabled
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   This is your registered business name from onboarding.
                 </p>
               </div>
@@ -363,15 +354,15 @@ export default function PartnerAgentsPage() {
                   value={form.businessId}
                   onChange={(event) => updateField("businessId", event.target.value)}
                 >
-                  <option value="">Select a business location</option>
+                  <option value="">Select a location</option>
                   {businesses.map((business) => (
                     <option key={business.id} value={business.id}>
                       {business.city} ({business.addressCode})
                     </option>
                   ))}
                 </select>
-                <p className="text-xs text-gray-500">
-                  Select the business location where this agent will be assigned.
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Select the location where this agent will be assigned.
                 </p>
               </div>
 
@@ -433,30 +424,16 @@ export default function PartnerAgentsPage() {
           </div>
         </div>
       ) : null}
-      {cpAppAgentId ? (
-        <div className="modal-backdrop">
-          <div className="modal-card">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold">Add CP App Number</h2>
-              <button className="btn btn-ghost" type="button" onClick={() => setCpAppAgentId(null)}>
-                Close
-              </button>
-            </div>
-            <div className="space-y-3">
-              <label className="label">CP App Number</label>
-              <input
-                className="input"
-                value={cpAppNumber}
-                onChange={(event) => setCpAppNumber(event.target.value)}
-              />
-              <button className="btn btn-primary" type="button" onClick={saveCpAppNumber} disabled={loading}>
-                {loading ? "Saving..." : "Save CP App Number"}
-              </button>
-              {error ? <p className="form-message form-message-error">{error}</p> : null}
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <AgentCredentialsModal
+        open={Boolean(credentialsAgent)}
+        agentId={credentialsAgent?.id ?? ""}
+        agentName={credentialsAgent ? `${credentialsAgent.firstName} ${credentialsAgent.surname}` : ""}
+        existingCpAppNumber={credentialsAgent?.cpAppNumber}
+        existingAgentUsername={credentialsAgent?.agentUsername}
+        existingMinervaReferralCode={credentialsAgent?.minervaReferralCode}
+        onClose={() => setCredentialsAgent(null)}
+        onSaved={handleCredentialsSaved}
+      />
       <FilePreviewModal
         open={Boolean(preview)}
         url={preview?.url ?? ""}

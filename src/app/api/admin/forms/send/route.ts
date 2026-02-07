@@ -4,11 +4,12 @@ import { z } from "zod";
 import prisma from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-guard";
 import { logAuditEvent } from "@/lib/audit";
+import { formatZodError } from "@/lib/validation";
 
 const sendSchema = z.object({
-  title: z.string().trim().min(1),
-  partnerIds: z.array(z.string().min(1)).min(1),
-  documentUrl: z.string().url(),
+  title: z.string().trim().min(1, "Title is required"),
+  partnerIds: z.array(z.string().min(1)).min(1, "At least one partner must be selected"),
+  documentUrl: z.string().url("Document is required"),
 });
 
 export async function POST(request: Request) {
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
   const body = await request.json();
   const parsed = sendSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
 
   const { title, partnerIds, documentUrl } = parsed.data;

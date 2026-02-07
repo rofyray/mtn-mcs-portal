@@ -33,7 +33,7 @@ export default function AdminAuditPage() {
       <div className="mx-auto w-full max-w-5xl space-y-6 glass-panel p-6">
         <div>
           <h1 className="text-2xl font-semibold">Audit Logs</h1>
-          <p className="text-sm text-gray-600">Admin actions across partner workflows.</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Admin actions across partner workflows.</p>
         </div>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}

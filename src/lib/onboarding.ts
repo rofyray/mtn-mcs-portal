@@ -15,7 +15,12 @@ const optionalUrl = z.preprocess(
 
 const optionalDigits = z.preprocess(
   emptyToUndefined,
-  z.string().trim().regex(/^\d+$/).optional()
+  z.string().trim().regex(/^\d+$/, "Must contain only digits").optional()
+);
+
+const optionalImei = z.preprocess(
+  emptyToUndefined,
+  z.string().trim().regex(/^\d+$/, "IMEI must contain only digits").max(15, "IMEI must be at most 15 digits").optional()
 );
 
 export const onboardingSchema = z.object({
@@ -33,7 +38,7 @@ export const onboardingSchema = z.object({
   fireCertificateUrl: optionalUrl,
   insuranceUrl: optionalUrl,
   apn: optionalDigits,
-  mifiImei: optionalDigits,
+  mifiImei: optionalImei,
 });
 
 export type OnboardingInput = z.infer<typeof onboardingSchema>;

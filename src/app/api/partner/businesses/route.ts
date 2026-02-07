@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { businessSchema } from "@/lib/business";
 import { getApprovedPartnerProfile } from "@/lib/partner";
+import { formatZodError } from "@/lib/validation";
 
 export async function GET() {
   const result = await getApprovedPartnerProfile();
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
   const body = await request.json();
   const parsed = businessSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
 
   const business = await prisma.business.create({

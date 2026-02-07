@@ -348,14 +348,14 @@ export default function OnboardingPage() {
       <PostAuthToast />
       <div className="mx-auto w-full max-w-4xl space-y-6 glass-panel p-6 page-animate">
         <div className="space-y-2">
-          <p className="text-xs uppercase tracking-[0.2em] text-gray-500">
+          <p className="text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
             Step {currentStep + 1} of {steps.length}
           </p>
           <h1 className="text-2xl font-semibold onboarding-title">
             <span className="onboarding-title-icon">{step.icon}</span>
             {step.title}
           </h1>
-          <p className="text-sm text-gray-600">{step.description}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{step.description}</p>
         </div>
 
         <div className="grid gap-2 md:grid-cols-4 stagger">
@@ -418,11 +418,14 @@ export default function OnboardingPage() {
                     className="input"
                     inputMode="numeric"
                     pattern="\\d*"
+                    maxLength={field.key === "mifiImei" ? 15 : undefined}
                     placeholder={field.placeholder}
                     value={form[field.key] ?? ""}
-                    onChange={(event) =>
-                      updateField(field.key, event.target.value.replace(/\D/g, ""))
-                    }
+                    onChange={(event) => {
+                      let digits = event.target.value.replace(/\D/g, "");
+                      if (field.key === "mifiImei") digits = digits.slice(0, 15);
+                      updateField(field.key, digits);
+                    }}
                     required
                   />
                 ) : (
@@ -435,7 +438,7 @@ export default function OnboardingPage() {
                   />
                 )}
                 {field.hint ? (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {field.hint}
                     {field.hintLink ? (
                       <>
@@ -498,7 +501,7 @@ export default function OnboardingPage() {
           <div className="absolute inset-0 bg-black/50" aria-hidden="true" />
           <div className="relative w-full max-w-md space-y-4 text-center glass-panel p-6">
             <h2 className="text-2xl font-semibold">Submission Received</h2>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Your submission is under review. You will be notified once there is a response from the admin team.
             </p>
             <button

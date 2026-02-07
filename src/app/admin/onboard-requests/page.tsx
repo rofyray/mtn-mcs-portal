@@ -3,18 +3,19 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
-import { useAdmin, useAdminRole } from "@/contexts/admin-context";
+import { useAdmin } from "@/contexts/admin-context";
 import { ghanaLocations } from "@/lib/ghana-locations";
 import EmptyState from "@/components/empty-state";
-import { AdminDataRequestsEmptyIcon } from "@/components/admin-empty-icons";
+import { AdminOnboardRequestsEmptyIcon } from "@/components/admin-empty-icons";
 
-type DataRequest = {
+type OnboardRequest = {
   id: string;
   businessName: string;
   regionCode: string;
   status: string;
   createdAt: string;
-  createdByAdmin: { id: string; name: string; role: string };
+  createdByAdmin: { id: string; name: string; role: string } | null;
+  submitterName: string | null;
 };
 
 type Pagination = {
@@ -26,10 +27,11 @@ type Pagination = {
 
 const STATUS_OPTIONS = [
   { value: "", label: "All Statuses" },
+  { value: "PENDING_COORDINATOR", label: "Pending Coordinator" },
   { value: "DRAFT", label: "Draft" },
   { value: "PENDING_MANAGER", label: "Pending Manager" },
   { value: "PENDING_SENIOR_MANAGER", label: "Pending Senior Manager" },
-  { value: "PENDING_LEGAL", label: "Pending Legal" },
+  { value: "PENDING_GOVERNANCE_CHECK", label: "Pending Governance" },
   { value: "APPROVED", label: "Approved" },
   { value: "DENIED", label: "Denied" },
 ];
@@ -38,9 +40,10 @@ function getStatusClass(status: string) {
   switch (status) {
     case "DRAFT":
       return "dr-status dr-status-draft";
+    case "PENDING_COORDINATOR":
     case "PENDING_MANAGER":
     case "PENDING_SENIOR_MANAGER":
-    case "PENDING_LEGAL":
+    case "PENDING_GOVERNANCE_CHECK":
       return "dr-status dr-status-pending";
     case "APPROVED":
       return "dr-status dr-status-approved";
@@ -63,10 +66,9 @@ function formatDate(dateStr: string) {
   });
 }
 
-export default function DataRequestsPage() {
+export default function OnboardRequestsPage() {
   const { admin } = useAdmin();
-  const { isCoordinator } = useAdminRole();
-  const [forms, setForms] = useState<DataRequest[]>([]);
+  const [forms, setForms] = useState<OnboardRequest[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
@@ -78,7 +80,7 @@ export default function DataRequestsPage() {
       const params = new URLSearchParams({ page: String(page), limit: "20" });
       if (statusFilter) params.set("status", statusFilter);
 
-      const response = await fetch(`/api/admin/data-requests?${params}`);
+      const response = await fetch(`/api/admin/onboard-requests?${params}`);
       if (!response.ok) throw new Error();
       const data = await response.json();
       setForms(data.forms);
@@ -99,16 +101,11 @@ export default function DataRequestsPage() {
       <div className="mx-auto w-full max-w-5xl space-y-6 glass-panel p-6 page-animate panel-loading">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold">Data Requests</h1>
+            <h1 className="text-2xl font-semibold">Onboard Requests</h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              MCS Partner Data Request Forms
+              MCS Partner Onboard Request Forms
             </p>
           </div>
-          {isCoordinator && (
-            <Link href="/admin/data-requests/new" className="btn btn-primary text-sm">
-              New Data Request
-            </Link>
-          )}
         </div>
 
         {loading ? <span className="panel-spinner" aria-label="Loading" /> : null}
@@ -139,9 +136,9 @@ export default function DataRequestsPage() {
         {!loading && forms.length === 0 ? (
           <div className="card">
             <EmptyState
-              icon={<AdminDataRequestsEmptyIcon />}
-              title="No data requests yet"
-              description="Data request forms will show here."
+              icon={<AdminOnboardRequestsEmptyIcon />}
+              title="No onboard requests yet"
+              description="Onboard request forms will show here."
               variant="inset"
             />
           </div>
@@ -150,7 +147,7 @@ export default function DataRequestsPage() {
             {forms.map((form) => (
               <Link
                 key={form.id}
-                href={`/admin/data-requests/${form.id}`}
+                href={`/admin/onboard-requests/${form.id}`}
                 className="card grid-card space-y-2 block"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -165,7 +162,7 @@ export default function DataRequestsPage() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                  <span>By {form.createdByAdmin.name}</span>
+                  <span>By {form.createdByAdmin?.name ?? form.submitterName ?? "Public"}</span>
                   <span>{formatDate(form.createdAt)}</span>
                 </div>
               </Link>

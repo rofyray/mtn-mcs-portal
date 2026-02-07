@@ -6,9 +6,10 @@ import prisma from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { buildEmailTemplate } from "@/lib/email-template";
 import { generateOtpCode } from "@/lib/admin-auth";
+import { formatZodError } from "@/lib/validation";
 
 const requestSchema = z.object({
-  email: z.string().email(),
+  email: z.string().email("A valid email is required"),
 });
 
 export async function POST(request: Request) {
@@ -16,7 +17,7 @@ export async function POST(request: Request) {
   const parsed = requestSchema.safeParse(body);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
 
   const adminEmail = parsed.data.email.trim().toLowerCase();

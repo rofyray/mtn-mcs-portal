@@ -4,16 +4,17 @@ import { z } from "zod";
 import prisma from "@/lib/db";
 import { getAdminSession } from "@/lib/admin-session";
 import { logAuditEvent } from "@/lib/audit";
+import { formatZodError } from "@/lib/validation";
 
 const createSchema = z.object({
-  businessName: z.string().min(1),
+  businessName: z.string().min(1, "Business name is required"),
   dateOfIncorporation: z.string().optional(),
   businessType: z.string().optional(),
   businessTypeOther: z.string().optional(),
   registeredNature: z.string().optional(),
   registrationCertNo: z.string().optional(),
   mainOfficeLocation: z.string().optional(),
-  regionCode: z.string().min(1),
+  regionCode: z.string().min(1, "Region is required"),
   tinNumber: z.string().optional(),
   postalAddress: z.string().optional(),
   physicalAddress: z.string().optional(),
@@ -54,9 +55,14 @@ export async function GET(request: NextRequest) {
   const regionCodes = admin.regions.map((r) => r.regionCode);
 
   switch (role) {
-    case "COORDINATOR":
-      where.createdByAdminId = admin.id;
+    case "COORDINATOR": {
+      const coordRegions = admin.regions.map((r) => r.regionCode);
+      where.OR = [
+        { createdByAdminId: admin.id },
+        { status: "PENDING_COORDINATOR", regionCode: { in: coordRegions } },
+      ];
       break;
+    }
     case "MANAGER":
       if (!statusFilter) {
         where.OR = [
@@ -75,10 +81,10 @@ export async function GET(request: NextRequest) {
         where.regionCode = { in: regionCodes };
       }
       break;
-    case "LEGAL":
+    case "GOVERNANCE_CHECK":
       if (!statusFilter) {
         where.OR = [
-          { status: "PENDING_LEGAL" },
+          { status: "PENDING_GOVERNANCE_CHECK" },
           { approvals: { some: { adminId: admin.id } } },
         ];
       }
@@ -91,8 +97,8 @@ export async function GET(request: NextRequest) {
   }
 
   const [total, forms] = await Promise.all([
-    prisma.dataRequestForm.count({ where }),
-    prisma.dataRequestForm.findMany({
+    prisma.onboardRequestForm.count({ where }),
+    prisma.onboardRequestForm.findMany({
       where,
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * limit,
@@ -118,7 +124,7 @@ export async function POST(request: NextRequest) {
   const admin = session.admin;
   if (admin.role !== "COORDINATOR") {
     return NextResponse.json(
-      { error: "Only coordinators can create data requests" },
+      { error: "Only coordinators can create onboard requests" },
       { status: 403 }
     );
   }
@@ -127,7 +133,7 @@ export async function POST(request: NextRequest) {
   const parsed = createSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Validation failed", details: parsed.error.flatten() },
+      { error: formatZodError(parsed.error), details: parsed.error.flatten() },
       { status: 400 }
     );
   }
@@ -143,7 +149,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const form = await prisma.dataRequestForm.create({
+  const form = await prisma.onboardRequestForm.create({
     data: {
       status: "DRAFT",
       createdByAdminId: admin.id,
@@ -172,8 +178,8 @@ export async function POST(request: NextRequest) {
 
   await logAuditEvent({
     adminId: admin.id,
-    action: "DATA_REQUEST_CREATED",
-    targetType: "DataRequestForm",
+    action: "ONBOARD_REQUEST_CREATED",
+    targetType: "OnboardRequestForm",
     targetId: form.id,
     metadata: { businessName: data.businessName, regionCode: data.regionCode },
   });
