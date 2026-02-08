@@ -40,9 +40,26 @@ export async function GET(request: Request) {
 
   const agents = await prisma.agent.findMany({
     where,
-    include: { business: true },
+    select: {
+      id: true,
+      firstName: true,
+      surname: true,
+      phoneNumber: true,
+      email: true,
+      status: true,
+      businessName: true,
+      business: {
+        select: {
+          city: true,
+          addressCode: true,
+          addressRegionCode: true,
+        },
+      },
+    },
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json({ agents, adminRole: admin.role });
+  const response = NextResponse.json({ agents, adminRole: admin.role });
+  response.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60");
+  return response;
 }

@@ -239,5 +239,7 @@ export async function GET() {
     };
   });
 
-  return NextResponse.json({ logs: enrichedLogs });
+  const response = NextResponse.json({ logs: enrichedLogs });
+  response.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60");
+  return response;
 }

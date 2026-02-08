@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
         hostname: "*.blob.core.windows.net",
       },
     ],
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 60,
   },
 };
 

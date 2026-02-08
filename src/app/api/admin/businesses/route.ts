@@ -40,8 +40,19 @@ export async function GET(request: Request) {
 
   const businesses = await prisma.business.findMany({
     where,
+    select: {
+      id: true,
+      businessName: true,
+      city: true,
+      addressRegionCode: true,
+      addressDistrictCode: true,
+      addressSbuCode: true,
+      status: true,
+    },
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json({ businesses, adminRole: admin.role });
+  const response = NextResponse.json({ businesses, adminRole: admin.role });
+  response.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60");
+  return response;
 }

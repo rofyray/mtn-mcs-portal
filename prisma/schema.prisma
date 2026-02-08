@@ -215,6 +215,7 @@ model AdminRegionAssignment {
   admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
 
   @@unique([adminId, regionCode])
+  @@index([regionCode])
 }
 
 model AdminSession {
@@ -344,6 +345,7 @@ model Notification {
   @@index([recipientAdminId])
   @@index([recipientUserId])
   @@index([recipientType, recipientAdminId, readAt])
+  @@index([createdAt])
 }
 
 model TrainingRequest {
@@ -357,6 +359,8 @@ model TrainingRequest {
 
   partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
   replies        TrainingRequestReply[]
+
+  @@index([partnerProfileId])
 }
 
 model RestockRequest {
@@ -371,6 +375,9 @@ model RestockRequest {
   partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
   business       Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
   replies        RestockRequestReply[]
+
+  @@index([partnerProfileId])
+  @@index([businessId])
 }
 
 model Feedback {
@@ -383,6 +390,8 @@ model Feedback {
 
   partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
   replies        FeedbackReply[]
+
+  @@index([partnerProfileId])
 }
 
 model FeedbackReply {
@@ -439,6 +448,7 @@ model AuditLog {
 
   @@index([adminId])
   @@index([createdAt])
+  @@index([action])
 }
 
 model OnboardRequestForm {

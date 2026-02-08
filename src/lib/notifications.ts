@@ -40,27 +40,25 @@ export async function broadcastAdminNotification(
   const adminIds = new Set<string>();
 
   if (hasRegionFilter) {
-    // Global roles (FULL, MANAGER) always receive notifications
+    // Single query: global roles get all notifications, coordinators filtered by region
     const globalRoles = roles.filter((r) => r !== AdminRole.COORDINATOR);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const orConditions: any[] = [];
     if (globalRoles.length > 0) {
-      const globalAdmins = await prisma.admin.findMany({
-        where: { role: { in: globalRoles }, enabled: true },
-        select: { id: true },
-      });
-      for (const a of globalAdmins) adminIds.add(a.id);
+      orConditions.push({ role: { in: globalRoles } });
     }
-
-    // COORDINATORs filtered by region
     if (roles.includes(AdminRole.COORDINATOR)) {
-      const regionAdmins = await prisma.admin.findMany({
-        where: {
-          role: AdminRole.COORDINATOR,
-          enabled: true,
-          regions: { some: { regionCode: { in: regionCodes } } },
-        },
+      orConditions.push({
+        role: AdminRole.COORDINATOR,
+        regions: { some: { regionCode: { in: regionCodes } } },
+      });
+    }
+    if (orConditions.length > 0) {
+      const admins = await prisma.admin.findMany({
+        where: { enabled: true, OR: orConditions },
         select: { id: true },
       });
-      for (const a of regionAdmins) adminIds.add(a.id);
+      for (const a of admins) adminIds.add(a.id);
     }
   } else {
     // No region filter — fall back to current behavior (all matching roles)

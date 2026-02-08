@@ -44,7 +44,9 @@ export async function GET() {
     ),
   }));
 
-  return NextResponse.json({ admins: result });
+  const response = NextResponse.json({ admins: result });
+  response.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60");
+  return response;
 }
 
 const createAdminSchema = z.object({
