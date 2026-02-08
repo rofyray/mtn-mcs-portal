@@ -17,7 +17,7 @@ export default function HeaderActions() {
   const isPartnerRoute = pathname.startsWith("/partner") || pathname.startsWith("/onboarding");
   const isAdminRoute = pathname.startsWith("/admin");
 
-  const noSidebar = adminRole === "GOVERNANCE_CHECK" || adminRole === "SENIOR_MANAGER" || isLoading;
+  const noSidebar = !isLoading && (adminRole === "GOVERNANCE" || adminRole === "SENIOR_MANAGER");
   const showMobileNavToggle =
     (isPartnerRoute &&
       status === "authenticated" &&

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import prisma from "@/lib/db";
 import { getAdminSession } from "@/lib/admin-session";
+import { logAuditEvent, buildFieldChanges } from "@/lib/audit";
 import { formatZodError } from "@/lib/validation";
 
 const updateSchema = z.object({
@@ -14,6 +15,7 @@ const updateSchema = z.object({
   registrationCertNo: z.string().optional(),
   mainOfficeLocation: z.string().optional(),
   regionCode: z.string().optional(),
+  sbuCode: z.string().optional(),
   tinNumber: z.string().optional(),
   postalAddress: z.string().optional(),
   physicalAddress: z.string().optional(),
@@ -145,6 +147,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   if (data.registrationCertNo !== undefined) updateData.registrationCertNo = data.registrationCertNo;
   if (data.mainOfficeLocation !== undefined) updateData.mainOfficeLocation = data.mainOfficeLocation;
   if (data.regionCode !== undefined) updateData.regionCode = data.regionCode;
+  if (data.sbuCode !== undefined) updateData.sbuCode = data.sbuCode || null;
   if (data.tinNumber !== undefined) updateData.tinNumber = data.tinNumber;
   if (data.postalAddress !== undefined) updateData.postalAddress = data.postalAddress;
   if (data.physicalAddress !== undefined) updateData.physicalAddress = data.physicalAddress;
@@ -169,10 +172,25 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     updateData.createdByAdminId = admin.id;
   }
 
+  const changes = buildFieldChanges(
+    form as unknown as Record<string, unknown>,
+    updateData as Record<string, unknown>
+  );
+
   const updated = await prisma.onboardRequestForm.update({
     where: { id },
     data: updateData,
   });
+
+  if (changes.length > 0) {
+    await logAuditEvent({
+      adminId: admin.id,
+      action: "ONBOARD_REQUEST_EDITED",
+      targetType: "OnboardRequestForm",
+      targetId: id,
+      metadata: { changes },
+    });
+  }
 
   return NextResponse.json({ form: updated });
 }

@@ -23,8 +23,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const admin = session.admin;
   const { id } = await context.params;
 
-  // Only MANAGER, SENIOR_MANAGER, or GOVERNANCE_CHECK can deny
-  if (!["MANAGER", "SENIOR_MANAGER", "GOVERNANCE_CHECK"].includes(admin.role)) {
+  // Only MANAGER, SENIOR_MANAGER, or GOVERNANCE can deny
+  if (!["MANAGER", "SENIOR_MANAGER", "GOVERNANCE"].includes(admin.role)) {
     return NextResponse.json(
       { error: "You do not have permission to deny onboard requests" },
       { status: 403 }
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const allowedStatuses: Record<string, string[]> = {
     MANAGER: ["PENDING_MANAGER"],
     SENIOR_MANAGER: ["PENDING_SENIOR_MANAGER"],
-    GOVERNANCE_CHECK: ["PENDING_GOVERNANCE_CHECK"],
+    GOVERNANCE: ["PENDING_GOVERNANCE_CHECK"],
   };
 
   const allowed = allowedStatuses[admin.role] ?? [];

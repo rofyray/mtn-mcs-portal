@@ -17,7 +17,7 @@ export async function getAdminSession() {
       admin: {
         include: {
           regions: {
-            select: { regionCode: true },
+            select: { regionCode: true, sbuCode: true },
           },
         },
       },

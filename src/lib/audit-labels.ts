@@ -20,10 +20,11 @@ const ACTION_LABELS: Record<string, string> = {
   ONBOARD_REQUEST_CREATED: "Onboard Request Created",
   ONBOARD_REQUEST_SUBMITTED_TO_MANAGER: "Onboard Request Sent to Manager",
   ONBOARD_REQUEST_SUBMITTED_TO_SENIOR_MANAGER: "Onboard Request Sent to Senior Manager",
-  ONBOARD_REQUEST_SUBMITTED_TO_GOVERNANCE_CHECK: "Onboard Request Sent to Governance",
+  ONBOARD_REQUEST_SUBMITTED_TO_GOVERNANCE: "Onboard Request Sent to Governance",
   ONBOARD_REQUEST_APPROVED: "Onboard Request Approved",
   ONBOARD_REQUEST_DENIED: "Onboard Request Denied",
   ONBOARD_REQUEST_PUBLIC_SUBMITTED: "Onboard Request Public Submitted",
+  ONBOARD_REQUEST_EDITED: "Onboard Request Edited",
 };
 
 const ACTION_AREAS: Record<string, string> = {
@@ -48,10 +49,11 @@ const ACTION_AREAS: Record<string, string> = {
   ONBOARD_REQUEST_CREATED: "Onboard Request",
   ONBOARD_REQUEST_SUBMITTED_TO_MANAGER: "Onboard Request",
   ONBOARD_REQUEST_SUBMITTED_TO_SENIOR_MANAGER: "Onboard Request",
-  ONBOARD_REQUEST_SUBMITTED_TO_GOVERNANCE_CHECK: "Onboard Request",
+  ONBOARD_REQUEST_SUBMITTED_TO_GOVERNANCE: "Onboard Request",
   ONBOARD_REQUEST_APPROVED: "Onboard Request",
   ONBOARD_REQUEST_DENIED: "Onboard Request",
   ONBOARD_REQUEST_PUBLIC_SUBMITTED: "Onboard Request",
+  ONBOARD_REQUEST_EDITED: "Onboard Request",
 };
 
 const ACTION_CATEGORIES: Record<string, "success" | "warning" | "error" | "info"> = {
@@ -76,10 +78,11 @@ const ACTION_CATEGORIES: Record<string, "success" | "warning" | "error" | "info"
   ONBOARD_REQUEST_CREATED: "info",
   ONBOARD_REQUEST_SUBMITTED_TO_MANAGER: "info",
   ONBOARD_REQUEST_SUBMITTED_TO_SENIOR_MANAGER: "info",
-  ONBOARD_REQUEST_SUBMITTED_TO_GOVERNANCE_CHECK: "info",
+  ONBOARD_REQUEST_SUBMITTED_TO_GOVERNANCE: "info",
   ONBOARD_REQUEST_APPROVED: "success",
   ONBOARD_REQUEST_DENIED: "error",
   ONBOARD_REQUEST_PUBLIC_SUBMITTED: "info",
+  ONBOARD_REQUEST_EDITED: "info",
 };
 
 export function getActionLabel(action: string): string {

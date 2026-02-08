@@ -19,7 +19,23 @@ export async function GET(request: Request) {
   }
 
   if (admin.role !== "FULL") {
-    where.business = { addressRegionCode: { in: regionCodes } };
+    const sbuAssignments = admin.regions.filter((r) => r.sbuCode);
+    const sbuRegionCodes = sbuAssignments.map((s) => s.regionCode);
+    const nonSbuRegions = regionCodes.filter((rc) => !sbuRegionCodes.includes(rc));
+
+    if (sbuAssignments.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const conditions: any[] = [];
+      if (nonSbuRegions.length > 0) {
+        conditions.push({ addressRegionCode: { in: nonSbuRegions } });
+      }
+      for (const s of sbuAssignments) {
+        conditions.push({ addressRegionCode: s.regionCode, addressSbuCode: s.sbuCode });
+      }
+      where.business = { OR: conditions };
+    } else {
+      where.business = { addressRegionCode: { in: regionCodes } };
+    }
   }
 
   const agents = await prisma.agent.findMany({

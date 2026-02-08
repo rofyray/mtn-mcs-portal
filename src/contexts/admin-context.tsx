@@ -9,7 +9,7 @@ type Admin = {
   email: string;
   role: string;
   enabled: boolean;
-  regions: { regionCode: string }[];
+  regions: { regionCode: string; sbuCode: string | null }[];
 };
 
 type AdminContextValue = {
@@ -89,6 +89,6 @@ export function useAdminRole() {
     isManager: admin?.role === "MANAGER",
     isCoordinator: admin?.role === "COORDINATOR",
     isSeniorManager: admin?.role === "SENIOR_MANAGER",
-    isGovernanceCheck: admin?.role === "GOVERNANCE_CHECK",
+    isGovernance: admin?.role === "GOVERNANCE",
   };
 }

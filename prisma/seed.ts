@@ -7,55 +7,55 @@ const coordinators = [
     name: "Lydia Ohenewaa",
     email: "lydia.ohenewaa@mtn.com",
     role: "COORDINATOR",
-    regions: ["A"],
+    regions: [{ code: "A" }],
   },
   {
     name: "System Coordinator",
     email: "regionadmin@grr.la",
     role: "COORDINATOR",
-    regions: ["G", "A"],
+    regions: [{ code: "G" }, { code: "A" }],
   },
   {
     name: "Mariam Abubakar",
     email: "mariam.abubakar@mtn.com",
     role: "COORDINATOR",
-    regions: ["N", "U", "X", "S", "J", "B", "F", "H"],
+    regions: [{ code: "N" }, { code: "U" }, { code: "X" }, { code: "S" }, { code: "J" }, { code: "B" }, { code: "F" }, { code: "H" }],
   },
   {
     name: "Jeremiah Agyei",
     email: "jeremiah.adjei@mtn.com",
     role: "COORDINATOR",
-    regions: ["E", "V", "O"],
+    regions: [{ code: "E" }, { code: "V" }, { code: "O" }],
   },
   {
     name: "Kwame Nkrumah",
     email: "lynxcorp.org@gmail.com",
     role: "COORDINATOR",
-    regions: ["E", "V", "O"],
+    regions: [{ code: "E" }, { code: "V" }, { code: "O" }],
   },
   {
     name: "Muniratu Iddi-Abass Hussein",
     email: "muniratu.iddi-abasshussein@mtn.com",
     role: "COORDINATOR",
-    regions: ["G"],
+    regions: [{ code: "G", sbuCode: "ACCRA_EAST" }],
   },
   {
     name: "Dennis Kwame",
     email: "dennis.kwame@mtn.com",
     role: "COORDINATOR",
-    regions: ["G"],
+    regions: [{ code: "G", sbuCode: "ACCRA_WEST" }],
   },
   {
     name: "Lovelace Mensah",
     email: "lovelace.mensah@mtn.com",
     role: "COORDINATOR",
-    regions: ["W", "C", "R"],
+    regions: [{ code: "W" }, { code: "C" }, { code: "R" }],
   },
   {
     name: "Paa Grant",
     email: "geoffreyokyereforson@gmail.com",
     role: "COORDINATOR",
-    regions: ["W", "C", "R", "G"],
+    regions: [{ code: "W" }, { code: "C" }, { code: "R" }, { code: "G" }],
   },
 ];
 
@@ -87,7 +87,7 @@ const governanceCheckAdmins = [
   {
     name: "System Governance",
     email: "mtnlegal@grr.la",
-    role: "GOVERNANCE_CHECK",
+    role: "GOVERNANCE",
     regions: [],
   },
 ];
@@ -97,31 +97,31 @@ const seniorManagers = [
     name: "Janet Quarshie",
     email: "janet.quarshie@mtn.com",
     role: "SENIOR_MANAGER",
-    regions: ["C", "W", "E", "O", "V", "G", "R"],
+    regions: [{ code: "C" }, { code: "W" }, { code: "E" }, { code: "O" }, { code: "V" }, { code: "G" }, { code: "R" }],
   },
   {
     name: "Adwoa Baah Obeng",
     email: "adwoa.obeng@mtn.com",
     role: "SENIOR_MANAGER",
-    regions: ["U", "X", "A", "N", "B", "F", "H", "S", "J"],
+    regions: [{ code: "U" }, { code: "X" }, { code: "A" }, { code: "N" }, { code: "B" }, { code: "F" }, { code: "H" }, { code: "S" }, { code: "J" }],
   },
   {
     name: "System Senior Manager",
     email: "snrmgr@grr.la",
     role: "SENIOR_MANAGER",
-    regions: ["A", "B", "C", "E", "F", "G", "H", "J", "N", "O", "R", "S", "U", "V", "W", "X"],
+    regions: [{ code: "A" }, { code: "B" }, { code: "C" }, { code: "E" }, { code: "F" }, { code: "G" }, { code: "H" }, { code: "J" }, { code: "N" }, { code: "O" }, { code: "R" }, { code: "S" }, { code: "U" }, { code: "V" }, { code: "W" }, { code: "X" }],
   },
   {
     name: "Okyere Forson",
     email: "okyereforsong@gmail.com",
     role: "SENIOR_MANAGER",
-    regions: ["A", "B", "C", "E", "F", "G", "H", "J", "N", "O", "R", "S", "U", "V", "W", "X"],
+    regions: [{ code: "A" }, { code: "B" }, { code: "C" }, { code: "E" }, { code: "F" }, { code: "G" }, { code: "H" }, { code: "J" }, { code: "N" }, { code: "O" }, { code: "R" }, { code: "S" }, { code: "U" }, { code: "V" }, { code: "W" }, { code: "X" }],
   },
   {
     name: "Geoffrey Okyere-Forson",
     email: "geoffreyokyereforson05@gmail.com",
     role: "SENIOR_MANAGER",
-    regions: ["C", "W", "E", "O", "V", "G", "R"],
+    regions: [{ code: "C" }, { code: "W" }, { code: "E" }, { code: "O" }, { code: "V" }, { code: "G" }, { code: "R" }],
   },
 ];
 
@@ -149,13 +149,16 @@ async function main() {
           where: {
             adminId_regionCode: {
               adminId: record.id,
-              regionCode: region,
+              regionCode: region.code,
             },
           },
-          update: {},
+          update: {
+            sbuCode: ("sbuCode" in region ? region.sbuCode : null) as string | null,
+          },
           create: {
             adminId: record.id,
-            regionCode: region,
+            regionCode: region.code,
+            sbuCode: ("sbuCode" in region ? region.sbuCode : null) as string | null,
           },
         });
       }

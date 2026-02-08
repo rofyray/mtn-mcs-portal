@@ -11,7 +11,7 @@ export default async function AdminHomePage() {
     redirect("/admin/login");
   }
 
-  if (session.admin.role === "GOVERNANCE_CHECK") {
+  if (session.admin.role === "GOVERNANCE") {
     redirect("/admin/onboard-requests");
   }
 

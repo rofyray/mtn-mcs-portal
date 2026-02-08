@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import prisma from "@/lib/db";
 import { getAdminAndProfile } from "@/lib/admin-access";
-import { logAuditEvent } from "@/lib/audit";
+import { logAuditEvent, buildFieldChanges } from "@/lib/audit";
 import { onboardingSchema } from "@/lib/onboarding";
 import { formatZodError } from "@/lib/validation";
 
@@ -29,12 +29,17 @@ export async function PUT(
     data: parsed.data,
   });
 
+  const changes = buildFieldChanges(
+    access.profile as unknown as Record<string, unknown>,
+    parsed.data as Record<string, unknown>
+  );
+
   await logAuditEvent({
     adminId: access.admin.id,
     action: "PARTNER_EDITED",
     targetType: "PartnerProfile",
     targetId: id,
-    metadata: { updatedFields: Object.keys(parsed.data) },
+    metadata: { changes },
   });
 
   return NextResponse.json({ profile: updated });

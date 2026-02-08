@@ -7,7 +7,7 @@ import { AdminBusinessesEmptyIcon } from "@/components/admin-empty-icons";
 import MultiSelectDropdown from "@/components/multi-select-dropdown";
 import { useToast } from "@/components/toast";
 import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
-import { ghanaLocations } from "@/lib/ghana-locations";
+import { ghanaLocations, GREATER_ACCRA_SBUS, GREATER_ACCRA_REGION_CODE } from "@/lib/ghana-locations";
 import ViewModeToggle from "@/components/view-mode-toggle";
 import { useViewMode } from "@/hooks/use-view-mode";
 
@@ -16,6 +16,7 @@ type Business = {
   businessName: string;
   city: string;
   addressRegionCode: string;
+  addressSbuCode?: string | null;
   addressDistrictCode: string;
   status: string;
 };
@@ -34,6 +35,7 @@ export default function AdminBusinessesPage() {
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [selectedDistricts, setSelectedDistricts] = useState<string[]>([]);
+  const [selectedSbu, setSelectedSbu] = useState("");
   const [adminRole, setAdminRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -148,6 +150,10 @@ export default function AdminBusinessesPage() {
 
   function handleRegionChange(nextRegions: string[]) {
     setSelectedRegions(nextRegions);
+    // Clear SBU filter if Greater Accra is deselected
+    if (!nextRegions.includes(GREATER_ACCRA_REGION_CODE)) {
+      setSelectedSbu("");
+    }
     const allowedDistricts =
       nextRegions.length === 0
         ? new Set(allDistrictOptions.map((district) => district.value))
@@ -192,6 +198,9 @@ export default function AdminBusinessesPage() {
       if (selectedDistricts.length > 0 && !selectedDistricts.includes(business.addressDistrictCode)) {
         return false;
       }
+      if (selectedSbu && business.addressSbuCode !== selectedSbu) {
+        return false;
+      }
       if (!normalizedSearch) {
         return true;
       }
@@ -200,7 +209,7 @@ export default function AdminBusinessesPage() {
         business.city.toLowerCase().includes(normalizedSearch)
       );
     });
-  }, [businesses, searchQuery, selectedCity, selectedRegions, selectedDistricts]);
+  }, [businesses, searchQuery, selectedCity, selectedRegions, selectedDistricts, selectedSbu]);
 
   return (
     <main className="min-h-screen px-6 py-10">
@@ -271,6 +280,23 @@ export default function AdminBusinessesPage() {
               onChange={handleRegionChange}
             />
           </div>
+          {selectedRegions.includes(GREATER_ACCRA_REGION_CODE) && (
+            <div className="admin-filter-field">
+              <label className="label">SBU</label>
+              <select
+                className="input"
+                value={selectedSbu}
+                onChange={(e) => setSelectedSbu(e.target.value)}
+              >
+                <option value="">All SBUs</option>
+                {GREATER_ACCRA_SBUS.map((sbu) => (
+                  <option key={sbu.code} value={sbu.code}>
+                    {sbu.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="admin-filter-field admin-filter-span-3">
             <label className="label">Districts</label>
             <MultiSelectDropdown

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { businessUpdateSchema } from "@/lib/business";
 import { getAdminAndBusiness } from "@/lib/admin-access";
-import { logAuditEvent } from "@/lib/audit";
+import { logAuditEvent, buildFieldChanges } from "@/lib/audit";
 import { formatZodError } from "@/lib/validation";
 
 export async function PUT(
@@ -29,12 +29,17 @@ export async function PUT(
     data: parsed.data,
   });
 
+  const changes = buildFieldChanges(
+    access.business as unknown as Record<string, unknown>,
+    parsed.data as Record<string, unknown>
+  );
+
   await logAuditEvent({
     adminId: access.admin.id,
     action: "BUSINESS_EDITED",
     targetType: "Business",
     targetId: id,
-    metadata: { updatedFields: Object.keys(parsed.data) },
+    metadata: { changes },
   });
 
   return NextResponse.json({ business: updated });

@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 import { useAdmin } from "@/contexts/admin-context";
 import { useToast } from "@/components/toast";
 import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
-import { ghanaLocations } from "@/lib/ghana-locations";
+import { ghanaLocations, GREATER_ACCRA_SBUS, GREATER_ACCRA_REGION_CODE } from "@/lib/ghana-locations";
 import { uploadFile } from "@/lib/storage/upload-client";
 import UploadField from "@/components/upload-field";
 import { IMAGE_ACCEPT } from "@/lib/storage/accepts";
@@ -217,6 +217,7 @@ function NewOnboardRequestPage() {
           registrationCertNo: f.registrationCertNo ?? "",
           mainOfficeLocation: f.mainOfficeLocation ?? "",
           regionCode: f.regionCode ?? "",
+          sbuCode: f.sbuCode ?? "",
           tinNumber: f.tinNumber ?? "",
           postalAddress: f.postalAddress ?? "",
           physicalAddress: f.physicalAddress ?? "",
@@ -242,7 +243,14 @@ function NewOnboardRequestPage() {
   }, [editId]);
 
   const updateField = useCallback((key: keyof OnboardRequestFormData, value: unknown) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    setForm((prev) => {
+      const next = { ...prev, [key]: value };
+      // Clear SBU when region changes away from Greater Accra
+      if (key === "regionCode" && value !== GREATER_ACCRA_REGION_CODE) {
+        next.sbuCode = "";
+      }
+      return next;
+    });
   }, []);
 
   const updateSignatory = useCallback(
@@ -551,6 +559,24 @@ function NewOnboardRequestPage() {
                 ))}
               </select>
             </div>
+
+            {form.regionCode === GREATER_ACCRA_REGION_CODE && (
+              <div className="space-y-1">
+                <label className="label">Sub-Business Unit (SBU)</label>
+                <select
+                  className="input"
+                  value={form.sbuCode}
+                  onChange={(e) => updateField("sbuCode", e.target.value)}
+                >
+                  <option value="">Select SBU</option>
+                  {GREATER_ACCRA_SBUS.map((sbu) => (
+                    <option key={sbu.code} value={sbu.code}>
+                      {sbu.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="space-y-1">
               <label className="label">TIN Number</label>

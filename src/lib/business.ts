@@ -11,6 +11,7 @@ const optionalString = z.preprocess(
 export const businessSchema = z.object({
   businessName: z.string().trim().min(1, "Business name is required"),
   addressRegionCode: z.string().trim().min(1, "Region is required"),
+  addressSbuCode: optionalString,
   addressDistrictCode: z.string().trim().min(1, "District is required"),
   addressCode: z.string().trim().min(1, "Digital address code is required"),
   gpsLatitude: optionalString,

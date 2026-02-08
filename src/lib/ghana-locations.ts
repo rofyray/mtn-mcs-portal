@@ -393,3 +393,10 @@ export const ghanaLocations: GhanaLocationsData = {
     ]
   }
 };
+
+export const GREATER_ACCRA_REGION_CODE = "G";
+
+export const GREATER_ACCRA_SBUS = [
+  { code: "ACCRA_EAST", name: "Accra East" },
+  { code: "ACCRA_WEST", name: "Accra West" },
+] as const;

@@ -12,7 +12,7 @@ enum AdminRole {
   MANAGER
   COORDINATOR
   SENIOR_MANAGER
-  GOVERNANCE_CHECK
+  GOVERNANCE
 }
 
 enum AdminOtpStatus {
@@ -76,10 +76,12 @@ enum AuditAction {
   ONBOARD_REQUEST_CREATED
   ONBOARD_REQUEST_SUBMITTED_TO_MANAGER
   ONBOARD_REQUEST_SUBMITTED_TO_SENIOR_MANAGER
-  ONBOARD_REQUEST_SUBMITTED_TO_GOVERNANCE_CHECK
+  ONBOARD_REQUEST_SUBMITTED_TO_GOVERNANCE
   ONBOARD_REQUEST_APPROVED
   ONBOARD_REQUEST_DENIED
   ONBOARD_REQUEST_PUBLIC_SUBMITTED
+  ONBOARD_REQUEST_EDITED
+  ADMIN_CREATED
 }
 
 enum OnboardRequestStatus {
@@ -185,6 +187,7 @@ model AdminRegionAssignment {
   id         String   @id @default(cuid())
   adminId    String
   regionCode String
+  sbuCode    String?
   createdAt  DateTime @default(now())
 
   admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
@@ -281,6 +284,7 @@ model Business {
   denialReason       String?
   businessName       String
   addressRegionCode  String
+  addressSbuCode     String?
   addressDistrictCode String
   addressCode        String
   gpsLatitude        String?
@@ -299,6 +303,7 @@ model Business {
   @@index([partnerProfileId])
   @@index([status])
   @@index([addressRegionCode])
+  @@index([addressSbuCode])
 }
 
 model Notification {
@@ -397,6 +402,7 @@ model OnboardRequestForm {
   status                OnboardRequestStatus @default(DRAFT)
   createdByAdminId      String?
   regionCode            String
+  sbuCode               String?
 
   // Submitter info (public form submissions)
   submitterName         String?
@@ -436,6 +442,7 @@ model OnboardRequestForm {
 
   @@index([status])
   @@index([regionCode])
+  @@index([sbuCode])
   @@index([createdByAdminId])
 }
 
@@ -448,7 +455,7 @@ model OnboardRequestApproval {
   comments              String?
   signatureUrl          String?
   signatureDate         DateTime?
-  governanceScore       Int?     // 1-100, only for GOVERNANCE_CHECK
+  governanceScore       Int?     // 1-100, only for GOVERNANCE
   createdAt             DateTime @default(now())
 
   onboardRequestForm    OnboardRequestForm @relation(fields: [onboardRequestFormId], references: [id], onDelete: Cascade)

@@ -7,6 +7,7 @@ export type OnboardRequestFormData = {
   registrationCertNo: string;
   mainOfficeLocation: string;
   regionCode: string;
+  sbuCode: string;
   tinNumber: string;
   postalAddress: string;
   physicalAddress: string;
@@ -51,6 +52,7 @@ export const INITIAL_FORM: OnboardRequestFormData = {
   registrationCertNo: "",
   mainOfficeLocation: "",
   regionCode: "",
+  sbuCode: "",
   tinNumber: "",
   postalAddress: "",
   physicalAddress: "",

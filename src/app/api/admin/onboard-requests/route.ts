@@ -15,6 +15,7 @@ const createSchema = z.object({
   registrationCertNo: z.string().optional(),
   mainOfficeLocation: z.string().optional(),
   regionCode: z.string().min(1, "Region is required"),
+  sbuCode: z.string().optional(),
   tinNumber: z.string().optional(),
   postalAddress: z.string().optional(),
   physicalAddress: z.string().optional(),
@@ -56,10 +57,30 @@ export async function GET(request: NextRequest) {
 
   switch (role) {
     case "COORDINATOR": {
-      const coordRegions = admin.regions.map((r) => r.regionCode);
+      // Build SBU-aware region conditions
+      const coordSbus = admin.regions.filter((r) => r.sbuCode);
+      const sbuRegionCodes = coordSbus.map((s) => s.regionCode);
+      const nonSbuRegions = admin.regions
+        .filter((r) => !sbuRegionCodes.includes(r.regionCode))
+        .map((r) => r.regionCode);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const regionConditions: any[] = [];
+      if (nonSbuRegions.length > 0) {
+        regionConditions.push({ regionCode: { in: nonSbuRegions } });
+      }
+      for (const s of coordSbus) {
+        regionConditions.push({ regionCode: s.regionCode, sbuCode: s.sbuCode });
+      }
+
       where.OR = [
         { createdByAdminId: admin.id },
-        { status: "PENDING_COORDINATOR", regionCode: { in: coordRegions } },
+        {
+          status: "PENDING_COORDINATOR",
+          ...(regionConditions.length === 1
+            ? regionConditions[0]
+            : { OR: regionConditions }),
+        },
       ];
       break;
     }
@@ -81,7 +102,7 @@ export async function GET(request: NextRequest) {
         where.regionCode = { in: regionCodes };
       }
       break;
-    case "GOVERNANCE_CHECK":
+    case "GOVERNANCE":
       if (!statusFilter) {
         where.OR = [
           { status: "PENDING_GOVERNANCE_CHECK" },
@@ -154,6 +175,7 @@ export async function POST(request: NextRequest) {
       status: "DRAFT",
       createdByAdminId: admin.id,
       regionCode: data.regionCode,
+      sbuCode: data.sbuCode ?? null,
       businessName: data.businessName,
       dateOfIncorporation: data.dateOfIncorporation
         ? new Date(data.dateOfIncorporation)

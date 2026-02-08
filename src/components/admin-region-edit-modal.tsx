@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import MultiSelectDropdown from "@/components/multi-select-dropdown";
+import { GREATER_ACCRA_SBUS, GREATER_ACCRA_REGION_CODE } from "@/lib/ghana-locations";
 
 type MultiSelectOption = {
   value: string;
@@ -12,9 +13,9 @@ type MultiSelectOption = {
 
 type AdminRegionEditModalProps = {
   open: boolean;
-  admin: { id: string; name: string; email: string; regionCodes: string[] } | null;
+  admin: { id: string; name: string; email: string; regionCodes: string[]; sbuAssignments?: Record<string, string> } | null;
   regionOptions: MultiSelectOption[];
-  onSave: (adminId: string, regionCodes: string[]) => Promise<void>;
+  onSave: (adminId: string, regionCodes: string[], sbuAssignments?: Record<string, string>) => Promise<void>;
   onClose: () => void;
 };
 
@@ -26,12 +27,14 @@ export default function AdminRegionEditModal({
   onClose,
 }: AdminRegionEditModalProps) {
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
+  const [sbuCode, setSbuCode] = useState("");
   const [saving, setSaving] = useState(false);
 
   // Sync selected regions when admin changes
   useEffect(() => {
     if (admin) {
       setSelectedRegions(admin.regionCodes);
+      setSbuCode(admin.sbuAssignments?.[GREATER_ACCRA_REGION_CODE] ?? "");
     }
   }, [admin]);
 
@@ -48,12 +51,26 @@ export default function AdminRegionEditModal({
     return () => window.removeEventListener("keydown", handleEscape);
   }, [open, saving, onClose]);
 
+  const hasGreaterAccra = selectedRegions.includes(GREATER_ACCRA_REGION_CODE);
+
+  // Clear SBU when Greater Accra is deselected
+  useEffect(() => {
+    if (!hasGreaterAccra) {
+      setSbuCode("");
+    }
+  }, [hasGreaterAccra]);
+
   async function handleSave() {
     if (!admin) return;
 
+    const sbuAssignments: Record<string, string> = {};
+    if (hasGreaterAccra && sbuCode) {
+      sbuAssignments[GREATER_ACCRA_REGION_CODE] = sbuCode;
+    }
+
     setSaving(true);
     try {
-      await onSave(admin.id, selectedRegions);
+      await onSave(admin.id, selectedRegions, sbuAssignments);
       onClose();
     } catch {
       // Error handling is done in parent component
@@ -123,6 +140,27 @@ export default function AdminRegionEditModal({
             <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
               This admin has no assigned regions.
             </p>
+          )}
+
+          {hasGreaterAccra && (
+            <div className="mt-4 space-y-1">
+              <label className="label">Greater Accra SBU (optional)</label>
+              <select
+                className="input"
+                value={sbuCode}
+                onChange={(e) => setSbuCode(e.target.value)}
+              >
+                <option value="">All of Greater Accra</option>
+                {GREATER_ACCRA_SBUS.map((sbu) => (
+                  <option key={sbu.code} value={sbu.code}>
+                    {sbu.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Assign a specific sub-business unit within Greater Accra.
+              </p>
+            </div>
           )}
         </div>
 

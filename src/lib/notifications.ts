@@ -57,7 +57,8 @@ export async function sendAdminNotification(
 export async function notifyAdminsByRole(
   input: NotificationInput,
   roles: AdminRole[],
-  regionCode?: string
+  regionCode?: string,
+  sbuCode?: string
 ) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = {
@@ -66,7 +67,11 @@ export async function notifyAdminsByRole(
   };
 
   if (regionCode) {
-    where.regions = { some: { regionCode } };
+    if (sbuCode) {
+      where.regions = { some: { regionCode, sbuCode } };
+    } else {
+      where.regions = { some: { regionCode } };
+    }
   }
 
   const admins = await prisma.admin.findMany({

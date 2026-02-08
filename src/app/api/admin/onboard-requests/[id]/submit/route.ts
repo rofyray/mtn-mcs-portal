@@ -121,12 +121,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         }
       }
       newStatus = "PENDING_GOVERNANCE_CHECK";
-      auditAction = "ONBOARD_REQUEST_SUBMITTED_TO_GOVERNANCE_CHECK";
+      auditAction = "ONBOARD_REQUEST_SUBMITTED_TO_GOVERNANCE";
       approvalAction = "APPROVED";
       break;
     }
     case "PENDING_GOVERNANCE_CHECK": {
-      if (admin.role !== "GOVERNANCE_CHECK") {
+      if (admin.role !== "GOVERNANCE") {
         return NextResponse.json(
           { error: "Only governance check admins can approve at this stage" },
           { status: 403 }
@@ -216,7 +216,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       break;
     case "PENDING_GOVERNANCE_CHECK":
       msg.message = `Onboard request for "${form.businessName}" has been approved by senior management and needs governance review.`;
-      await notifyAdminsByRole(msg, ["GOVERNANCE_CHECK"]);
+      await notifyAdminsByRole(msg, ["GOVERNANCE"]);
       if (form.createdByAdminId) {
         await sendAdminNotification(form.createdByAdminId, {
           ...msg,

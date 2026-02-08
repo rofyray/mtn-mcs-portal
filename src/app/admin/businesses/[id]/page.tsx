@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import { buildAddressCode, parseAddressCode } from "@/lib/ghana-post-gps";
-import { ghanaLocations } from "@/lib/ghana-locations";
+import { ghanaLocations, GREATER_ACCRA_SBUS, GREATER_ACCRA_REGION_CODE } from "@/lib/ghana-locations";
 import { useToast } from "@/components/toast";
 import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
 import { useAdminActionsEnabled } from "@/hooks/use-admin-actions-enabled";
@@ -73,6 +73,8 @@ export default function AdminBusinessDetailPage() {
       for (const field of fileFields) {
         next[field.key] = data.business[field.key] ?? null;
       }
+      // Load SBU code (not in editableFields but used conditionally)
+      next.addressSbuCode = data.business.addressSbuCode ?? "";
       setForm(next);
       setAdminRole(data.adminRole ?? null);
       setBusinessStatus(data.business.status ?? null);
@@ -128,6 +130,7 @@ export default function AdminBusinessDetailPage() {
               value={form[field.key] ?? ""}
               onChange={(event) => {
                 updateField(field.key, event.target.value);
+                updateField("addressSbuCode", "");
                 updateField("addressDistrictCode", "");
                 updateField("addressCode", "");
               }}
@@ -140,6 +143,24 @@ export default function AdminBusinessDetailPage() {
                 </option>
               ))}
             </select>
+            {form.addressRegionCode === GREATER_ACCRA_REGION_CODE && (
+              <div className="mt-2 space-y-1">
+                <label className="label text-xs">SBU</label>
+                <select
+                  className="input"
+                  value={form.addressSbuCode ?? ""}
+                  onChange={(e) => updateField("addressSbuCode", e.target.value)}
+                  disabled={!canEdit}
+                >
+                  <option value="">Select SBU</option>
+                  {GREATER_ACCRA_SBUS.map((sbu) => (
+                    <option key={sbu.code} value={sbu.code}>
+                      {sbu.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             {form.addressRegionCode ? (
               <p className="text-xs text-gray-500 dark:text-gray-400">Code: {form.addressRegionCode}</p>
             ) : null}

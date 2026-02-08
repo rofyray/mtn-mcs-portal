@@ -41,6 +41,7 @@ export async function GET() {
   const agentIds = new Set<string>();
   const businessIds = new Set<string>();
   const formRequestIds = new Set<string>();
+  const onboardRequestIds = new Set<string>();
 
   for (const log of logs) {
     switch (log.targetType) {
@@ -56,11 +57,14 @@ export async function GET() {
       case "FormRequest":
         formRequestIds.add(log.targetId);
         break;
+      case "OnboardRequestForm":
+        onboardRequestIds.add(log.targetId);
+        break;
     }
   }
 
   // Batch fetch all target entities
-  const [partners, agents, businesses, formRequests] = await Promise.all([
+  const [partners, agents, businesses, formRequests, onboardRequests] = await Promise.all([
     partnerIds.size > 0
       ? prisma.partnerProfile.findMany({
           where: { id: { in: [...partnerIds] } },
@@ -110,6 +114,17 @@ export async function GET() {
           },
         })
       : [],
+    onboardRequestIds.size > 0
+      ? prisma.onboardRequestForm.findMany({
+          where: { id: { in: [...onboardRequestIds] } },
+          select: {
+            id: true,
+            businessName: true,
+            regionCode: true,
+            createdByAdmin: { select: { id: true, name: true } },
+          },
+        })
+      : [],
   ]);
 
   // Create maps for O(1) lookup
@@ -117,6 +132,7 @@ export async function GET() {
   const agentMap = new Map(agents.map((a) => [a.id, a]));
   const businessMap = new Map(businesses.map((b) => [b.id, b]));
   const formRequestMap = new Map(formRequests.map((f) => [f.id, f]));
+  const onboardRequestMap = new Map(onboardRequests.map((o) => [o.id, o]));
 
   // Enrich logs with target details
   const enrichedLogs = logs.map((log) => {
@@ -188,6 +204,16 @@ export async function GET() {
                 }
               : undefined,
             signerName: formRequest.signature?.signerName ?? undefined,
+          };
+        }
+        break;
+      }
+      case "OnboardRequestForm": {
+        const onboardRequest = onboardRequestMap.get(log.targetId);
+        if (onboardRequest) {
+          targetDetails = {
+            name: onboardRequest.businessName || "Onboard Request",
+            location: { regionCode: onboardRequest.regionCode },
           };
         }
         break;

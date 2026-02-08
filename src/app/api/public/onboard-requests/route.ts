@@ -13,6 +13,7 @@ const publicSchema = z.object({
   submitterEmail: z.string().email().optional().or(z.literal("")),
   businessName: z.string().min(1, "Business name is required"),
   regionCode: z.string().min(1, "Region is required"),
+  sbuCode: z.string().optional(),
   dateOfIncorporation: z.string().optional(),
   businessType: z.string().optional(),
   businessTypeOther: z.string().optional(),
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
       status: "PENDING_COORDINATOR",
       createdByAdminId: null,
       regionCode: data.regionCode,
+      sbuCode: data.sbuCode ?? null,
       businessName: data.businessName,
       submitterName: data.submitterName,
       submitterEmail: data.submitterEmail || null,
@@ -98,7 +100,8 @@ export async function POST(request: NextRequest) {
       category: "INFO",
     },
     ["COORDINATOR"],
-    data.regionCode
+    data.regionCode,
+    data.sbuCode
   );
 
   return NextResponse.json(

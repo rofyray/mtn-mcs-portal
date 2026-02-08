@@ -13,7 +13,7 @@ function resolveHomeHref(pathname: string, adminRole?: string) {
       return "/admin/login";
     }
     if (adminRole === "SENIOR_MANAGER") return "/admin/map-reports";
-    if (adminRole === "GOVERNANCE_CHECK") return "/admin/onboard-requests";
+    if (adminRole === "GOVERNANCE") return "/admin/onboard-requests";
     return "/admin";
   }
   if (pathname.startsWith("/partner")) {

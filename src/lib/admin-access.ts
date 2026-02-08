@@ -35,11 +35,17 @@ export async function getAdminAndAgent(agentId: string) {
     return { error: "not_found" as const };
   }
 
-  if (
-    adminContext.admin.role !== "FULL" &&
-    !adminContext.regionCodes.includes(agent.business.addressRegionCode)
-  ) {
-    return { error: "forbidden" as const };
+  if (adminContext.admin.role !== "FULL") {
+    if (!adminContext.regionCodes.includes(agent.business.addressRegionCode)) {
+      return { error: "forbidden" as const };
+    }
+    // SBU check: if coordinator has SBU for this region, validate business SBU matches
+    const sbuAssignment = adminContext.admin.regions.find(
+      (r) => r.regionCode === agent.business.addressRegionCode && r.sbuCode
+    );
+    if (sbuAssignment && agent.business.addressSbuCode && agent.business.addressSbuCode !== sbuAssignment.sbuCode) {
+      return { error: "forbidden" as const };
+    }
   }
 
   return { admin: adminContext.admin, agent } as const;
@@ -59,11 +65,17 @@ export async function getAdminAndBusiness(businessId: string) {
     return { error: "not_found" as const };
   }
 
-  if (
-    adminContext.admin.role !== "FULL" &&
-    !adminContext.regionCodes.includes(business.addressRegionCode)
-  ) {
-    return { error: "forbidden" as const };
+  if (adminContext.admin.role !== "FULL") {
+    if (!adminContext.regionCodes.includes(business.addressRegionCode)) {
+      return { error: "forbidden" as const };
+    }
+    // SBU check: if coordinator has SBU for this region, validate business SBU matches
+    const sbuAssignment = adminContext.admin.regions.find(
+      (r) => r.regionCode === business.addressRegionCode && r.sbuCode
+    );
+    if (sbuAssignment && business.addressSbuCode && business.addressSbuCode !== sbuAssignment.sbuCode) {
+      return { error: "forbidden" as const };
+    }
   }
 
   return { admin: adminContext.admin, business } as const;

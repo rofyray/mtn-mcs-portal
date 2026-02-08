@@ -16,6 +16,7 @@ export async function GET() {
       role: adminContext.admin.role,
       regions: adminContext.admin.regions.map((r) => ({
         regionCode: r.regionCode,
+        sbuCode: r.sbuCode,
       })),
     },
   });

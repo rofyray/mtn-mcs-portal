@@ -3,26 +3,32 @@
 import { memo, useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
-import { ghanaLocations } from "@/lib/ghana-locations";
+import { ghanaLocations, GREATER_ACCRA_SBUS } from "@/lib/ghana-locations";
 
 const AdminRegionEditModal = dynamic(() => import("@/components/admin-region-edit-modal"));
+const AdminCreateModal = dynamic(() => import("@/components/admin-create-modal"));
 const ConfirmModal = dynamic(() => import("@/components/confirm-modal"));
 
 type AdminData = {
   id: string;
   name: string;
   email: string;
-  role: "FULL" | "MANAGER" | "COORDINATOR" | "SENIOR_MANAGER" | "GOVERNANCE_CHECK";
+  role: "FULL" | "MANAGER" | "COORDINATOR" | "SENIOR_MANAGER" | "GOVERNANCE";
   enabled: boolean;
   regionCodes: string[];
+  sbuAssignments?: Record<string, string>;
 };
+
+const SBU_LABELS: Record<string, string> = Object.fromEntries(
+  GREATER_ACCRA_SBUS.map((s) => [s.code, s.name])
+);
 
 const ROLE_LABELS: Record<string, string> = {
   FULL: "Full Access",
   MANAGER: "Manager",
   COORDINATOR: "Coordinator",
   SENIOR_MANAGER: "Senior Manager",
-  GOVERNANCE_CHECK: "Governance",
+  GOVERNANCE: "Governance",
 };
 
 const ROLE_BADGE_CLASSES: Record<string, string> = {
@@ -30,17 +36,17 @@ const ROLE_BADGE_CLASSES: Record<string, string> = {
   MANAGER: "badge-primary",
   COORDINATOR: "badge-info",
   SENIOR_MANAGER: "badge-success",
-  GOVERNANCE_CHECK: "badge-warning",
+  GOVERNANCE: "badge-warning",
 };
 
-const ROLE_ORDER: AdminData["role"][] = ["FULL", "MANAGER", "SENIOR_MANAGER", "GOVERNANCE_CHECK", "COORDINATOR"];
+const ROLE_ORDER: AdminData["role"][] = ["FULL", "MANAGER", "SENIOR_MANAGER", "GOVERNANCE", "COORDINATOR"];
 
 const SECTION_TITLES: Record<string, string> = {
   FULL: "Full Access Admins",
   MANAGER: "Managers",
   SENIOR_MANAGER: "Senior Managers",
-  GOVERNANCE_CHECK: "Governance",
-  COORDINATOR: "Coordinators",
+  GOVERNANCE: "Governance",
+  COORDINATOR: "Regional Coordinators",
 };
 
 const MAX_VISIBLE_PILLS = 3;
@@ -70,6 +76,7 @@ export default function AdminManagementSection() {
   });
 
   const [editingAdmin, setEditingAdmin] = useState<AdminData | null>(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const fetchAdmins = useCallback(async () => {
@@ -133,14 +140,14 @@ export default function AdminManagementSection() {
     }
   }
 
-  async function handleRegionChange(adminId: string, regionCodes: string[]) {
+  async function handleRegionChange(adminId: string, regionCodes: string[], sbuAssignments?: Record<string, string>) {
     setActionLoading(adminId);
 
     try {
       const response = await fetch(`/api/admin/management/${adminId}/regions`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ regionCodes }),
+        body: JSON.stringify({ regionCodes, sbuAssignments }),
       });
 
       if (!response.ok) {
@@ -150,7 +157,7 @@ export default function AdminManagementSection() {
 
       setAdmins((prev) =>
         prev.map((admin) =>
-          admin.id === adminId ? { ...admin, regionCodes } : admin
+          admin.id === adminId ? { ...admin, regionCodes, sbuAssignments } : admin
         )
       );
     } catch (err) {
@@ -161,6 +168,28 @@ export default function AdminManagementSection() {
     } finally {
       setActionLoading(null);
     }
+  }
+
+  async function handleCreateAdmin(data: {
+    name: string;
+    email: string;
+    role: string;
+    regionCodes: string[];
+    sbuAssignments: Record<string, string>;
+  }) {
+    const response = await fetch("/api/admin/management", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const body = await response.json();
+      throw new Error(body.error || "Failed to create admin");
+    }
+
+    const { admin } = await response.json();
+    setAdmins((prev) => [...prev, admin as AdminData]);
   }
 
   // Group admins by role
@@ -190,6 +219,12 @@ export default function AdminManagementSection() {
   return (
     <>
       <div className="space-y-6">
+        <div className="flex justify-end">
+          <button className="btn btn-primary" onClick={() => setCreateModalOpen(true)}>
+            + Add Admin
+          </button>
+        </div>
+
         {admins.length === 0 ? (
           <p className="text-sm text-gray-600 dark:text-gray-400">No admins found.</p>
         ) : (
@@ -239,6 +274,13 @@ export default function AdminManagementSection() {
         regionOptions={regionOptions}
         onSave={handleRegionChange}
         onClose={() => setEditingAdmin(null)}
+      />
+
+      <AdminCreateModal
+        open={createModalOpen}
+        regionOptions={regionOptions}
+        onSave={handleCreateAdmin}
+        onClose={() => setCreateModalOpen(false)}
       />
     </>
   );
@@ -300,6 +342,11 @@ const AdminCard = memo(function AdminCard({
                   {visibleRegions.map((code) => (
                     <span key={code} className="badge badge-muted text-xs">
                       {ghanaLocations[code]?.name ?? code}
+                      {admin.sbuAssignments?.[code] && (
+                        <span className="ml-1 text-[10px] opacity-75">
+                          ({SBU_LABELS[admin.sbuAssignments[code]] ?? admin.sbuAssignments[code]})
+                        </span>
+                      )}
                     </span>
                   ))}
                   {hiddenCount > 0 && (

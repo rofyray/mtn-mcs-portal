@@ -6,7 +6,7 @@ import {
   buildAddressCode,
   parseAddressCode,
 } from "@/lib/ghana-post-gps";
-import { ghanaLocations } from "@/lib/ghana-locations";
+import { ghanaLocations, GREATER_ACCRA_SBUS, GREATER_ACCRA_REGION_CODE } from "@/lib/ghana-locations";
 import { useToast } from "@/components/toast";
 import EmptyState from "@/components/empty-state";
 import UploadField from "@/components/upload-field";
@@ -26,6 +26,7 @@ type Business = {
 const initialForm = {
   businessName: "",
   addressRegionCode: "",
+  addressSbuCode: "",
   addressDistrictCode: "",
   addressCode: "",
   gpsLatitude: "",
@@ -255,6 +256,7 @@ export default function PartnerBusinessesPage() {
                   value={form.addressRegionCode}
                   onChange={(event) => {
                     updateField("addressRegionCode", event.target.value);
+                    updateField("addressSbuCode", "");
                     updateField("addressDistrictCode", "");
                     updateField("addressCode", "");
                   }}
@@ -267,6 +269,23 @@ export default function PartnerBusinessesPage() {
                   ))}
                 </select>
               </div>
+              {form.addressRegionCode === GREATER_ACCRA_REGION_CODE && (
+                <div className="space-y-1">
+                  <label className="label">Sub-Business Unit (SBU)</label>
+                  <select
+                    className="input"
+                    value={form.addressSbuCode}
+                    onChange={(e) => updateField("addressSbuCode", e.target.value)}
+                  >
+                    <option value="">Select SBU</option>
+                    {GREATER_ACCRA_SBUS.map((sbu) => (
+                      <option key={sbu.code} value={sbu.code}>
+                        {sbu.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="space-y-1">
                 <label className="label">District</label>
                 <select

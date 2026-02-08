@@ -62,14 +62,14 @@ const ROLE_LABELS: Record<string, string> = {
   MANAGER: "Manager",
   COORDINATOR: "Coordinator",
   SENIOR_MANAGER: "Senior Manager",
-  GOVERNANCE_CHECK: "Governance",
+  GOVERNANCE: "Governance",
 };
 
 const ROLE_BADGE_CLASSES: Record<string, string> = {
   COORDINATOR: "badge-yellow-light",
   MANAGER: "badge-primary",
   SENIOR_MANAGER: "badge-blue-light",
-  GOVERNANCE_CHECK: "badge-blue",
+  GOVERNANCE: "badge-blue",
 };
 
 function formatDate(dateStr: string | null) {
@@ -154,7 +154,7 @@ export default function OnboardRequestDetailPage() {
     admin &&
     ((form.status === "PENDING_MANAGER" && admin.role === "MANAGER") ||
       (form.status === "PENDING_SENIOR_MANAGER" && admin.role === "SENIOR_MANAGER") ||
-      (form.status === "PENDING_GOVERNANCE_CHECK" && admin.role === "GOVERNANCE_CHECK"));
+      (form.status === "PENDING_GOVERNANCE_CHECK" && admin.role === "GOVERNANCE"));
 
   const canEditDenied =
     form &&

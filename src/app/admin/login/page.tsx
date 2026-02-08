@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
     [admins]
   );
   const governanceCheckAdmins = useMemo(
-    () => admins.filter((admin) => admin.role === "GOVERNANCE_CHECK"),
+    () => admins.filter((admin) => admin.role === "GOVERNANCE"),
     [admins]
   );
 
@@ -137,7 +137,7 @@ export default function AdminLoginPage() {
       });
       function getAdminHome(role: string) {
         if (role === "SENIOR_MANAGER") return "/admin/map-reports";
-        if (role === "GOVERNANCE_CHECK") return "/admin/onboard-requests";
+        if (role === "GOVERNANCE") return "/admin/onboard-requests";
         return "/admin";
       }
       window.location.href = getAdminHome(data.role ?? "");
@@ -166,7 +166,7 @@ export default function AdminLoginPage() {
             >
               <option value="">Select admin</option>
               {coordinators.length > 0 ? (
-                <optgroup label="Regional Admins">
+                <optgroup label="Regional Coordinators">
                   {coordinators.map((admin) => (
                     <option key={admin.id} value={admin.email}>
                       {admin.name} ({admin.email})

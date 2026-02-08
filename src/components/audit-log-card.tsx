@@ -22,7 +22,7 @@ export type EnrichedAuditLog = {
   admin: {
     name: string | null;
     email: string | null;
-    role: "FULL" | "COORDINATOR";
+    role: string;
     regionCodes: string[];
   } | null;
   targetDetails: {
@@ -80,6 +80,69 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
   );
 }
 
+const ROLE_LABELS: Record<string, string> = {
+  FULL: "Full Access",
+  MANAGER: "Manager",
+  COORDINATOR: "Coordinator",
+  SENIOR_MANAGER: "Senior Manager",
+  GOVERNANCE: "Governance",
+};
+
+function formatRole(role: string): string {
+  return ROLE_LABELS[role] ?? role;
+}
+
+type FieldChangeEntry = {
+  field: string;
+  label: string;
+  oldValue: string | null;
+  newValue: string | null;
+  isUrl?: boolean;
+};
+
+function ValueDisplay({ value, isUrl }: { value: string | null; isUrl?: boolean }) {
+  if (!value) return <span className="audit-changes-empty">(empty)</span>;
+  if (isUrl) {
+    return (
+      <a href={value} target="_blank" rel="noopener noreferrer" className="audit-link">
+        View file
+      </a>
+    );
+  }
+  if (value.length > 80) {
+    return <span title={value}>{value.slice(0, 80)}...</span>;
+  }
+  return <>{value}</>;
+}
+
+function ChangesSection({ changes }: { changes: FieldChangeEntry[] }) {
+  return (
+    <div className="audit-detail-section">
+      <h4 className="audit-detail-heading">Changes</h4>
+      <div className="audit-changes-table">
+        <div className="audit-changes-header">
+          <span>Field</span>
+          <span>Old Value</span>
+          <span>New Value</span>
+        </div>
+        {changes.map((change) => (
+          <div key={change.field} className="audit-changes-row">
+            <span className="audit-changes-field">{change.label}</span>
+            <span className="audit-changes-old">
+              <span className="audit-changes-mobile-label">Was: </span>
+              <ValueDisplay value={change.oldValue} isUrl={change.isUrl} />
+            </span>
+            <span className="audit-changes-new">
+              <span className="audit-changes-mobile-label">Now: </span>
+              <ValueDisplay value={change.newValue} isUrl={change.isUrl} />
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export const AuditLogCard = memo(function AuditLogCard({ log }: { log: EnrichedAuditLog }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -94,8 +157,13 @@ export const AuditLogCard = memo(function AuditLogCard({ log }: { log: EnrichedA
     [log.action, log.createdAt]
   );
 
-  const hasMetadata = log.metadata && Object.keys(log.metadata).length > 0;
+  const metadataChanges = log.metadata?.changes as FieldChangeEntry[] | undefined;
   const denialReason = log.metadata?.reason as string | undefined;
+  const hasOtherMetadata =
+    log.metadata &&
+    Object.keys(log.metadata).some(
+      (key) => !["reason", "changes"].includes(key)
+    ) || !!denialReason;
 
   return (
     <div className={`audit-card audit-card-${category}`}>
@@ -125,7 +193,7 @@ export const AuditLogCard = memo(function AuditLogCard({ log }: { log: EnrichedA
               <DetailRow label="Email" value={log.admin?.email ?? "n/a"} />
               <DetailRow
                 label="Role"
-                value={log.admin?.role === "FULL" ? "Full Access" : "Coordinator"}
+                value={log.admin ? formatRole(log.admin.role) : "n/a"}
               />
               <DetailRow
                 label="Regions"
@@ -159,6 +227,13 @@ export const AuditLogCard = memo(function AuditLogCard({ log }: { log: EnrichedA
                     ) : log.targetType === "Business" ? (
                       <Link
                         href={`/admin/businesses/${log.targetId}`}
+                        className="audit-link"
+                      >
+                        {log.targetDetails.name}
+                      </Link>
+                    ) : log.targetType === "OnboardRequestForm" ? (
+                      <Link
+                        href={`/admin/onboard-requests/${log.targetId}`}
                         className="audit-link"
                       >
                         {log.targetDetails.name}
@@ -197,14 +272,19 @@ export const AuditLogCard = memo(function AuditLogCard({ log }: { log: EnrichedA
             </div>
           )}
 
-          {/* Metadata Section */}
-          {hasMetadata && (
+          {/* Structured Changes Section */}
+          {metadataChanges && metadataChanges.length > 0 && (
+            <ChangesSection changes={metadataChanges} />
+          )}
+
+          {/* Other Metadata */}
+          {hasOtherMetadata && (
             <div className="audit-detail-section">
               <h4 className="audit-detail-heading">Details</h4>
               <div className="audit-detail-grid">
                 {denialReason && <DetailRow label="Reason" value={denialReason} />}
                 {Object.entries(log.metadata!)
-                  .filter(([key]) => key !== "reason")
+                  .filter(([key]) => !["reason", "changes"].includes(key))
                   .map(([key, value]) => (
                     <DetailRow
                       key={key}

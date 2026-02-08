@@ -193,6 +193,16 @@ type NavLinksProps = {
   showTooltip?: boolean;
 };
 
+function NavSkeleton() {
+  return (
+    <nav className="nav-links">
+      {Array.from({ length: 6 }, (_, i) => (
+        <div key={i} className="nav-skeleton-item" style={{ animationDelay: `${i * 0.05}s` }} />
+      ))}
+    </nav>
+  );
+}
+
 const NavLinks = memo(function NavLinks({ links, pathname, onLinkClick, showTooltip = true }: NavLinksProps) {
   return (
     <nav className="nav-links">
@@ -230,9 +240,9 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
     pathname === "/partner/login" ||
     pathname === "/onboarding" ||
     pathname === "/admin/map-reports" ||
-    adminRole === "GOVERNANCE_CHECK" ||
-    adminRole === "SENIOR_MANAGER" ||
-    (isAdminRoute && isLoading);
+    (!isLoading && (adminRole === "GOVERNANCE" || adminRole === "SENIOR_MANAGER"));
+
+  const showSkeleton = isAdminRoute && isLoading;
 
   const collapsed = useSyncExternalStore(
     (callback) => {
@@ -320,7 +330,7 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
           <p className="nav-title">{isAdmin ? "Admin Menu" : "Partner Menu"}</p>
         </div>
         <div className="nav-panel-divider" />
-        <NavLinks links={links} pathname={pathname} showTooltip />
+        {showSkeleton ? <NavSkeleton /> : <NavLinks links={links} pathname={pathname} showTooltip />}
         <div className="nav-panel-footer">
           <div className="nav-panel-divider" />
           <button
@@ -358,7 +368,7 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
               </button>
             </div>
             <div className="nav-panel-divider" />
-            <NavLinks links={links} pathname={pathname} onLinkClick={closeMobileNav} showTooltip={false} />
+            {showSkeleton ? <NavSkeleton /> : <NavLinks links={links} pathname={pathname} onLinkClick={closeMobileNav} showTooltip={false} />}
           </aside>
         </div>
       ) : null}

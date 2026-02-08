@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 
-import { ghanaLocations } from "@/lib/ghana-locations";
+import { ghanaLocations, GREATER_ACCRA_SBUS, GREATER_ACCRA_REGION_CODE } from "@/lib/ghana-locations";
 import {
   type OnboardRequestFormData,
   INITIAL_FORM,
@@ -156,7 +156,14 @@ export default function PublicOnboardRequestPage() {
   );
 
   const updateField = useCallback((key: keyof PublicFormData, value: unknown) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    setForm((prev) => {
+      const next = { ...prev, [key]: value };
+      // Clear SBU when region changes away from Greater Accra
+      if (key === "regionCode" && value !== GREATER_ACCRA_REGION_CODE) {
+        next.sbuCode = "";
+      }
+      return next;
+    });
   }, []);
 
   const updateSignatory = useCallback((field: string, value: string) => {
@@ -201,6 +208,7 @@ export default function PublicOnboardRequestPage() {
           submitterEmail: form.submitterEmail || undefined,
           businessName: form.businessName,
           regionCode: form.regionCode,
+          sbuCode: form.sbuCode || undefined,
           dateOfIncorporation: form.dateOfIncorporation || undefined,
           businessType: form.businessType || undefined,
           businessTypeOther: form.businessTypeOther || undefined,
@@ -449,6 +457,24 @@ export default function PublicOnboardRequestPage() {
                   ))}
                 </select>
               </div>
+
+              {form.regionCode === GREATER_ACCRA_REGION_CODE && (
+                <div className="space-y-1">
+                  <label className="label">Sub-Business Unit (SBU)</label>
+                  <select
+                    className="input"
+                    value={form.sbuCode}
+                    onChange={(e) => updateField("sbuCode", e.target.value)}
+                  >
+                    <option value="">Select SBU</option>
+                    {GREATER_ACCRA_SBUS.map((sbu) => (
+                      <option key={sbu.code} value={sbu.code}>
+                        {sbu.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="space-y-1">
                 <label className="label">TIN Number</label>

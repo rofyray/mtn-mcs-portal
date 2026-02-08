@@ -1803,6 +1803,9 @@ select.input {
   background: rgba(107, 114, 128, 0.15);
   color: #4b5563;
 }
+.theme-dark .badge-muted {
+  color: #d1d5db;
+}
 
 .badge-primary {
   background: rgba(255, 204, 8, 0.15);
@@ -1829,6 +1832,28 @@ select.input {
   border: 1px solid var(--border);
   padding: 16px;
   background: var(--card);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.nav-skeleton-item {
+  height: 36px;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    var(--border) 25%,
+    rgba(148, 163, 184, 0.18) 50%,
+    var(--border) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
 }
 
 @keyframes fadeUp {
@@ -2125,6 +2150,92 @@ select.input {
 .audit-timestamp {
   font-size: 0.75rem;
   color: var(--muted);
+}
+
+/* Audit changes table */
+.audit-changes-table {
+  display: grid;
+  gap: 0;
+  font-size: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.audit-changes-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.theme-light .audit-changes-header {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.audit-changes-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.audit-changes-row:last-child {
+  border-bottom: none;
+}
+
+.audit-changes-field {
+  font-weight: 500;
+}
+
+.audit-changes-old {
+  color: var(--muted);
+}
+
+.audit-changes-new {
+  color: var(--foreground);
+}
+
+.audit-changes-empty {
+  color: var(--muted);
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.audit-changes-mobile-label {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .audit-changes-header {
+    display: none;
+  }
+
+  .audit-changes-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 10px 12px;
+  }
+
+  .audit-changes-field {
+    font-weight: 600;
+    font-size: 0.78rem;
+  }
+
+  .audit-changes-mobile-label {
+    display: inline;
+    font-weight: 500;
+    opacity: 0.6;
+    font-size: 0.72rem;
+  }
 }
 
 .audit-loading {
