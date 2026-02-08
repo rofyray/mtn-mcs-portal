@@ -48,66 +48,57 @@ export default async function AdminHomePage() {
         </section>
 
         <section className="space-y-4">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-semibold">Modules coming next</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                These tiles will light up as data flows in.
-              </p>
-            </div>
-            <Link className="btn btn-secondary" href="/admin/audit">
-              View audit logs
-            </Link>
-          </div>
+          <h2 className="text-xl font-semibold">Quick Access</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="card admin-module-card">
+            <Link className="card admin-module-card" href="/admin/requests">
               <div className="admin-module-icon">
                 <svg aria-hidden="true" viewBox="0 0 24 24">
-                  <path d="M12 3v18M5 10h14" />
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
               </div>
-              <h3 className="text-sm font-semibold">Pending approvals</h3>
+              <h3 className="text-sm font-semibold">Requests</h3>
               <p className="text-xs text-gray-600 dark:text-gray-400">
-                Quick queue for partners, agents, and businesses awaiting review.
+                View and respond to partner training and restock requests.
               </p>
-            </div>
-            <div className="card admin-module-card">
+            </Link>
+            <Link className="card admin-module-card" href="/admin/audit">
               <div className="admin-module-icon">
                 <svg aria-hidden="true" viewBox="0 0 24 24">
-                  <path d="M3 12h18" />
-                  <path d="M7 6h10M7 18h10" />
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
                 </svg>
               </div>
-              <h3 className="text-sm font-semibold">Recent activity</h3>
+              <h3 className="text-sm font-semibold">Audit Logs</h3>
               <p className="text-xs text-gray-600 dark:text-gray-400">
-                Live feed of the latest actions and approvals across the platform.
+                Track admin actions and compliance signals across the platform.
               </p>
-            </div>
-            <div className="card admin-module-card">
-              <div className="admin-module-icon">
-                <svg aria-hidden="true" viewBox="0 0 24 24">
-                  <path d="M3 3h18v6H3z" />
-                  <path d="M12 9v12" />
-                  <path d="M7 21h10" />
-                </svg>
-              </div>
-              <h3 className="text-sm font-semibold">Audit highlights</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Top audit events and compliance signals summarized in one view.
-              </p>
-            </div>
-            <div className="card admin-module-card">
+            </Link>
+            <Link className="card admin-module-card" href="/admin/reports">
               <div className="admin-module-icon">
                 <svg aria-hidden="true" viewBox="0 0 24 24">
                   <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" />
                   <path d="M14 2v6h6" />
+                  <path d="M9 15h6M9 11h6" />
                 </svg>
               </div>
-              <h3 className="text-sm font-semibold">Form status</h3>
+              <h3 className="text-sm font-semibold">Reports</h3>
               <p className="text-xs text-gray-600 dark:text-gray-400">
-                Track who has signed onboarding forms and what is still pending.
+                Generate and download CSV exports of platform data.
               </p>
-            </div>
+            </Link>
+            <Link className="card admin-module-card" href="/admin/onboard-requests">
+              <div className="admin-module-icon">
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M19 8v6M22 11h-6" />
+                </svg>
+              </div>
+              <h3 className="text-sm font-semibold">Onboard Requests</h3>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Review and process partner onboarding request forms.
+              </p>
+            </Link>
           </div>
         </section>
       </div>
