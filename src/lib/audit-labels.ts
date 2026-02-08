@@ -25,6 +25,9 @@ const ACTION_LABELS: Record<string, string> = {
   ONBOARD_REQUEST_DENIED: "Onboard Request Denied",
   ONBOARD_REQUEST_PUBLIC_SUBMITTED: "Onboard Request Public Submitted",
   ONBOARD_REQUEST_EDITED: "Onboard Request Edited",
+  PARTNER_SUSPENDED: "Partner Suspended",
+  PARTNER_UNSUSPENDED: "Partner Unsuspended",
+  PARTNER_DELETED: "Partner Deleted",
 };
 
 const ACTION_AREAS: Record<string, string> = {
@@ -54,6 +57,9 @@ const ACTION_AREAS: Record<string, string> = {
   ONBOARD_REQUEST_DENIED: "Onboard Request",
   ONBOARD_REQUEST_PUBLIC_SUBMITTED: "Onboard Request",
   ONBOARD_REQUEST_EDITED: "Onboard Request",
+  PARTNER_SUSPENDED: "Partner",
+  PARTNER_UNSUSPENDED: "Partner",
+  PARTNER_DELETED: "Partner",
 };
 
 const ACTION_CATEGORIES: Record<string, "success" | "warning" | "error" | "info"> = {
@@ -83,6 +89,9 @@ const ACTION_CATEGORIES: Record<string, "success" | "warning" | "error" | "info"
   ONBOARD_REQUEST_DENIED: "error",
   ONBOARD_REQUEST_PUBLIC_SUBMITTED: "info",
   ONBOARD_REQUEST_EDITED: "info",
+  PARTNER_SUSPENDED: "warning",
+  PARTNER_UNSUSPENDED: "success",
+  PARTNER_DELETED: "error",
 };
 
 export function getActionLabel(action: string): string {

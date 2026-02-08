@@ -15,6 +15,7 @@ type ConfirmModalProps = {
   inputValue?: string;
   inputRequired?: boolean;
   inputMinLength?: number;
+  inputMatch?: string;
   onInputChange?: (value: string) => void;
   onConfirm: () => void;
   onCancel: () => void;
@@ -38,6 +39,7 @@ export default function ConfirmModal({
   inputValue = "",
   inputRequired = false,
   inputMinLength = 1,
+  inputMatch,
   onInputChange,
   onConfirm,
   onCancel,
@@ -57,8 +59,12 @@ export default function ConfirmModal({
 
   const trimmedValue = inputValue.trim();
   const requiresInput = Boolean(inputLabel);
+  const matchInvalid =
+    inputMatch != null &&
+    trimmedValue.toLowerCase() !== inputMatch.toLowerCase();
   const inputInvalid =
-    requiresInput && inputRequired && trimmedValue.length < inputMinLength;
+    (requiresInput && inputRequired && trimmedValue.length < inputMinLength) ||
+    matchInvalid;
 
   if (!open) {
     return null;

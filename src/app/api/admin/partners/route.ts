@@ -28,6 +28,8 @@ export async function GET(request: Request) {
       id: true,
       userId: true,
       status: true,
+      suspended: true,
+      suspendedAt: true,
       businessName: true,
       partnerFirstName: true,
       partnerSurname: true,

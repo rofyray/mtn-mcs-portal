@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import prisma from "@/lib/db";
 import { getPartnerSession } from "@/lib/session";
+import SuspendedOverlay from "@/components/suspended-overlay";
 
 export default async function PartnerAppLayout({
   children,
@@ -21,6 +22,7 @@ export default async function PartnerAppLayout({
       partnerProfile: {
         select: {
           status: true,
+          suspended: true,
         },
       },
     },
@@ -28,6 +30,10 @@ export default async function PartnerAppLayout({
 
   if (user?.partnerProfile?.status !== "APPROVED") {
     redirect("/onboarding");
+  }
+
+  if (user.partnerProfile.suspended) {
+    return <SuspendedOverlay />;
   }
 
   return children;

@@ -82,6 +82,9 @@ enum AuditAction {
   ONBOARD_REQUEST_PUBLIC_SUBMITTED
   ONBOARD_REQUEST_EDITED
   ADMIN_CREATED
+  PARTNER_SUSPENDED
+  PARTNER_UNSUSPENDED
+  PARTNER_DELETED
 }
 
 enum OnboardRequestStatus {
@@ -213,6 +216,8 @@ model PartnerProfile {
   approvedAt               DateTime?
   deniedAt                 DateTime?
   denialReason             String?
+  suspended                Boolean          @default(false)
+  suspendedAt              DateTime?
   businessName             String?
   partnerFirstName         String?
   partnerSurname           String?

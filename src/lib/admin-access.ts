@@ -15,7 +15,7 @@ export async function getAdminAndProfile(profileId: string) {
     return { error: "not_found" as const };
   }
 
-  // Partners no longer have direct location - FULL access admins can view all,
+  // Partners no longer have direct location - Platform Admins admins can view all,
   // COORDINATOR admins can view all partners (region filtering now through businesses)
   return { admin: adminContext.admin, profile } as const;
 }

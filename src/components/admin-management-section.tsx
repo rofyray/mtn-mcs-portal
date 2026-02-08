@@ -42,7 +42,7 @@ const ROLE_BADGE_CLASSES: Record<string, string> = {
 const ROLE_ORDER: AdminData["role"][] = ["FULL", "MANAGER", "SENIOR_MANAGER", "GOVERNANCE", "COORDINATOR"];
 
 const SECTION_TITLES: Record<string, string> = {
-  FULL: "Full Access Admins",
+  FULL: "Platform Admins",
   MANAGER: "Managers",
   SENIOR_MANAGER: "Senior Managers",
   GOVERNANCE: "Governance",
@@ -78,6 +78,18 @@ export default function AdminManagementSection() {
   const [editingAdmin, setEditingAdmin] = useState<AdminData | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    () => new Set()
+  );
+
+  const toggleSection = useCallback((role: string) => {
+    setExpandedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(role)) next.delete(role);
+      else next.add(role);
+      return next;
+    });
+  }, []);
 
   const fetchAdmins = useCallback(async () => {
     try {
@@ -201,29 +213,47 @@ export default function AdminManagementSection() {
     {} as Record<AdminData["role"], AdminData[]>
   );
 
+  const header = (
+    <div className="flex items-start justify-between gap-4">
+      <div>
+        <h2 className="text-lg font-semibold">Admin Management</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Manage admin accounts, enable/disable access, and assign regions.
+        </p>
+      </div>
+      <button className="btn btn-primary shrink-0" onClick={() => setCreateModalOpen(true)}>
+        + Add Admin
+      </button>
+    </div>
+  );
+
   if (loading) {
-    return <p className="text-sm text-gray-600 dark:text-gray-400">Loading admins...</p>;
+    return (
+      <>
+        {header}
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">Loading admins...</p>
+      </>
+    );
   }
 
   if (error) {
     return (
-      <div className="space-y-2">
-        <p className="text-sm text-red-600">{error}</p>
-        <button className="btn btn-secondary" onClick={fetchAdmins}>
-          Retry
-        </button>
-      </div>
+      <>
+        {header}
+        <div className="space-y-2 mt-4">
+          <p className="text-sm text-red-600">{error}</p>
+          <button className="btn btn-secondary" onClick={fetchAdmins}>
+            Retry
+          </button>
+        </div>
+      </>
     );
   }
 
   return (
     <>
       <div className="space-y-6">
-        <div className="flex justify-end">
-          <button className="btn btn-primary" onClick={() => setCreateModalOpen(true)}>
-            + Add Admin
-          </button>
-        </div>
+        {header}
 
         {admins.length === 0 ? (
           <p className="text-sm text-gray-600 dark:text-gray-400">No admins found.</p>
@@ -234,20 +264,35 @@ export default function AdminManagementSection() {
 
             return (
               <div key={role} className="space-y-3">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">
-                  {SECTION_TITLES[role]} ({roleAdmins.length})
-                </h3>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {roleAdmins.map((admin) => (
-                    <AdminCard
-                      key={admin.id}
-                      admin={admin}
-                      actionLoading={actionLoading === admin.id}
-                      onToggleStatus={handleToggleStatus}
-                      onEditRegions={handleEditRegions}
-                    />
-                  ))}
-                </div>
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-between gap-2 pb-2 border-b border-gray-200 dark:border-gray-700 cursor-pointer"
+                  onClick={() => toggleSection(role)}
+                >
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {SECTION_TITLES[role]} ({roleAdmins.length})
+                  </h3>
+                  <svg
+                    className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${expandedSections.has(role) ? "rotate-180" : ""}`}
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+                {expandedSections.has(role) && (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {roleAdmins.map((admin) => (
+                      <AdminCard
+                        key={admin.id}
+                        admin={admin}
+                        actionLoading={actionLoading === admin.id}
+                        onToggleStatus={handleToggleStatus}
+                        onEditRegions={handleEditRegions}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })
@@ -303,7 +348,7 @@ const AdminCard = memo(function AdminCard({
   const hiddenCount = admin.regionCodes.length - MAX_VISIBLE_PILLS;
 
   return (
-    <div className={`card-flat p-4 space-y-3 ${!admin.enabled ? "opacity-60" : ""}`}>
+    <div className={`card-flat p-4 space-y-3 min-w-0 ${!admin.enabled ? "opacity-60" : ""}`}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
@@ -328,7 +373,7 @@ const AdminCard = memo(function AdminCard({
         </label>
       </div>
 
-      {admin.role !== "FULL" && admin.role !== "MANAGER" && (
+      {admin.role !== "FULL" && admin.role !== "MANAGER" && admin.role !== "GOVERNANCE" && (
         <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
           <button
             type="button"
@@ -367,9 +412,9 @@ const AdminCard = memo(function AdminCard({
         </div>
       )}
 
-      {(admin.role === "FULL" || admin.role === "MANAGER") && (
+      {(admin.role === "FULL" || admin.role === "MANAGER" || admin.role === "GOVERNANCE") && (
         <p className="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700">
-          {admin.role === "FULL" ? "Full access admins" : "Managers"} have global access to all regions.
+          {admin.role === "GOVERNANCE" ? "Governance admins have global access to all regions." : `${admin.role === "FULL" ? "Platform admins" : "Managers"} have global access to all regions.`}
         </p>
       )}
     </div>

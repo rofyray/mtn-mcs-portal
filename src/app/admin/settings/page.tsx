@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/admin-session";
 import AdminActionsToggle from "@/components/admin-actions-toggle";
 import AdminManagementSection from "@/components/admin-management-section";
+import PartnerManagementSection from "@/components/partner-management-section";
 
 export default async function AdminSettingsPage() {
   const session = await getAdminSession();
@@ -23,7 +24,7 @@ export default async function AdminSettingsPage() {
           <>
             <section className="card space-y-4">
               <div>
-                <h2 className="text-lg font-semibold">Submission actions</h2>
+                <h2 className="text-lg font-semibold">Submission Actions</h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Enable approve/deny controls for full-access admins. This is off by default.
                 </p>
@@ -32,15 +33,15 @@ export default async function AdminSettingsPage() {
             </section>
 
             {adminRole === "FULL" && (
-              <section className="card space-y-4">
-                <div>
-                  <h2 className="text-lg font-semibold">Admin Management</h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Manage admin accounts, enable/disable access, and assign regions.
-                  </p>
-                </div>
-                <AdminManagementSection />
-              </section>
+              <>
+                <section className="card space-y-4">
+                  <AdminManagementSection />
+                </section>
+
+                <section className="card space-y-4">
+                  <PartnerManagementSection />
+                </section>
+              </>
             )}
           </>
         ) : (
