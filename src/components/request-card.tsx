@@ -15,16 +15,21 @@ type Reply = {
   createdAt: string;
 };
 
-export type FeedbackItem = {
+export type RequestItem = {
   id: string;
-  title: string;
-  message: string;
+  requestType: "restock" | "training";
   status: string;
+  message: string | null;
+  items?: string[];
+  agentNames?: string[];
   createdAt: string;
   partnerProfile: {
     businessName: string | null;
     partnerFirstName: string | null;
     partnerSurname: string | null;
+  } | null;
+  business?: {
+    businessName: string | null;
     city: string | null;
   } | null;
   _count?: {
@@ -70,12 +75,20 @@ function StatusBadge({ status }: { status: string }) {
   return <span className={`badge ${cls}`}>{status}</span>;
 }
 
-export const FeedbackCard = memo(function FeedbackCard({
+function TypeBadge({ type }: { type: "restock" | "training" }) {
+  return (
+    <span className={`badge ${type === "restock" ? "badge-info" : "badge-warning"}`}>
+      {type === "restock" ? "Restock" : "Training"}
+    </span>
+  );
+}
+
+export const RequestCard = memo(function RequestCard({
   item,
   viewerType = "ADMIN",
   onReplySubmitted,
 }: {
-  item: FeedbackItem;
+  item: RequestItem;
   viewerType?: "ADMIN" | "PARTNER";
   onReplySubmitted?: () => void;
 }) {
@@ -84,20 +97,28 @@ export const FeedbackCard = memo(function FeedbackCard({
   const [loadingReplies, setLoadingReplies] = useState(false);
   const [localStatus, setLocalStatus] = useState(item.status);
 
-  const { relativeTime, fullTime, partnerName, businessName, location } = useMemo(
-    () => ({
+  const { relativeTime, fullTime, partnerName, businessName, summary } = useMemo(() => {
+    const pName = item.partnerProfile
+      ? [item.partnerProfile.partnerFirstName, item.partnerProfile.partnerSurname]
+          .filter(Boolean)
+          .join(" ") || "Partner"
+      : "Partner";
+
+    let summaryText = "";
+    if (item.requestType === "restock") {
+      summaryText = item.items?.join(", ") ?? "Restock request";
+    } else {
+      summaryText = item.agentNames?.join(", ") ?? "Training request";
+    }
+
+    return {
       relativeTime: formatRelativeTime(item.createdAt),
       fullTime: formatGhanaDate(item.createdAt, { includeTime: true, includeSeconds: true }),
-      partnerName: item.partnerProfile
-        ? [item.partnerProfile.partnerFirstName, item.partnerProfile.partnerSurname]
-            .filter(Boolean)
-            .join(" ") || "Partner"
-        : "Partner",
+      partnerName: pName,
       businessName: item.partnerProfile?.businessName,
-      location: item.partnerProfile?.city,
-    }),
-    [item.createdAt, item.partnerProfile]
-  );
+      summary: summaryText,
+    };
+  }, [item]);
 
   const replyCount = item._count?.replies ?? 0;
 
@@ -107,17 +128,18 @@ export const FeedbackCard = memo(function FeedbackCard({
     try {
       const endpoint =
         viewerType === "ADMIN"
-          ? `/api/admin/feedback/${item.id}`
-          : `/api/partner/feedback`;
+          ? `/api/admin/requests/${item.requestType}/${item.id}`
+          : `/api/partner/requests`;
       const response = await fetch(endpoint);
       if (response.ok) {
         const data = await response.json();
         if (viewerType === "ADMIN") {
-          setReplies(data.feedback?.replies ?? []);
-          if (data.feedback?.status) setLocalStatus(data.feedback.status);
+          setReplies(data.request?.replies ?? []);
+          if (data.request?.status) setLocalStatus(data.request.status);
         } else {
-          const found = (data.feedback ?? []).find(
-            (f: { id: string }) => f.id === item.id
+          const allRequests = data.requests ?? [];
+          const found = allRequests.find(
+            (r: { id: string }) => r.id === item.id
           );
           setReplies(found?.replies ?? []);
           if (found?.status) setLocalStatus(found.status);
@@ -126,7 +148,7 @@ export const FeedbackCard = memo(function FeedbackCard({
     } finally {
       setLoadingReplies(false);
     }
-  }, [item.id, viewerType, loadingReplies]);
+  }, [item.id, item.requestType, viewerType, loadingReplies]);
 
   async function handleExpand() {
     const next = !expanded;
@@ -140,8 +162,8 @@ export const FeedbackCard = memo(function FeedbackCard({
     async (message: string) => {
       const endpoint =
         viewerType === "ADMIN"
-          ? `/api/admin/feedback/${item.id}/reply`
-          : `/api/partner/feedback/${item.id}/reply`;
+          ? `/api/admin/requests/${item.requestType}/${item.id}/reply`
+          : `/api/partner/requests/${item.requestType}/${item.id}/reply`;
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -152,12 +174,12 @@ export const FeedbackCard = memo(function FeedbackCard({
         onReplySubmitted?.();
       }
     },
-    [item.id, viewerType, loadThread, onReplySubmitted]
+    [item.id, item.requestType, viewerType, loadThread, onReplySubmitted]
   );
 
   const handleToggleStatus = useCallback(async () => {
     const newStatus = localStatus === "CLOSED" ? "OPEN" : "CLOSED";
-    const response = await fetch(`/api/admin/feedback/${item.id}`, {
+    const response = await fetch(`/api/admin/requests/${item.requestType}/${item.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: newStatus }),
@@ -166,7 +188,11 @@ export const FeedbackCard = memo(function FeedbackCard({
       setLocalStatus(newStatus);
       onReplySubmitted?.();
     }
-  }, [item.id, localStatus, onReplySubmitted]);
+  }, [item.id, item.requestType, localStatus, onReplySubmitted]);
+
+  const originalMessage = item.message || (item.requestType === "restock"
+    ? `Restock request: ${item.items?.join(", ") ?? "N/A"}`
+    : `Training request for: ${item.agentNames?.join(", ") ?? "N/A"}`);
 
   return (
     <div className="feedback-card">
@@ -177,7 +203,10 @@ export const FeedbackCard = memo(function FeedbackCard({
         aria-expanded={expanded}
       >
         <div className="feedback-card-summary">
-          <span className="feedback-card-title">{item.title}</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <TypeBadge type={item.requestType} />
+            <span className="feedback-card-title truncate">{summary}</span>
+          </div>
           <div className="feedback-card-badges">
             <StatusBadge status={localStatus} />
             {replyCount > 0 && (
@@ -202,10 +231,26 @@ export const FeedbackCard = memo(function FeedbackCard({
               <div className="feedback-detail-grid">
                 <DetailRow label="Name" value={partnerName} />
                 <DetailRow label="Business Name" value={businessName} />
-                <DetailRow label="Location" value={location} />
+                {item.business && (
+                  <DetailRow label="Location" value={`${item.business.businessName} (${item.business.city})`} />
+                )}
               </div>
             </div>
           )}
+
+          {/* Request Details */}
+          <div className="feedback-detail-section">
+            <h4 className="feedback-detail-heading">Request Details</h4>
+            <div className="feedback-detail-grid">
+              <DetailRow label="Type" value={item.requestType === "restock" ? "Restock" : "Training"} />
+              {item.requestType === "restock" && item.items && (
+                <DetailRow label="Items" value={item.items.join(", ")} />
+              )}
+              {item.requestType === "training" && item.agentNames && (
+                <DetailRow label="Agents" value={item.agentNames.join(", ")} />
+              )}
+            </div>
+          </div>
 
           {/* Thread */}
           <div className="feedback-detail-section">
@@ -214,7 +259,7 @@ export const FeedbackCard = memo(function FeedbackCard({
               <p className="text-sm" style={{ color: "var(--muted)" }}>Loading thread...</p>
             ) : (
               <FeedbackThread
-                feedbackMessage={item.message}
+                feedbackMessage={originalMessage}
                 feedbackCreatedAt={item.createdAt}
                 senderName={partnerName}
                 replies={replies}

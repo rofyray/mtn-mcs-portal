@@ -4,7 +4,7 @@ import { z } from "zod";
 import prisma from "@/lib/db";
 import { logAuditEvent } from "@/lib/audit";
 import { broadcastAdminNotification } from "@/lib/notifications";
-import { getApprovedPartnerProfile } from "@/lib/partner";
+import { getApprovedPartnerProfile, getPartnerRegionCodes } from "@/lib/partner";
 import { formatZodError } from "@/lib/validation";
 
 const signSchema = z.object({
@@ -59,11 +59,16 @@ export async function POST(
     },
   });
 
-  await broadcastAdminNotification({
-    title: "Form signed",
-    message: `${parsed.data.signerName} signed "${formRequest.title}".`,
-    category: "SUCCESS",
-  });
+  const regionCodes = await getPartnerRegionCodes(result.profile.id);
+  await broadcastAdminNotification(
+    {
+      title: "Form signed",
+      message: `${parsed.data.signerName} signed "${formRequest.title}".`,
+      category: "SUCCESS",
+    },
+    undefined,
+    regionCodes
+  );
 
   await logAuditEvent({
     action: "FORM_SIGNED",

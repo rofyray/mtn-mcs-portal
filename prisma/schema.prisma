@@ -54,6 +54,18 @@ enum FormStatus {
   REJECTED
 }
 
+enum FeedbackStatus {
+  OPEN
+  RESPONDED
+  CLOSED
+}
+
+enum RequestStatus {
+  OPEN
+  RESPONDED
+  CLOSED
+}
+
 enum AuditAction {
   PARTNER_APPROVED
   PARTNER_DENIED
@@ -85,6 +97,13 @@ enum AuditAction {
   PARTNER_SUSPENDED
   PARTNER_UNSUSPENDED
   PARTNER_DELETED
+  FEEDBACK_REPLIED
+  FEEDBACK_CLOSED
+  RESTOCK_REQUEST_REPLIED
+  RESTOCK_REQUEST_CLOSED
+  TRAINING_REQUEST_REPLIED
+  TRAINING_REQUEST_CLOSED
+  REPORT_GENERATED
 }
 
 enum OnboardRequestStatus {
@@ -328,36 +347,56 @@ model Notification {
 }
 
 model TrainingRequest {
-  id              String       @id @default(cuid())
+  id              String        @id @default(cuid())
   partnerProfileId String
   agentIds        String[]
   agentNames      String[]
   message         String?
-  createdAt       DateTime     @default(now())
+  status          RequestStatus @default(OPEN)
+  createdAt       DateTime      @default(now())
 
   partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
+  replies        TrainingRequestReply[]
 }
 
 model RestockRequest {
-  id               String   @id @default(cuid())
+  id               String        @id @default(cuid())
   partnerProfileId String
   businessId       String
   items            String[]
   message          String?
-  createdAt        DateTime @default(now())
+  status           RequestStatus @default(OPEN)
+  createdAt        DateTime      @default(now())
 
   partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
   business       Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  replies        RestockRequestReply[]
 }
 
 model Feedback {
-  id              String   @id @default(cuid())
+  id              String         @id @default(cuid())
   partnerProfileId String
   title           String
   message         String
-  createdAt       DateTime @default(now())
+  status          FeedbackStatus @default(OPEN)
+  createdAt       DateTime       @default(now())
 
   partnerProfile PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
+  replies        FeedbackReply[]
+}
+
+model FeedbackReply {
+  id              String   @id @default(cuid())
+  feedbackId      String
+  message         String
+  senderType      String   // "ADMIN" or "PARTNER"
+  senderAdminId   String?
+  senderPartnerId String?
+  createdAt       DateTime @default(now())
+
+  feedback Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+
+  @@index([feedbackId])
 }
 
 model FormRequest {
@@ -468,4 +507,32 @@ model OnboardRequestApproval {
 
   @@index([onboardRequestFormId])
   @@index([adminId])
+}
+
+model RestockRequestReply {
+  id               String   @id @default(cuid())
+  restockRequestId String
+  message          String
+  senderType       String   // "ADMIN" or "PARTNER"
+  senderAdminId    String?
+  senderPartnerId  String?
+  createdAt        DateTime @default(now())
+
+  restockRequest RestockRequest @relation(fields: [restockRequestId], references: [id], onDelete: Cascade)
+
+  @@index([restockRequestId])
+}
+
+model TrainingRequestReply {
+  id                String   @id @default(cuid())
+  trainingRequestId String
+  message           String
+  senderType        String   // "ADMIN" or "PARTNER"
+  senderAdminId     String?
+  senderPartnerId   String?
+  createdAt         DateTime @default(now())
+
+  trainingRequest TrainingRequest @relation(fields: [trainingRequestId], references: [id], onDelete: Cascade)
+
+  @@index([trainingRequestId])
 }

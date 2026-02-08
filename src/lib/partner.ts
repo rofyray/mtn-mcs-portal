@@ -19,6 +19,15 @@ export async function getPartnerProfile() {
   return { user, profile: user.partnerProfile };
 }
 
+export async function getPartnerRegionCodes(partnerProfileId: string): Promise<string[]> {
+  const businesses = await prisma.business.findMany({
+    where: { partnerProfileId },
+    select: { addressRegionCode: true },
+    distinct: ["addressRegionCode"],
+  });
+  return businesses.map((b) => b.addressRegionCode);
+}
+
 export async function getApprovedPartnerProfile() {
   const result = await getPartnerProfile();
   if (!result) {

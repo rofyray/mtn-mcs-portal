@@ -6,7 +6,8 @@ import { getAdminAndProfile } from "@/lib/admin-access";
 import { logAuditEvent } from "@/lib/audit";
 import { sendEmail } from "@/lib/email";
 import { buildEmailTemplate } from "@/lib/email-template";
-import { requiredEnv } from "@/lib/env";
+import { getCoordinatorEmailsForRegions } from "@/lib/notifications";
+import { getPartnerRegionCodes } from "@/lib/partner";
 import { formatZodError } from "@/lib/validation";
 
 const denialSchema = z.object({
@@ -69,8 +70,9 @@ export async function POST(
     });
   }
 
+  const coordinatorEmails = await getCoordinatorEmailsForRegions(await getPartnerRegionCodes(id));
   const adminRecipients = Array.from(
-    new Set([access.admin.email, requiredEnv.smtpDefaultRecipient].filter(Boolean))
+    new Set([access.admin.email, ...coordinatorEmails].filter(Boolean))
   ).join(",");
   const adminMessage = buildEmailTemplate({
     title: "Partner submission denied",

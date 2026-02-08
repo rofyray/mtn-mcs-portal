@@ -1,6 +1,22 @@
 import prisma from "@/lib/db";
 import { AdminRole, NotificationCategory } from "@prisma/client";
 
+/**
+ * Get emails of enabled COORDINATOR admins assigned to given region(s).
+ */
+export async function getCoordinatorEmailsForRegions(regionCodes: string[]): Promise<string[]> {
+  if (regionCodes.length === 0) return [];
+  const coordinators = await prisma.admin.findMany({
+    where: {
+      role: "COORDINATOR",
+      enabled: true,
+      regions: { some: { regionCode: { in: regionCodes } } },
+    },
+    select: { email: true },
+  });
+  return coordinators.map((c) => c.email);
+}
+
 type NotificationInput = {
   title: string;
   message: string;
@@ -10,22 +26,57 @@ type NotificationInput = {
 /**
  * Broadcast notification to admins with specified roles.
  * Default: FULL, MANAGER, COORDINATOR (excludes SENIOR_MANAGER by design)
+ *
+ * When regionCodes is provided, COORDINATOR admins are filtered to only
+ * those with region assignments matching the given codes. FULL and MANAGER
+ * admins always receive the notification regardless of region.
  */
 export async function broadcastAdminNotification(
   input: NotificationInput,
-  roles: AdminRole[] = [AdminRole.FULL, AdminRole.MANAGER, AdminRole.COORDINATOR]
+  roles: AdminRole[] = [AdminRole.FULL, AdminRole.MANAGER, AdminRole.COORDINATOR],
+  regionCodes?: string[]
 ) {
-  const admins = await prisma.admin.findMany({
-    where: { role: { in: roles }, enabled: true },
-    select: { id: true },
-  });
+  const hasRegionFilter = regionCodes && regionCodes.length > 0;
+  const adminIds = new Set<string>();
 
-  if (admins.length === 0) return;
+  if (hasRegionFilter) {
+    // Global roles (FULL, MANAGER) always receive notifications
+    const globalRoles = roles.filter((r) => r !== AdminRole.COORDINATOR);
+    if (globalRoles.length > 0) {
+      const globalAdmins = await prisma.admin.findMany({
+        where: { role: { in: globalRoles }, enabled: true },
+        select: { id: true },
+      });
+      for (const a of globalAdmins) adminIds.add(a.id);
+    }
+
+    // COORDINATORs filtered by region
+    if (roles.includes(AdminRole.COORDINATOR)) {
+      const regionAdmins = await prisma.admin.findMany({
+        where: {
+          role: AdminRole.COORDINATOR,
+          enabled: true,
+          regions: { some: { regionCode: { in: regionCodes } } },
+        },
+        select: { id: true },
+      });
+      for (const a of regionAdmins) adminIds.add(a.id);
+    }
+  } else {
+    // No region filter — fall back to current behavior (all matching roles)
+    const admins = await prisma.admin.findMany({
+      where: { role: { in: roles }, enabled: true },
+      select: { id: true },
+    });
+    for (const a of admins) adminIds.add(a.id);
+  }
+
+  if (adminIds.size === 0) return;
 
   await prisma.notification.createMany({
-    data: admins.map((admin) => ({
+    data: [...adminIds].map((id) => ({
       recipientType: "ADMIN" as const,
-      recipientAdminId: admin.id,
+      recipientAdminId: id,
       title: input.title,
       message: input.message,
       category: input.category ?? "INFO",

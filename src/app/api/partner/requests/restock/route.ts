@@ -3,9 +3,8 @@ import { z } from "zod";
 
 import prisma from "@/lib/db";
 import { sendEmail } from "@/lib/email";
-import { broadcastAdminNotification } from "@/lib/notifications";
+import { broadcastAdminNotification, getCoordinatorEmailsForRegions } from "@/lib/notifications";
 import { buildEmailTemplate } from "@/lib/email-template";
-import { requiredEnv } from "@/lib/env";
 import { getApprovedPartnerProfile } from "@/lib/partner";
 import { formatZodError } from "@/lib/validation";
 
@@ -55,29 +54,35 @@ export async function POST(request: Request) {
 
   const locationInfo = `${business.businessName} (${business.city})`;
 
-  await broadcastAdminNotification({
-    title: "Restock request",
-    message: `${result.profile.businessName ?? "Partner"} requested restock for ${locationInfo}: ${parsed.data.items.join(", ")}.`,
-    category: "INFO",
-  });
+  await broadcastAdminNotification(
+    {
+      title: "Restock request",
+      message: `${result.profile.businessName ?? "Partner"} requested restock for ${locationInfo}: ${parsed.data.items.join(", ")}.`,
+      category: "INFO",
+    },
+    undefined,
+    [business.addressRegionCode]
+  );
 
-  const email = buildEmailTemplate({
-    title: "New restock request",
-    preheader: "A partner submitted a restock request.",
-    message: [
-      `Partner: ${result.profile.businessName ?? "Unknown"}`,
-      `Location: ${locationInfo}`,
-      parsed.data.message ? `Message: ${parsed.data.message}` : "Message: -",
-    ],
-    bullets: parsed.data.items.length ? [`Items: ${parsed.data.items.join(", ")}`] : undefined,
-  });
-
-  await sendEmail({
-    to: requiredEnv.smtpDefaultRecipient,
-    subject: "Partner restock request",
-    text: email.text,
-    html: email.html,
-  });
+  const coordinatorEmails = await getCoordinatorEmailsForRegions([business.addressRegionCode]);
+  if (coordinatorEmails.length > 0) {
+    const email = buildEmailTemplate({
+      title: "New restock request",
+      preheader: "A partner submitted a restock request.",
+      message: [
+        `Partner: ${result.profile.businessName ?? "Unknown"}`,
+        `Location: ${locationInfo}`,
+        parsed.data.message ? `Message: ${parsed.data.message}` : "Message: -",
+      ],
+      bullets: parsed.data.items.length ? [`Items: ${parsed.data.items.join(", ")}`] : undefined,
+    });
+    await sendEmail({
+      to: coordinatorEmails.join(","),
+      subject: "Partner restock request",
+      text: email.text,
+      html: email.html,
+    });
+  }
 
   return NextResponse.json({ request: requestRecord });
 }

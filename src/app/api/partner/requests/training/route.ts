@@ -3,10 +3,9 @@ import { z } from "zod";
 
 import prisma from "@/lib/db";
 import { sendEmail } from "@/lib/email";
-import { broadcastAdminNotification } from "@/lib/notifications";
+import { broadcastAdminNotification, getCoordinatorEmailsForRegions } from "@/lib/notifications";
 import { buildEmailTemplate } from "@/lib/email-template";
-import { requiredEnv } from "@/lib/env";
-import { getApprovedPartnerProfile } from "@/lib/partner";
+import { getApprovedPartnerProfile, getPartnerRegionCodes } from "@/lib/partner";
 import { formatZodError } from "@/lib/validation";
 
 const trainingSchema = z.object({
@@ -47,28 +46,35 @@ export async function POST(request: Request) {
     },
   });
 
-  await broadcastAdminNotification({
-    title: "Training request",
-    message: `${result.profile.businessName ?? "Partner"} requested training for ${agentNames.join(", ")}.`,
-    category: "INFO",
-  });
+  const regionCodes = await getPartnerRegionCodes(result.profile.id);
+  await broadcastAdminNotification(
+    {
+      title: "Training request",
+      message: `${result.profile.businessName ?? "Partner"} requested training for ${agentNames.join(", ")}.`,
+      category: "INFO",
+    },
+    undefined,
+    regionCodes
+  );
 
-  const email = buildEmailTemplate({
-    title: "New training request",
-    preheader: "A partner submitted a training request.",
-    message: [
-      `Partner: ${result.profile.businessName ?? "Unknown"}`,
-      parsed.data.message ? `Message: ${parsed.data.message}` : "Message: -",
-    ],
-    bullets: agentNames.length ? [`Agents: ${agentNames.join(", ")}`] : undefined,
-  });
-
-  await sendEmail({
-    to: requiredEnv.smtpDefaultRecipient,
-    subject: "Partner training request",
-    text: email.text,
-    html: email.html,
-  });
+  const coordinatorEmails = await getCoordinatorEmailsForRegions(regionCodes);
+  if (coordinatorEmails.length > 0) {
+    const email = buildEmailTemplate({
+      title: "New training request",
+      preheader: "A partner submitted a training request.",
+      message: [
+        `Partner: ${result.profile.businessName ?? "Unknown"}`,
+        parsed.data.message ? `Message: ${parsed.data.message}` : "Message: -",
+      ],
+      bullets: agentNames.length ? [`Agents: ${agentNames.join(", ")}`] : undefined,
+    });
+    await sendEmail({
+      to: coordinatorEmails.join(","),
+      subject: "Partner training request",
+      text: email.text,
+      html: email.html,
+    });
+  }
 
   return NextResponse.json({ request: requestRecord });
 }

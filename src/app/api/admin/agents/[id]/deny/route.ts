@@ -6,7 +6,7 @@ import { getAdminAndAgent } from "@/lib/admin-access";
 import { logAuditEvent } from "@/lib/audit";
 import { sendEmail } from "@/lib/email";
 import { buildEmailTemplate } from "@/lib/email-template";
-import { requiredEnv } from "@/lib/env";
+import { getCoordinatorEmailsForRegions } from "@/lib/notifications";
 import { formatZodError } from "@/lib/validation";
 
 const denialSchema = z.object({
@@ -68,8 +68,9 @@ export async function POST(
     });
   }
 
+  const coordinatorEmails = await getCoordinatorEmailsForRegions([access.agent.business.addressRegionCode]);
   const adminRecipients = Array.from(
-    new Set([access.admin.email, requiredEnv.smtpDefaultRecipient].filter(Boolean))
+    new Set([access.admin.email, ...coordinatorEmails].filter(Boolean))
   ).join(",");
   const adminMessage = buildEmailTemplate({
     title: "Agent submission denied",

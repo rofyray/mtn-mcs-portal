@@ -13,9 +13,17 @@ export async function GET(request: Request) {
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
   const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50", 10)));
   const skip = (page - 1) * limit;
+  const statusFilter = searchParams.get("status");
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: any = {};
+  if (statusFilter && ["OPEN", "RESPONDED", "CLOSED"].includes(statusFilter)) {
+    where.status = statusFilter;
+  }
 
   const [feedback, total] = await Promise.all([
     prisma.feedback.findMany({
+      where,
       orderBy: { createdAt: "desc" },
       include: {
         partnerProfile: {
@@ -25,11 +33,14 @@ export async function GET(request: Request) {
             partnerSurname: true,
           },
         },
+        _count: {
+          select: { replies: true },
+        },
       },
       take: limit,
       skip,
     }),
-    prisma.feedback.count(),
+    prisma.feedback.count({ where }),
   ]);
 
   const response = NextResponse.json({

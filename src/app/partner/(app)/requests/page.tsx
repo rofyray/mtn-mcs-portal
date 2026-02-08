@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import EmptyState from "@/components/empty-state";
 import MultiSelectDropdown from "@/components/multi-select-dropdown";
+import { RequestCard, type RequestItem } from "@/components/request-card";
 import { useToast } from "@/components/toast";
 import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
 
@@ -37,6 +38,8 @@ export default function PartnerRequestsPage() {
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pastRequests, setPastRequests] = useState<RequestItem[]>([]);
+  const [requestsRefreshKey, setRequestsRefreshKey] = useState(0);
   const { notify } = useToast();
   useAutoDismiss(error, setError);
   useAutoDismiss(status, setStatus);
@@ -66,6 +69,20 @@ export default function PartnerRequestsPage() {
     loadAgents();
     loadBusinesses();
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadPastRequests() {
+      const response = await fetch("/api/partner/requests");
+      if (cancelled || !response.ok) return;
+      const data = await response.json();
+      if (!cancelled) {
+        setPastRequests(data.requests ?? []);
+      }
+    }
+    loadPastRequests();
+    return () => { cancelled = true; };
+  }, [requestsRefreshKey]);
 
   const trainingEmptyIcon = (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -97,6 +114,7 @@ export default function PartnerRequestsPage() {
     notify({ title: "Training request sent", message: "Admins have been notified.", kind: "success" });
     setSelectedAgents([]);
     setTrainingMessage("");
+    setRequestsRefreshKey((k) => k + 1);
   }
 
   async function submitRestock() {
@@ -133,6 +151,7 @@ export default function PartnerRequestsPage() {
     setSelectedBusinessId("");
     setRestockSelection([]);
     setRestockMessage("");
+    setRequestsRefreshKey((k) => k + 1);
   }
 
   async function submitFeedback() {
@@ -286,6 +305,40 @@ export default function PartnerRequestsPage() {
           <button className="btn btn-primary" type="button" onClick={submitFeedback}>
             Send feedback
           </button>
+        </section>
+
+        {/* My Requests History */}
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold">My Requests</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Your submitted requests and admin responses.</p>
+          </div>
+          <div className="space-y-3">
+            {pastRequests.length === 0 ? (
+              <div className="card">
+                <EmptyState
+                  icon={
+                    <svg width={40} height={40} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M9 3h6l3 3v15a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
+                      <path d="M9 12h6M9 16h6M9 8h2" />
+                    </svg>
+                  }
+                  title="No requests yet"
+                  description="Your submitted requests will appear here."
+                  variant="inset"
+                />
+              </div>
+            ) : (
+              pastRequests.map((item) => (
+                <RequestCard
+                  key={item.id}
+                  item={item}
+                  viewerType="PARTNER"
+                  onReplySubmitted={() => setRequestsRefreshKey((k) => k + 1)}
+                />
+              ))
+            )}
+          </div>
         </section>
 
         {error ? <p className="form-message form-message-error">{error}</p> : null}

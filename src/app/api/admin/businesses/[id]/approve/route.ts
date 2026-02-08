@@ -5,7 +5,7 @@ import { getAdminAndBusiness } from "@/lib/admin-access";
 import { logAuditEvent } from "@/lib/audit";
 import { sendEmail } from "@/lib/email";
 import { buildEmailTemplate } from "@/lib/email-template";
-import { requiredEnv } from "@/lib/env";
+import { getCoordinatorEmailsForRegions } from "@/lib/notifications";
 
 export async function POST(
   _request: Request,
@@ -54,8 +54,9 @@ export async function POST(
     });
   }
 
+  const coordinatorEmails = await getCoordinatorEmailsForRegions([updated.addressRegionCode]);
   const adminRecipients = Array.from(
-    new Set([access.admin.email, requiredEnv.smtpDefaultRecipient].filter(Boolean))
+    new Set([access.admin.email, ...coordinatorEmails].filter(Boolean))
   ).join(",");
   const adminMessage = buildEmailTemplate({
     title: "Business submission approved",

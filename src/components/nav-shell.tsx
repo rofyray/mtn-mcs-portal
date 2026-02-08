@@ -77,6 +77,16 @@ const partnerLinks: NavLink[] = [
       </svg>
     ),
   },
+  {
+    href: "/partner/feedback",
+    label: "Feedback",
+    icon: (
+      <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
+        <path d="M21 15a4 4 0 0 1-4 4H7l-4 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
+        <path d="M8 8h8M8 12h6" />
+      </svg>
+    ),
+  },
 ];
 
 type AdminNavLink = NavLink & { fullOnly?: boolean; seniorManagerOnly?: boolean };
@@ -150,6 +160,16 @@ const adminLinks: AdminNavLink[] = [
     ),
   },
   {
+    href: "/admin/requests",
+    label: "Requests",
+    icon: (
+      <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
+        <path d="M9 3h6l3 3v15a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
+        <path d="M9 12h6M9 16h6M9 8h2" />
+      </svg>
+    ),
+  },
+  {
     href: "/admin/feedback",
     label: "Feedback",
     fullOnly: true,
@@ -157,6 +177,18 @@ const adminLinks: AdminNavLink[] = [
       <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
         <path d="M21 15a4 4 0 0 1-4 4H7l-4 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />
         <path d="M8 8h8M8 12h6" />
+      </svg>
+    ),
+  },
+  {
+    href: "/admin/reports",
+    label: "Reports",
+    fullOnly: true,
+    icon: (
+      <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
       </svg>
     ),
   },
