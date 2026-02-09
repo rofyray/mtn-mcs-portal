@@ -89,7 +89,7 @@ const partnerLinks: NavLink[] = [
   },
 ];
 
-type AdminNavLink = NavLink & { fullOnly?: boolean; seniorManagerOnly?: boolean };
+type AdminNavLink = NavLink & { fullOnly?: boolean; seniorManagerOnly?: boolean; platformAdminOnly?: boolean };
 
 const adminLinks: AdminNavLink[] = [
   {
@@ -183,7 +183,7 @@ const adminLinks: AdminNavLink[] = [
   {
     href: "/admin/reports",
     label: "Reports",
-    fullOnly: true,
+    platformAdminOnly: true,
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -346,6 +346,7 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
     const isFullAccess = adminRole === "FULL";
     const isManager = adminRole === "MANAGER";
     return adminLinks.filter((link) => {
+      if (link.platformAdminOnly && !isFullAccess) return false;
       if (link.fullOnly && !isFullAccess && !isManager) return false;
       return true;
     });

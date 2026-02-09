@@ -1,6 +1,6 @@
 "use client";
 
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 
 import PostAuthToast, { storeToast } from "@/components/post-auth-toast";
@@ -183,6 +183,10 @@ export default function OnboardingPage() {
     kind: "image" | "pdf";
     anchorRect?: DOMRect | null;
   } | null>(null);
+  const { data: session } = useSession();
+  const draftKey = session?.user?.email
+    ? `partnerOnboardingDraft:${session.user.email}`
+    : null;
   const { notify } = useToast();
   useAutoDismiss(error, setError);
   useAutoDismiss(status, setStatus);
@@ -198,14 +202,19 @@ export default function OnboardingPage() {
   }, [form]);
 
   useEffect(() => {
+    if (!draftKey) return;
+
     async function loadDraft() {
-      const localDraft = window.localStorage.getItem("partnerOnboardingDraft");
+      // Clean up legacy unscoped key from before per-user fix
+      window.localStorage.removeItem("partnerOnboardingDraft");
+
+      const localDraft = window.localStorage.getItem(draftKey!);
       if (localDraft) {
         try {
           const parsed = JSON.parse(localDraft) as Record<string, string>;
           setForm(parsed);
         } catch {
-          window.localStorage.removeItem("partnerOnboardingDraft");
+          window.localStorage.removeItem(draftKey!);
         }
       }
 
@@ -231,12 +240,12 @@ export default function OnboardingPage() {
     }
 
     loadDraft();
-  }, []);
+  }, [draftKey]);
 
   function updateField(key: string, value: string) {
     setForm((prev) => {
       const next = { ...prev, [key]: value };
-      window.localStorage.setItem("partnerOnboardingDraft", JSON.stringify(next));
+      if (draftKey) window.localStorage.setItem(draftKey, JSON.stringify(next));
       return next;
     });
   }
@@ -258,7 +267,7 @@ export default function OnboardingPage() {
       notify({ title: "Draft not saved", message: data.error ?? "Check the form fields.", kind: "error" });
     } else {
       setStatus("Draft saved.");
-      window.localStorage.setItem("partnerOnboardingDraft", JSON.stringify(form));
+      if (draftKey) window.localStorage.setItem(draftKey, JSON.stringify(form));
       notify({ title: "Draft saved", message: "Your progress has been saved.", kind: "success" });
     }
 
@@ -327,6 +336,7 @@ export default function OnboardingPage() {
     } else {
       setStatus(null);
       setSubmitted(true);
+      if (draftKey) window.localStorage.removeItem(draftKey);
       notify({ title: "Submitted", message: "Your onboarding is now under review.", kind: "success" });
     }
 

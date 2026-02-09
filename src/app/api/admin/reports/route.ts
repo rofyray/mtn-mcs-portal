@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
   }
 
   const { admin } = session;
-  if (admin.role !== "FULL" && admin.role !== "MANAGER") {
+  if (admin.role !== "FULL") {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 

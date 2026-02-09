@@ -208,7 +208,7 @@ export default function AdminReportsPage() {
     );
   }
 
-  if (!admin || (admin.role !== "FULL" && admin.role !== "MANAGER")) {
+  if (!admin || admin.role !== "FULL") {
     return (
       <main className="min-h-screen px-6 py-10">
         <div className="mx-auto w-full max-w-5xl glass-panel p-6">
