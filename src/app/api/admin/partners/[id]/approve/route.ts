@@ -5,7 +5,7 @@ import { getAdminAndProfile } from "@/lib/admin-access";
 import { logAuditEvent } from "@/lib/audit";
 import { sendEmail } from "@/lib/email";
 import { buildEmailTemplate } from "@/lib/email-template";
-import { getCoordinatorEmailsForRegions } from "@/lib/notifications";
+import { getCoordinatorEmailsForRegions, sendAdminNotification } from "@/lib/notifications";
 import { getPartnerRegionCodes } from "@/lib/partner";
 
 export async function POST(
@@ -57,22 +57,28 @@ export async function POST(
   }
 
   const coordinatorEmails = await getCoordinatorEmailsForRegions(await getPartnerRegionCodes(id));
-  const adminRecipients = Array.from(
-    new Set([access.admin.email, ...coordinatorEmails].filter(Boolean))
-  ).join(",");
-  const adminMessage = buildEmailTemplate({
+  const adminRecipients = coordinatorEmails.filter(Boolean).join(",");
+  if (adminRecipients) {
+    const adminMessage = buildEmailTemplate({
+      title: "Partner submission approved",
+      preheader: "A partner submission was approved.",
+      message: [
+        `Admin: ${access.admin.name} (${access.admin.email})`,
+        `Partner: ${updated.businessName ?? "Unknown"}`,
+      ],
+    });
+    await sendEmail({
+      to: adminRecipients,
+      subject: "Partner submission approved",
+      text: adminMessage.text,
+      html: adminMessage.html,
+    });
+  }
+
+  await sendAdminNotification(access.admin.id, {
     title: "Partner submission approved",
-    preheader: "A partner submission was approved.",
-    message: [
-      `Admin: ${access.admin.name} (${access.admin.email})`,
-      `Partner: ${updated.businessName ?? "Unknown"}`,
-    ],
-  });
-  await sendEmail({
-    to: adminRecipients,
-    subject: "Partner submission approved",
-    text: adminMessage.text,
-    html: adminMessage.html,
+    message: `Partner: ${updated.businessName ?? "Unknown"}`,
+    category: "SUCCESS",
   });
 
   return NextResponse.json({ profile: updated });

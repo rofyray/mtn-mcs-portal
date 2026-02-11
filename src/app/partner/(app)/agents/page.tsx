@@ -47,8 +47,6 @@ const initialForm = {
   phoneNumber: "",
   email: "",
   ghanaCardNumber: "",
-  ghanaCardFrontUrl: "",
-  ghanaCardBackUrl: "",
   passportPhotoUrl: "",
   businessId: "",
   businessName: "",
@@ -65,6 +63,27 @@ function formatPhoneForDisplay(value?: string) {
   const digits = (value ?? "").replace(/\D/g, "");
   const withoutPrefix = digits.startsWith("233") ? digits.slice(3) : digits;
   return withoutPrefix.length > 9 ? withoutPrefix.slice(-9) : withoutPrefix;
+}
+
+function parseGhanaCard(value?: string) {
+  const raw = value ?? "";
+  const match = raw.match(/^([A-Za-z]{0,3})-?(\d{0,9})-?(\d?)$/);
+  if (!match) {
+    const letters = raw.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase();
+    const digits = raw.replace(/\D/g, "").slice(0, 10);
+    return { prefix: letters, main: digits.slice(0, 9), check: digits.slice(9, 10) };
+  }
+  return {
+    prefix: (match[1] ?? "").toUpperCase(),
+    main: match[2] ?? "",
+    check: match[3] ?? "",
+  };
+}
+
+function buildGhanaCardValue(prefix: string, main: string, check: string) {
+  if (!prefix && !main && !check) return "";
+  const p = prefix.toUpperCase();
+  return `${p}-${main}${check ? `-${check}` : ""}`;
 }
 
 export default function PartnerAgentsPage() {
@@ -341,11 +360,47 @@ export default function PartnerAgentsPage() {
               </div>
               <div className="space-y-1">
                 <label className="label">Ghana Card Number</label>
-                <input
-                  className="input"
-                  value={form.ghanaCardNumber}
-                  onChange={(event) => updateField("ghanaCardNumber", event.target.value)}
-                />
+                {(() => {
+                  const gc = parseGhanaCard(form.ghanaCardNumber);
+                  return (
+                    <div className="ghana-card-grid">
+                      <input
+                        className="input ghana-card-prefix"
+                        placeholder="GHA"
+                        maxLength={3}
+                        value={gc.prefix}
+                        onChange={(e) => {
+                          const letters = e.target.value.replace(/[^A-Za-z]/g, "").slice(0, 3);
+                          updateField("ghanaCardNumber", buildGhanaCardValue(letters, gc.main, gc.check));
+                        }}
+                      />
+                      <span className="ghana-card-divider">-</span>
+                      <input
+                        className="input ghana-card-main"
+                        inputMode="numeric"
+                        placeholder="000000000"
+                        maxLength={9}
+                        value={gc.main}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, "").slice(0, 9);
+                          updateField("ghanaCardNumber", buildGhanaCardValue(gc.prefix, digits, gc.check));
+                        }}
+                      />
+                      <span className="ghana-card-divider">-</span>
+                      <input
+                        className="input ghana-card-check"
+                        inputMode="numeric"
+                        placeholder="0"
+                        maxLength={1}
+                        value={gc.check}
+                        onChange={(e) => {
+                          const digit = e.target.value.replace(/\D/g, "").slice(0, 1);
+                          updateField("ghanaCardNumber", buildGhanaCardValue(gc.prefix, gc.main, digit));
+                        }}
+                      />
+                    </div>
+                  );
+                })()}
               </div>
               <div className="space-y-1 md:col-span-2">
                 <label className="label">Business Location</label>
@@ -366,36 +421,6 @@ export default function PartnerAgentsPage() {
                 </p>
               </div>
 
-              <UploadField
-                label="Ghana Card Front"
-                value={form.ghanaCardFrontUrl}
-                accept={IMAGE_ACCEPT}
-                uploading={uploading.ghanaCardFrontUrl}
-                onPreview={(url, anchorRect) =>
-                  setPreview({
-                    url,
-                    label: "Ghana Card Front",
-                    kind: "image",
-                    anchorRect: anchorRect ?? null,
-                  })
-                }
-                onSelect={(file) => handleUpload("ghanaCardFrontUrl", file)}
-              />
-              <UploadField
-                label="Ghana Card Back"
-                value={form.ghanaCardBackUrl}
-                accept={IMAGE_ACCEPT}
-                uploading={uploading.ghanaCardBackUrl}
-                onPreview={(url, anchorRect) =>
-                  setPreview({
-                    url,
-                    label: "Ghana Card Back",
-                    kind: "image",
-                    anchorRect: anchorRect ?? null,
-                  })
-                }
-                onSelect={(file) => handleUpload("ghanaCardBackUrl", file)}
-              />
               <UploadField
                 label="Passport Photo"
                 value={form.passportPhotoUrl}

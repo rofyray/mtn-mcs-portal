@@ -10,8 +10,6 @@ const FIELD_LABELS: Record<string, string> = {
   phoneNumber: "Phone Number",
   paymentWallet: "Payment Wallet",
   ghanaCardNumber: "Ghana Card Number",
-  ghanaCardFrontUrl: "Ghana Card Front",
-  ghanaCardBackUrl: "Ghana Card Back",
   passportPhotoUrl: "Passport Photo",
   taxIdentityNumber: "Tax Identity Number",
   businessCertificateUrl: "Business Certificate",
@@ -63,8 +61,6 @@ const FIELD_LABELS: Record<string, string> = {
 
 /** Fields that contain file/image URLs */
 export const URL_FIELDS = new Set([
-  "ghanaCardFrontUrl",
-  "ghanaCardBackUrl",
   "passportPhotoUrl",
   "businessCertificateUrl",
   "fireCertificateUrl",

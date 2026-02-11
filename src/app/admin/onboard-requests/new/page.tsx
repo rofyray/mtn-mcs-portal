@@ -290,7 +290,7 @@ function NewOnboardRequestPage() {
     }
     setUploading((prev) => ({ ...prev, photos: true }));
     try {
-      const pathname = `onboard-requests/photos/${Date.now()}-${file.name}`;
+      const pathname = `onboarding/onboard-requests/photos/${Date.now()}-${file.name}`;
       const result = await uploadFile({ file, pathname, contentType: file.type });
       setForm((prev) => ({ ...prev, imageUrls: [...prev.imageUrls, result.url] }));
     } catch {
@@ -347,6 +347,10 @@ function NewOnboardRequestPage() {
   async function handleSubmit() {
     if (!form.businessName.trim() || !form.regionCode) {
       setError("Business name and region are required");
+      return;
+    }
+    if (!form.signatureUrl) {
+      notify({ title: "Signature required", message: "Please add your signature before submitting.", kind: "warning" });
       return;
     }
     setLoading(true);
@@ -562,7 +566,7 @@ function NewOnboardRequestPage() {
 
             {form.regionCode === GREATER_ACCRA_REGION_CODE && (
               <div className="space-y-1">
-                <label className="label">Sub-Business Unit (SBU)</label>
+                <label className="label">Strategic Business Unit (SBU)</label>
                 <select
                   className="input"
                   value={form.sbuCode}
@@ -682,15 +686,6 @@ function NewOnboardRequestPage() {
                     type="email"
                     value={form.authorizedSignatory.email}
                     onChange={(e) => updateSignatory("email", e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="label">Date</label>
-                  <input
-                    className="input"
-                    type="date"
-                    value={form.authorizedSignatory.date}
-                    onChange={(e) => updateSignatory("date", e.target.value)}
                   />
                 </div>
               </div>
@@ -931,6 +926,12 @@ function NewOnboardRequestPage() {
                 <span>{form.businessName || "—"}</span>
                 <span className="text-gray-500 dark:text-gray-400">Region</span>
                 <span>{ghanaLocations[form.regionCode]?.name ?? (form.regionCode || "—")}</span>
+                {form.regionCode === GREATER_ACCRA_REGION_CODE && form.sbuCode && (
+                  <>
+                    <span className="text-gray-500 dark:text-gray-400">SBU</span>
+                    <span>{GREATER_ACCRA_SBUS.find((s) => s.code === form.sbuCode)?.name || form.sbuCode}</span>
+                  </>
+                )}
                 <span className="text-gray-500 dark:text-gray-400">Business Type</span>
                 <span>
                   {form.businessType === "Other"
@@ -967,8 +968,26 @@ function NewOnboardRequestPage() {
                 <span>{form.pepDeclaration.q1 || "—"}</span>
                 <span className="text-gray-500 dark:text-gray-400">Q2: Held public position</span>
                 <span>{form.pepDeclaration.q2 || "—"}</span>
+                {form.pepDeclaration.q2 === "Yes" && (
+                  <>
+                    <span className="text-gray-500 dark:text-gray-400">Q2: Timeframe</span>
+                    <span>{form.pepDeclaration.q2Timeframe || "—"}</span>
+                  </>
+                )}
                 <span className="text-gray-500 dark:text-gray-400">Q3: Related to PEP</span>
                 <span>{form.pepDeclaration.q3 || "—"}</span>
+                {form.pepDeclaration.q3 === "Yes" && (
+                  <>
+                    <span className="text-gray-500 dark:text-gray-400">Q3: PEP Name</span>
+                    <span>{form.pepDeclaration.q3Name || "—"}</span>
+                    <span className="text-gray-500 dark:text-gray-400">Q3: Position</span>
+                    <span>{form.pepDeclaration.q3Position || "—"}</span>
+                    <span className="text-gray-500 dark:text-gray-400">Q3: Year</span>
+                    <span>{form.pepDeclaration.q3Year || "—"}</span>
+                    <span className="text-gray-500 dark:text-gray-400">Q3: Relationship</span>
+                    <span>{form.pepDeclaration.q3Relationship || "—"}</span>
+                  </>
+                )}
               </div>
             </div>
 
@@ -1016,6 +1035,7 @@ function NewOnboardRequestPage() {
                 existingSignatureUrl={form.signatureUrl || undefined}
                 onSignatureReady={(url) => updateField("signatureUrl", url)}
                 onClear={() => updateField("signatureUrl", "")}
+                onError={(msg) => notify({ title: "Signature error", message: msg, kind: "error" })}
                 disabled={loading}
               />
             </div>
@@ -1054,7 +1074,7 @@ function NewOnboardRequestPage() {
                 type="button"
                 className="btn btn-primary text-sm"
                 onClick={handleSubmit}
-                disabled={loading || !form.businessName.trim() || !form.regionCode}
+                disabled={loading || !form.businessName.trim() || !form.regionCode || !form.signatureUrl}
               >
                 {loading ? "Submitting..." : "Submit to Manager"}
               </button>

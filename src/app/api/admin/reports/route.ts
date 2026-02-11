@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
 
         headers = [
           "Business Name", "First Name", "Surname", "Email", "Phone",
-          "Payment Wallet", "Ghana Card #", "TIN", "APN", "MIFI IMEI",
+          "Payment Wallet", "Ghana Card #", "TIN", "Region",
           "Status", "Submitted", "Approved", "Denied",
         ];
         rows = partners.map((p) => [
@@ -104,8 +104,7 @@ export async function GET(request: NextRequest) {
           p.paymentWallet ?? "",
           p.ghanaCardNumber ?? "",
           p.taxIdentityNumber ?? "",
-          p.apn ?? "",
-          p.mifiImei ?? "",
+          regionName(p.regionCode),
           p.status,
           formatDate(p.submittedAt),
           formatDate(p.approvedAt),
@@ -189,7 +188,7 @@ export async function GET(request: NextRequest) {
 
         headers = [
           "Business Name", "Region", "District", "City", "Landmark",
-          "Latitude", "Longitude", "Partner", "Status", "Submitted", "Approved", "Denied",
+          "Latitude", "Longitude", "APN", "MiFi IMEI", "Partner", "Status", "Submitted", "Approved", "Denied",
         ];
         rows = locations.map((b) => [
           b.businessName,
@@ -199,6 +198,8 @@ export async function GET(request: NextRequest) {
           b.landmark ?? "",
           b.gpsLatitude ?? "",
           b.gpsLongitude ?? "",
+          b.apn ?? "",
+          b.mifiImei ?? "",
           b.partnerProfile.businessName ?? "",
           b.status,
           formatDate(b.submittedAt),

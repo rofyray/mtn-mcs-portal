@@ -28,6 +28,21 @@ export async function GET(request: NextRequest, { params }: Params) {
   const searchParams = request.nextUrl.searchParams;
   const search = searchParams.get("search");
 
+  const partnerCount = await prisma.partnerProfile.count({
+    where: {
+      status: "APPROVED",
+      suspended: false,
+      regionCode: regionCode,
+      ...(search && {
+        OR: [
+          { businessName: { contains: search, mode: "insensitive" as const } },
+          { partnerFirstName: { contains: search, mode: "insensitive" as const } },
+          { partnerSurname: { contains: search, mode: "insensitive" as const } },
+        ],
+      }),
+    },
+  });
+
   const businesses = await prisma.business.findMany({
     where: {
       addressRegionCode: regionCode,
@@ -97,6 +112,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       agentCount: business.agents.length,
       agents: business.agents,
     })),
+    totalPartners: partnerCount,
     totalBusinesses: businesses.length,
     totalAgents: businesses.reduce((sum, b) => sum + b.agents.length, 0),
   });

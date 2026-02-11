@@ -13,16 +13,6 @@ const optionalUrl = z.preprocess(
   z.string().url().nullable().optional()
 );
 
-const optionalDigits = z.preprocess(
-  emptyToUndefined,
-  z.string().trim().regex(/^\d+$/, "Must contain only digits").optional()
-);
-
-const optionalImei = z.preprocess(
-  emptyToUndefined,
-  z.string().trim().regex(/^\d+$/, "IMEI must contain only digits").max(15, "IMEI must be at most 15 digits").optional()
-);
-
 export const onboardingSchema = z.object({
   businessName: optionalString,
   partnerFirstName: optionalString,
@@ -30,15 +20,13 @@ export const onboardingSchema = z.object({
   phoneNumber: optionalString,
   paymentWallet: optionalString,
   ghanaCardNumber: optionalString,
-  ghanaCardFrontUrl: optionalUrl,
-  ghanaCardBackUrl: optionalUrl,
   passportPhotoUrl: optionalUrl,
   taxIdentityNumber: optionalString,
   businessCertificateUrl: optionalUrl,
   fireCertificateUrl: optionalUrl,
   insuranceUrl: optionalUrl,
-  apn: optionalDigits,
-  mifiImei: optionalImei,
+  regionCode: optionalString,
+  sbuCode: optionalString,
 });
 
 export type OnboardingInput = z.infer<typeof onboardingSchema>;

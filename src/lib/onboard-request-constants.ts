@@ -18,7 +18,6 @@ export type OnboardRequestFormData = {
     designation: string;
     phone: string;
     email: string;
-    date: string;
   };
   contactPerson: {
     name: string;
@@ -58,7 +57,7 @@ export const INITIAL_FORM: OnboardRequestFormData = {
   physicalAddress: "",
   companyPhone: "",
   digitalPostAddress: "",
-  authorizedSignatory: { name: "", designation: "", phone: "", email: "", date: "" },
+  authorizedSignatory: { name: "", designation: "", phone: "", email: "" },
   contactPerson: { name: "", designation: "", phone: "", email: "", date: "" },
   pepDeclaration: {
     q1: "",

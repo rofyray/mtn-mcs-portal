@@ -460,7 +460,7 @@ export default function PublicOnboardRequestPage() {
 
               {form.regionCode === GREATER_ACCRA_REGION_CODE && (
                 <div className="space-y-1">
-                  <label className="label">Sub-Business Unit (SBU)</label>
+                  <label className="label">Strategic Business Unit (SBU)</label>
                   <select
                     className="input"
                     value={form.sbuCode}
@@ -581,15 +581,6 @@ export default function PublicOnboardRequestPage() {
                     type="email"
                     value={form.authorizedSignatory.email}
                     onChange={(e) => updateSignatory("email", e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="label">Date</label>
-                  <input
-                    className="input"
-                    type="date"
-                    value={form.authorizedSignatory.date}
-                    onChange={(e) => updateSignatory("date", e.target.value)}
                   />
                 </div>
               </div>
@@ -801,6 +792,12 @@ export default function PublicOnboardRequestPage() {
                 <span>{form.businessName || "—"}</span>
                 <span className="text-gray-500 dark:text-gray-400">Region</span>
                 <span>{ghanaLocations[form.regionCode]?.name ?? (form.regionCode || "—")}</span>
+                {form.regionCode === GREATER_ACCRA_REGION_CODE && form.sbuCode && (
+                  <>
+                    <span className="text-gray-500 dark:text-gray-400">SBU</span>
+                    <span>{GREATER_ACCRA_SBUS.find((s) => s.code === form.sbuCode)?.name || form.sbuCode}</span>
+                  </>
+                )}
                 <span className="text-gray-500 dark:text-gray-400">Business Type</span>
                 <span>
                   {form.businessType === "Other"
@@ -837,8 +834,26 @@ export default function PublicOnboardRequestPage() {
                 <span>{form.pepDeclaration.q1 || "—"}</span>
                 <span className="text-gray-500 dark:text-gray-400">Q2: Held public position</span>
                 <span>{form.pepDeclaration.q2 || "—"}</span>
+                {form.pepDeclaration.q2 === "Yes" && (
+                  <>
+                    <span className="text-gray-500 dark:text-gray-400">Q2: Timeframe</span>
+                    <span>{form.pepDeclaration.q2Timeframe || "—"}</span>
+                  </>
+                )}
                 <span className="text-gray-500 dark:text-gray-400">Q3: Related to PEP</span>
                 <span>{form.pepDeclaration.q3 || "—"}</span>
+                {form.pepDeclaration.q3 === "Yes" && (
+                  <>
+                    <span className="text-gray-500 dark:text-gray-400">Q3: PEP Name</span>
+                    <span>{form.pepDeclaration.q3Name || "—"}</span>
+                    <span className="text-gray-500 dark:text-gray-400">Q3: Position</span>
+                    <span>{form.pepDeclaration.q3Position || "—"}</span>
+                    <span className="text-gray-500 dark:text-gray-400">Q3: Year</span>
+                    <span>{form.pepDeclaration.q3Year || "—"}</span>
+                    <span className="text-gray-500 dark:text-gray-400">Q3: Relationship</span>
+                    <span>{form.pepDeclaration.q3Relationship || "—"}</span>
+                  </>
+                )}
               </div>
             </div>
           </div>

@@ -173,6 +173,11 @@ export default function OnboardRequestDetailPage() {
 
   async function handleApprove() {
     if (!form) return;
+    if (!signatureUrl) {
+      notify({ title: "Signature required", message: "Please add your signature before approving.", kind: "warning" });
+      setConfirmAction(null);
+      return;
+    }
     setActionLoading(true);
     try {
       const body: Record<string, unknown> = {
@@ -383,8 +388,6 @@ export default function OnboardRequestDetailPage() {
             <span>{form.authorizedSignatory.phone || "—"}</span>
             <span className="text-gray-500 dark:text-gray-400">Email</span>
             <span>{form.authorizedSignatory.email || "—"}</span>
-            <span className="text-gray-500 dark:text-gray-400">Date</span>
-            <span>{form.authorizedSignatory.date || "—"}</span>
           </div>
         </section>
       )}
@@ -517,7 +520,7 @@ export default function OnboardRequestDetailPage() {
                 onSelect={async (file: File) => {
                   setCoordUploading(true);
                   try {
-                    const pathname = `onboard-requests/photos/${Date.now()}-${file.name}`;
+                    const pathname = `onboarding/onboard-requests/photos/${Date.now()}-${file.name}`;
                     const result = await uploadFile({
                       file,
                       pathname,
@@ -566,6 +569,7 @@ export default function OnboardRequestDetailPage() {
               existingSignatureUrl={coordSignatureUrl || undefined}
               onSignatureReady={setCoordSignatureUrl}
               onClear={() => setCoordSignatureUrl("")}
+              onError={(msg) => notify({ title: "Signature error", message: msg, kind: "error" })}
               disabled={actionLoading}
             />
           </div>
@@ -574,6 +578,10 @@ export default function OnboardRequestDetailPage() {
             type="button"
             className="btn btn-primary text-sm"
             onClick={async () => {
+              if (!coordSignatureUrl) {
+                notify({ title: "Signature required", message: "Please add your signature before submitting.", kind: "warning" });
+                return;
+              }
               setActionLoading(true);
               try {
                 // Save images/completionDate to the form first
@@ -691,9 +699,12 @@ export default function OnboardRequestDetailPage() {
                   <div className="approval-step-comments">{approval.comments}</div>
                 )}
                 {approval.signatureUrl && (
-                  <div className="approval-step-signature">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={approval.signatureUrl} alt="Signature" />
+                  <div className="mt-2">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Signature</p>
+                    <div className="approval-step-signature">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={approval.signatureUrl} alt="Signature" />
+                    </div>
                   </div>
                 )}
               </div>
@@ -749,6 +760,7 @@ export default function OnboardRequestDetailPage() {
               existingSignatureUrl={signatureUrl || undefined}
               onSignatureReady={setSignatureUrl}
               onClear={() => setSignatureUrl("")}
+              onError={(msg) => notify({ title: "Signature error", message: msg, kind: "error" })}
               disabled={actionLoading}
             />
           </div>

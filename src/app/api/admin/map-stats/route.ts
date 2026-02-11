@@ -25,8 +25,8 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const search = searchParams.get("search");
 
-  // Build search filter for reuse
-  const searchFilter = search
+  // Build search filters for reuse
+  const businessSearchFilter = search
     ? {
         OR: [
           { businessName: { contains: search, mode: "insensitive" as const } },
@@ -54,8 +54,18 @@ export async function GET(request: NextRequest) {
       }
     : {};
 
+  const partnerSearchFilter = search
+    ? {
+        OR: [
+          { businessName: { contains: search, mode: "insensitive" as const } },
+          { partnerFirstName: { contains: search, mode: "insensitive" as const } },
+          { partnerSurname: { contains: search, mode: "insensitive" as const } },
+        ],
+      }
+    : {};
+
   // Run aggregation queries in parallel
-  const [businessCounts, agentCounts, partnerIdsByRegion] = await Promise.all([
+  const [businessCounts, agentCounts, partnerCounts] = await Promise.all([
     // Business counts by region
     prisma.business.groupBy({
       by: ["addressRegionCode"],
@@ -63,7 +73,7 @@ export async function GET(request: NextRequest) {
       where: {
         status: "APPROVED",
         addressRegionCode: { in: assignedRegions },
-        ...searchFilter,
+        ...businessSearchFilter,
       },
     }),
     // Agent counts by region (via business)
@@ -75,7 +85,7 @@ export async function GET(request: NextRequest) {
         business: {
           status: "APPROVED",
           addressRegionCode: { in: assignedRegions },
-          ...searchFilter,
+          ...businessSearchFilter,
         },
       },
     }).then(async (agentsByBusiness) => {
@@ -103,16 +113,15 @@ export async function GET(request: NextRequest) {
         _count: count,
       }));
     }),
-    // Get partner IDs by region for unique counting
-    prisma.business.findMany({
+    // Partner counts by region (direct from PartnerProfile)
+    prisma.partnerProfile.groupBy({
+      by: ["regionCode"],
+      _count: { id: true },
       where: {
         status: "APPROVED",
-        addressRegionCode: { in: assignedRegions },
-        ...searchFilter,
-      },
-      select: {
-        addressRegionCode: true,
-        partnerProfileId: true,
+        suspended: false,
+        regionCode: { in: assignedRegions },
+        ...partnerSearchFilter,
       },
     }),
   ]);
@@ -143,18 +152,11 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Calculate unique partners per region
-  const partnersByRegion: Record<string, Set<string>> = {};
-  const allPartners = new Set<string>();
-  for (const code of assignedRegions) {
-    partnersByRegion[code] = new Set();
-  }
-  for (const business of partnerIdsByRegion) {
-    partnersByRegion[business.addressRegionCode]?.add(business.partnerProfileId);
-    allPartners.add(business.partnerProfileId);
-  }
-  for (const code of assignedRegions) {
-    statsMap[code].partnerCount = partnersByRegion[code].size;
+  // Populate partner counts
+  for (const item of partnerCounts) {
+    if (item.regionCode && statsMap[item.regionCode]) {
+      statsMap[item.regionCode].partnerCount = item._count.id;
+    }
   }
 
   // When searching, filter out regions with 0 matches
@@ -170,7 +172,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     assignedRegions,
     stats,
-    totalPartners: allPartners.size,
+    totalPartners: stats.reduce((sum, s) => sum + s.partnerCount, 0),
     totalBusinesses: stats.reduce((sum, s) => sum + s.businessCount, 0),
     totalAgents: stats.reduce((sum, s) => sum + s.agentCount, 0),
     isFiltered: !!search,

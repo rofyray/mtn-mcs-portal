@@ -26,6 +26,7 @@ type DrilldownData = {
   regionCode: string;
   regionName: string;
   businesses: Business[];
+  totalPartners: number;
   totalBusinesses: number;
   totalAgents: number;
 };
@@ -110,7 +111,7 @@ export default function RegionDrilldownPanel({
             <h2 className="drilldown-title">{data?.regionName ?? regionCode}</h2>
             <p className="drilldown-subtitle">
               {data
-                ? `${data.totalBusinesses} businesses, ${data.totalAgents} agents`
+                ? `${data.totalPartners} partners, ${data.totalBusinesses} locations, ${data.totalAgents} agents`
                 : "Loading..."}
             </p>
           </div>

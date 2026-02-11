@@ -244,15 +244,13 @@ model PartnerProfile {
   phoneNumber              String?
   paymentWallet            String?
   ghanaCardNumber           String?
-  ghanaCardFrontUrl         String?
-  ghanaCardBackUrl          String?
   passportPhotoUrl          String?
   taxIdentityNumber        String?
   businessCertificateUrl    String?
   fireCertificateUrl        String?
   insuranceUrl              String?
-  apn                       String?
-  mifiImei                  String?
+  regionCode                String?
+  sbuCode                   String?
   createdAt                 DateTime         @default(now())
   updatedAt                 DateTime         @updatedAt
 
@@ -285,8 +283,6 @@ model Agent {
   agentUsername       String?
   minervaReferralCode String?
   ghanaCardNumber    String
-  ghanaCardFrontUrl  String?
-  ghanaCardBackUrl   String?
   passportPhotoUrl   String?
   businessName       String
   createdAt          DateTime     @default(now())
@@ -318,6 +314,8 @@ model Business {
   landmark           String?
   storeFrontUrl      String?
   storeInsideUrl     String?
+  apn                String?
+  mifiImei           String?
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
@@ -477,7 +475,7 @@ model OnboardRequestForm {
   companyPhone          String?
   digitalPostAddress    String?
 
-  // Authorized signatory & contact person (JSON: { name, designation, phone, email, date })
+  // Authorized signatory (JSON: { name, designation, phone, email }) & contact person (JSON: { name, designation, phone, email, date })
   authorizedSignatory   Json?
   contactPerson         Json?
 

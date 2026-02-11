@@ -34,8 +34,6 @@ export default function PartnerRequestsPage() {
   const [selectedBusinessId, setSelectedBusinessId] = useState("");
   const [restockSelection, setRestockSelection] = useState<string[]>([]);
   const [restockMessage, setRestockMessage] = useState("");
-  const [feedbackTitle, setFeedbackTitle] = useState("");
-  const [feedbackMessage, setFeedbackMessage] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pastRequests, setPastRequests] = useState<RequestItem[]>([]);
@@ -154,34 +152,12 @@ export default function PartnerRequestsPage() {
     setRequestsRefreshKey((k) => k + 1);
   }
 
-  async function submitFeedback() {
-    setError(null);
-    setStatus(null);
-
-    const response = await fetch("/api/partner/feedback", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: feedbackTitle, message: feedbackMessage }),
-    });
-
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      setError(data.error ?? "Unable to send feedback.");
-      notify({ title: "Feedback failed", message: data.error ?? "Unable to send feedback.", kind: "error" });
-      return;
-    }
-
-    setStatus("Feedback sent.");
-    notify({ title: "Feedback sent", message: "Thanks for sharing your input.", kind: "success" });
-    setFeedbackTitle("");
-    setFeedbackMessage("");
-  }
 
   return (
     <main className="min-h-screen px-6 py-10">
       <div className="mx-auto w-full max-w-5xl space-y-10 glass-panel p-6 page-animate">
         <div>
-          <h1 className="text-2xl font-semibold">Requests & Feedback</h1>
+          <h1 className="text-2xl font-semibold">Requests</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400">Send operational requests to the MTN admin team.</p>
         </div>
 
@@ -285,26 +261,6 @@ export default function PartnerRequestsPage() {
               </button>
             </>
           )}
-        </section>
-
-        <section className="card space-y-4">
-          <h2 className="text-lg font-semibold">Feedback</h2>
-          <input
-            className="input"
-            placeholder="Title"
-            value={feedbackTitle}
-            onChange={(event) => setFeedbackTitle(event.target.value)}
-          />
-          <textarea
-            className="input"
-            rows={4}
-            placeholder="Message"
-            value={feedbackMessage}
-            onChange={(event) => setFeedbackMessage(event.target.value)}
-          />
-          <button className="btn btn-primary" type="button" onClick={submitFeedback}>
-            Send feedback
-          </button>
         </section>
 
         {/* My Requests History */}

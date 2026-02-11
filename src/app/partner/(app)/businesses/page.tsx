@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import dynamic from "next/dynamic";
+
 import {
   buildAddressCode,
   parseAddressCode,
@@ -15,11 +17,18 @@ import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
 import { IMAGE_ACCEPT } from "@/lib/storage/accepts";
 import { uploadFile } from "@/lib/storage/upload-client";
 
+const BusinessDeviceModal = dynamic(
+  () => import("@/components/business-device-modal"),
+  { ssr: false }
+);
+
 type Business = {
   id: string;
   businessName: string;
   city: string;
   status: string;
+  apn?: string | null;
+  mifiImei?: string | null;
   createdAt: string;
 };
 
@@ -41,6 +50,7 @@ export default function PartnerBusinessesPage() {
   const [form, setForm] = useState(initialForm);
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [deviceBusiness, setDeviceBusiness] = useState<Business | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -157,6 +167,16 @@ export default function PartnerBusinessesPage() {
     setLoading(false);
   }
 
+  function handleDeviceSaved() {
+    setDeviceBusiness(null);
+    notify({
+      title: "Device details saved",
+      message: "Business device info has been updated.",
+      kind: "success",
+    });
+    loadBusinesses();
+  }
+
   const businessesEmptyIcon = (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 20h18" />
@@ -197,7 +217,7 @@ export default function PartnerBusinessesPage() {
           ) : (
             <div className="grid gap-3 md:grid-cols-2 stagger">
               {businesses.map((business) => (
-                <div key={business.id} className="card">
+                <div key={business.id} className="card space-y-2">
                   <span
                     className={`badge badge-${
                       business.status === "APPROVED"
@@ -213,6 +233,23 @@ export default function PartnerBusinessesPage() {
                   </span>
                   <p className="text-sm font-medium">{business.businessName}</p>
                   <p className="text-xs text-gray-600 dark:text-gray-400">{business.city}</p>
+                  {business.apn ? (
+                    <p className="text-xs text-gray-600 dark:text-gray-400">APN: {business.apn}</p>
+                  ) : null}
+                  {business.mifiImei ? (
+                    <p className="text-xs text-gray-600 dark:text-gray-400">IMEI: {business.mifiImei}</p>
+                  ) : null}
+                  {(!business.apn || !business.mifiImei) ? (
+                    <button
+                      className="btn btn-secondary"
+                      type="button"
+                      onClick={() => setDeviceBusiness(business)}
+                    >
+                      {business.apn || business.mifiImei
+                        ? "Update Device Info"
+                        : "Add Device Info"}
+                    </button>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -271,7 +308,7 @@ export default function PartnerBusinessesPage() {
               </div>
               {form.addressRegionCode === GREATER_ACCRA_REGION_CODE && (
                 <div className="space-y-1">
-                  <label className="label">Sub-Business Unit (SBU)</label>
+                  <label className="label">Strategic Business Unit (SBU)</label>
                   <select
                     className="input"
                     value={form.addressSbuCode}
@@ -424,6 +461,15 @@ export default function PartnerBusinessesPage() {
           </div>
         </div>
       ) : null}
+      <BusinessDeviceModal
+        open={Boolean(deviceBusiness)}
+        businessId={deviceBusiness?.id ?? ""}
+        businessName={deviceBusiness?.businessName ?? ""}
+        existingApn={deviceBusiness?.apn}
+        existingMifiImei={deviceBusiness?.mifiImei}
+        onClose={() => setDeviceBusiness(null)}
+        onSaved={handleDeviceSaved}
+      />
       <FilePreviewModal
         open={Boolean(preview)}
         url={preview?.url ?? ""}

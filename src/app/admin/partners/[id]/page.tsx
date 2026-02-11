@@ -11,6 +11,7 @@ import UploadField from "@/components/upload-field";
 import FilePreviewModal from "@/components/file-preview-modal";
 import { DOCUMENT_ACCEPT, IMAGE_ACCEPT } from "@/lib/storage/accepts";
 import { deleteUploadedFile, uploadFile } from "@/lib/storage/upload-client";
+import { ghanaLocations, GREATER_ACCRA_REGION_CODE, GREATER_ACCRA_SBUS } from "@/lib/ghana-locations";
 
 const editableFields = [
   { key: "businessName", label: "Business Name" },
@@ -20,13 +21,11 @@ const editableFields = [
   { key: "paymentWallet", label: "Payment Wallet" },
   { key: "ghanaCardNumber", label: "Ghana Card Number" },
   { key: "taxIdentityNumber", label: "Tax Identity Number" },
-  { key: "apn", label: "APN" },
-  { key: "mifiImei", label: "MiFi/Router IMEI" },
+  { key: "regionCode", label: "Region" },
+  { key: "sbuCode", label: "SBU" },
 ];
 
 const fileFields = [
-  { key: "ghanaCardFrontUrl", label: "Ghana Card Front", kind: "image" as const, accept: IMAGE_ACCEPT },
-  { key: "ghanaCardBackUrl", label: "Ghana Card Back", kind: "image" as const, accept: IMAGE_ACCEPT },
   { key: "passportPhotoUrl", label: "Passport Photo", kind: "image" as const, accept: IMAGE_ACCEPT },
   { key: "businessCertificateUrl", label: "Business Certificate", kind: "pdf" as const, accept: DOCUMENT_ACCEPT },
   { key: "fireCertificateUrl", label: "Fire Certificate", kind: "pdf" as const, accept: DOCUMENT_ACCEPT },
@@ -45,6 +44,34 @@ function formatPhoneForDisplay(value?: string | null) {
   const withoutPrefix = digits.startsWith("233") ? digits.slice(3) : digits;
   return withoutPrefix.length > 9 ? withoutPrefix.slice(-9) : withoutPrefix;
 }
+
+function parseGhanaCard(value?: string | null) {
+  const raw = value ?? "";
+  const match = raw.match(/^([A-Za-z]{0,3})-?(\d{0,9})-?(\d?)$/);
+  if (!match) {
+    const letters = raw.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase();
+    const digits = raw.replace(/\D/g, "").slice(0, 10);
+    return { prefix: letters, main: digits.slice(0, 9), check: digits.slice(9, 10) };
+  }
+  return {
+    prefix: (match[1] ?? "").toUpperCase(),
+    main: match[2] ?? "",
+    check: match[3] ?? "",
+  };
+}
+
+function buildGhanaCardValue(prefix: string, main: string, check: string) {
+  if (!prefix && !main && !check) return "";
+  const p = prefix.toUpperCase();
+  return `${p}-${main}${check ? `-${check}` : ""}`;
+}
+
+const regionOptions = Object.values(ghanaLocations)
+  .map((region) => ({
+    value: region.code,
+    label: region.name,
+  }))
+  .sort((a, b) => a.label.localeCompare(b.label));
 
 export default function AdminPartnerDetailPage() {
   const params = useParams();
@@ -109,6 +136,100 @@ export default function AdminPartnerDetailPage() {
   }
 
   function renderEditableField(field: (typeof editableFields)[number]) {
+    if (field.key === "regionCode") {
+      return (
+        <div key={field.key} className="space-y-1">
+          <label className="label">{field.label}</label>
+          <select
+            className="input"
+            value={form[field.key] ?? ""}
+            onChange={(event) => {
+              updateField("regionCode", event.target.value);
+              updateField("sbuCode", "");
+            }}
+            disabled={!canEdit}
+          >
+            <option value="">Select</option>
+            {regionOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      );
+    }
+
+    if (field.key === "sbuCode") {
+      if (form.regionCode !== GREATER_ACCRA_REGION_CODE) return null;
+      return (
+        <div key={field.key} className="space-y-1">
+          <label className="label">{field.label}</label>
+          <select
+            className="input"
+            value={form[field.key] ?? ""}
+            onChange={(e) => updateField("sbuCode", e.target.value)}
+            disabled={!canEdit}
+          >
+            <option value="">Select SBU</option>
+            {GREATER_ACCRA_SBUS.map((sbu) => (
+              <option key={sbu.code} value={sbu.code}>
+                {sbu.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      );
+    }
+
+    if (field.key === "ghanaCardNumber") {
+      const gc = parseGhanaCard(form[field.key]);
+      return (
+        <div key={field.key} className="space-y-1">
+          <label className="label">{field.label}</label>
+          <div className="ghana-card-grid">
+            <input
+              className="input ghana-card-prefix"
+              placeholder="GHA"
+              maxLength={3}
+              value={gc.prefix}
+              onChange={(e) => {
+                const letters = e.target.value.replace(/[^A-Za-z]/g, "").slice(0, 3);
+                updateField("ghanaCardNumber", buildGhanaCardValue(letters, gc.main, gc.check));
+              }}
+              disabled={!canEdit}
+            />
+            <span className="ghana-card-divider">-</span>
+            <input
+              className="input ghana-card-main"
+              inputMode="numeric"
+              placeholder="000000000"
+              maxLength={9}
+              value={gc.main}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, "").slice(0, 9);
+                updateField("ghanaCardNumber", buildGhanaCardValue(gc.prefix, digits, gc.check));
+              }}
+              disabled={!canEdit}
+            />
+            <span className="ghana-card-divider">-</span>
+            <input
+              className="input ghana-card-check"
+              inputMode="numeric"
+              placeholder="0"
+              maxLength={1}
+              value={gc.check}
+              onChange={(e) => {
+                const digit = e.target.value.replace(/\D/g, "").slice(0, 1);
+                updateField("ghanaCardNumber", buildGhanaCardValue(gc.prefix, gc.main, digit));
+              }}
+              disabled={!canEdit}
+            />
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div key={field.key} className="space-y-1">
         <label className="label">{field.label}</label>
@@ -126,20 +247,6 @@ export default function AdminPartnerDetailPage() {
               disabled={!canEdit}
             />
           </div>
-        ) : field.key === "apn" || field.key === "mifiImei" ? (
-          <input
-            className="input"
-            inputMode="numeric"
-            pattern="\\d*"
-            maxLength={field.key === "mifiImei" ? 15 : undefined}
-            value={form[field.key] ?? ""}
-            onChange={(event) => {
-              let digits = event.target.value.replace(/\D/g, "");
-              if (field.key === "mifiImei") digits = digits.slice(0, 15);
-              updateField(field.key, digits);
-            }}
-            disabled={!canEdit}
-          />
         ) : (
           <input
             className="input"

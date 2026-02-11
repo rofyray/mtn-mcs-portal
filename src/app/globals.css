@@ -846,6 +846,40 @@ p {
   font-size: 0.9rem;
 }
 
+.ghana-card-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.ghana-card-prefix {
+  width: 70px;
+  min-width: 70px;
+  text-transform: uppercase;
+  text-align: center;
+  letter-spacing: 0.1em;
+}
+
+.ghana-card-main {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.ghana-card-check {
+  width: 42px;
+  min-width: 42px;
+  text-align: center;
+}
+
+.ghana-card-divider {
+  flex-shrink: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .input-prefix-wrap {
   position: relative;
 }
@@ -3842,6 +3876,7 @@ select.input {
   border-radius: var(--radius-sm);
   cursor: crosshair;
   touch-action: none;
+  background: #ffffff;
 }
 
 .sig-pad-draw-actions {
@@ -3856,6 +3891,7 @@ select.input {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #ffffff;
 }
 
 .sig-pad-image {
@@ -3962,6 +3998,11 @@ select.input {
 
 .approval-step-signature {
   margin-top: 6px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: inline-block;
 }
 
 .approval-step-signature img {

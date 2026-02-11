@@ -25,8 +25,6 @@ const editableFields = [
 ];
 
 const fileFields = [
-  { key: "ghanaCardFrontUrl", label: "Ghana Card Front", kind: "image" as const, accept: IMAGE_ACCEPT },
-  { key: "ghanaCardBackUrl", label: "Ghana Card Back", kind: "image" as const, accept: IMAGE_ACCEPT },
   { key: "passportPhotoUrl", label: "Passport Photo", kind: "image" as const, accept: IMAGE_ACCEPT },
 ];
 
@@ -41,6 +39,27 @@ function formatPhoneForDisplay(value?: string | null) {
   const digits = (value ?? "").replace(/\D/g, "");
   const withoutPrefix = digits.startsWith("233") ? digits.slice(3) : digits;
   return withoutPrefix.length > 9 ? withoutPrefix.slice(-9) : withoutPrefix;
+}
+
+function parseGhanaCard(value?: string | null) {
+  const raw = value ?? "";
+  const match = raw.match(/^([A-Za-z]{0,3})-?(\d{0,9})-?(\d?)$/);
+  if (!match) {
+    const letters = raw.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase();
+    const digits = raw.replace(/\D/g, "").slice(0, 10);
+    return { prefix: letters, main: digits.slice(0, 9), check: digits.slice(9, 10) };
+  }
+  return {
+    prefix: (match[1] ?? "").toUpperCase(),
+    main: match[2] ?? "",
+    check: match[3] ?? "",
+  };
+}
+
+function buildGhanaCardValue(prefix: string, main: string, check: string) {
+  if (!prefix && !main && !check) return "";
+  const p = prefix.toUpperCase();
+  return `${p}-${main}${check ? `-${check}` : ""}`;
 }
 
 export default function AdminAgentDetailPage() {
@@ -110,6 +129,54 @@ export default function AdminAgentDetailPage() {
   }
 
   function renderEditableField(field: (typeof editableFields)[number]) {
+    if (field.key === "ghanaCardNumber") {
+      const gc = parseGhanaCard(form[field.key]);
+      return (
+        <div key={field.key} className="space-y-1">
+          <label className="label">{field.label}</label>
+          <div className="ghana-card-grid">
+            <input
+              className="input ghana-card-prefix"
+              placeholder="GHA"
+              maxLength={3}
+              value={gc.prefix}
+              onChange={(e) => {
+                const letters = e.target.value.replace(/[^A-Za-z]/g, "").slice(0, 3);
+                updateField("ghanaCardNumber", buildGhanaCardValue(letters, gc.main, gc.check));
+              }}
+              disabled={!canEdit}
+            />
+            <span className="ghana-card-divider">-</span>
+            <input
+              className="input ghana-card-main"
+              inputMode="numeric"
+              placeholder="000000000"
+              maxLength={9}
+              value={gc.main}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, "").slice(0, 9);
+                updateField("ghanaCardNumber", buildGhanaCardValue(gc.prefix, digits, gc.check));
+              }}
+              disabled={!canEdit}
+            />
+            <span className="ghana-card-divider">-</span>
+            <input
+              className="input ghana-card-check"
+              inputMode="numeric"
+              placeholder="0"
+              maxLength={1}
+              value={gc.check}
+              onChange={(e) => {
+                const digit = e.target.value.replace(/\D/g, "").slice(0, 1);
+                updateField("ghanaCardNumber", buildGhanaCardValue(gc.prefix, gc.main, digit));
+              }}
+              disabled={!canEdit}
+            />
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div key={field.key} className="space-y-1">
         <label className="label">{field.label}</label>

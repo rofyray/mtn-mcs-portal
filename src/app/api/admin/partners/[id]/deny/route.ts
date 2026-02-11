@@ -6,7 +6,7 @@ import { getAdminAndProfile } from "@/lib/admin-access";
 import { logAuditEvent } from "@/lib/audit";
 import { sendEmail } from "@/lib/email";
 import { buildEmailTemplate } from "@/lib/email-template";
-import { getCoordinatorEmailsForRegions } from "@/lib/notifications";
+import { getCoordinatorEmailsForRegions, sendAdminNotification } from "@/lib/notifications";
 import { getPartnerRegionCodes } from "@/lib/partner";
 import { formatZodError } from "@/lib/validation";
 
@@ -71,23 +71,29 @@ export async function POST(
   }
 
   const coordinatorEmails = await getCoordinatorEmailsForRegions(await getPartnerRegionCodes(id));
-  const adminRecipients = Array.from(
-    new Set([access.admin.email, ...coordinatorEmails].filter(Boolean))
-  ).join(",");
-  const adminMessage = buildEmailTemplate({
+  const adminRecipients = coordinatorEmails.filter(Boolean).join(",");
+  if (adminRecipients) {
+    const adminMessage = buildEmailTemplate({
+      title: "Partner submission denied",
+      preheader: "A partner submission was denied.",
+      message: [
+        `Admin: ${access.admin.name} (${access.admin.email})`,
+        `Partner: ${updated.businessName ?? "Unknown"}`,
+        `Reason: ${parsed.data.reason}`,
+      ],
+    });
+    await sendEmail({
+      to: adminRecipients,
+      subject: "Partner submission denied",
+      text: adminMessage.text,
+      html: adminMessage.html,
+    });
+  }
+
+  await sendAdminNotification(access.admin.id, {
     title: "Partner submission denied",
-    preheader: "A partner submission was denied.",
-    message: [
-      `Admin: ${access.admin.name} (${access.admin.email})`,
-      `Partner: ${updated.businessName ?? "Unknown"}`,
-      `Reason: ${parsed.data.reason}`,
-    ],
-  });
-  await sendEmail({
-    to: adminRecipients,
-    subject: "Partner submission denied",
-    text: adminMessage.text,
-    html: adminMessage.html,
+    message: `Partner: ${updated.businessName ?? "Unknown"}`,
+    category: "WARNING",
   });
 
   return NextResponse.json({ profile: updated });

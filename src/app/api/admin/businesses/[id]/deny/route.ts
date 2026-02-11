@@ -6,7 +6,7 @@ import { getAdminAndBusiness } from "@/lib/admin-access";
 import { logAuditEvent } from "@/lib/audit";
 import { sendEmail } from "@/lib/email";
 import { buildEmailTemplate } from "@/lib/email-template";
-import { getCoordinatorEmailsForRegions } from "@/lib/notifications";
+import { getCoordinatorEmailsForRegions, sendAdminNotification } from "@/lib/notifications";
 import { formatZodError } from "@/lib/validation";
 
 const denialSchema = z.object({
@@ -69,24 +69,30 @@ export async function POST(
   }
 
   const coordinatorEmails = await getCoordinatorEmailsForRegions([updated.addressRegionCode]);
-  const adminRecipients = Array.from(
-    new Set([access.admin.email, ...coordinatorEmails].filter(Boolean))
-  ).join(",");
-  const adminMessage = buildEmailTemplate({
+  const adminRecipients = coordinatorEmails.filter(Boolean).join(",");
+  if (adminRecipients) {
+    const adminMessage = buildEmailTemplate({
+      title: "Business submission denied",
+      preheader: "A business submission was denied.",
+      message: [
+        `Admin: ${access.admin.name} (${access.admin.email})`,
+        `Business: ${updated.businessName}`,
+        `Partner: ${updated.partnerProfile.businessName ?? "Unknown"}`,
+        `Reason: ${parsed.data.reason}`,
+      ],
+    });
+    await sendEmail({
+      to: adminRecipients,
+      subject: "Business submission denied",
+      text: adminMessage.text,
+      html: adminMessage.html,
+    });
+  }
+
+  await sendAdminNotification(access.admin.id, {
     title: "Business submission denied",
-    preheader: "A business submission was denied.",
-    message: [
-      `Admin: ${access.admin.name} (${access.admin.email})`,
-      `Business: ${updated.businessName}`,
-      `Partner: ${updated.partnerProfile.businessName ?? "Unknown"}`,
-      `Reason: ${parsed.data.reason}`,
-    ],
-  });
-  await sendEmail({
-    to: adminRecipients,
-    subject: "Business submission denied",
-    text: adminMessage.text,
-    html: adminMessage.html,
+    message: `Business: ${updated.businessName}`,
+    category: "WARNING",
   });
 
   return NextResponse.json({ business: updated });

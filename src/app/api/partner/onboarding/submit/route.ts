@@ -10,15 +10,12 @@ const requiredFields = [
   "phoneNumber",
   "paymentWallet",
   "ghanaCardNumber",
-  "ghanaCardFrontUrl",
-  "ghanaCardBackUrl",
   "passportPhotoUrl",
   "taxIdentityNumber",
   "businessCertificateUrl",
   "fireCertificateUrl",
   "insuranceUrl",
-  "apn",
-  "mifiImei",
+  "regionCode",
 ];
 
 export async function POST() {
@@ -48,6 +45,11 @@ export async function POST() {
   }
 
   const missing = requiredFields.filter((field) => !profile[field as keyof typeof profile]);
+
+  // If Greater Accra region, also require sbuCode
+  if (profile.regionCode === "G" && !profile.sbuCode) {
+    missing.push("sbuCode");
+  }
 
   if (missing.length) {
     return NextResponse.json(

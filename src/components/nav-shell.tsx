@@ -102,6 +102,18 @@ const adminLinks: AdminNavLink[] = [
     ),
   },
   {
+    href: "/admin/onboard-requests",
+    label: "Onboard Requests",
+    icon: (
+      <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
+        <path d="M9 2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z" />
+        <path d="M9 14H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Z" />
+        <path d="M14 4h7M14 9h5M14 16h7M14 21h5" />
+        <path d="M21 12l-3 3-2-2" />
+      </svg>
+    ),
+  },
+  {
     href: "/admin/partners",
     label: "Partners",
     icon: (
@@ -109,18 +121,6 @@ const adminLinks: AdminNavLink[] = [
         <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
         <circle cx="8" cy="7" r="4" />
         <path d="M17 11h6M20 8v6" />
-      </svg>
-    ),
-  },
-  {
-    href: "/admin/agents",
-    label: "Agents",
-    icon: (
-      <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
-        <path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
       </svg>
     ),
   },
@@ -137,25 +137,14 @@ const adminLinks: AdminNavLink[] = [
     ),
   },
   {
-    href: "/admin/forms",
-    label: "Forms",
+    href: "/admin/agents",
+    label: "Agents",
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
-        <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" />
-        <path d="M14 2v6h6" />
-        <path d="M9 13h6M9 17h6M9 9h2" />
-      </svg>
-    ),
-  },
-  {
-    href: "/admin/onboard-requests",
-    label: "Onboard Requests",
-    icon: (
-      <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
-        <path d="M9 2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z" />
-        <path d="M9 14H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Z" />
-        <path d="M14 4h7M14 9h5M14 16h7M14 21h5" />
-        <path d="M21 12l-3 3-2-2" />
+        <path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
       </svg>
     ),
   },
@@ -166,6 +155,17 @@ const adminLinks: AdminNavLink[] = [
       <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
         <path d="M9 3h6l3 3v15a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" />
         <path d="M9 12h6M9 16h6M9 8h2" />
+      </svg>
+    ),
+  },
+  {
+    href: "/admin/forms",
+    label: "Documents",
+    icon: (
+      <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
+        <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" />
+        <path d="M14 2v6h6" />
+        <path d="M9 13h6M9 17h6M9 9h2" />
       </svg>
     ),
   },

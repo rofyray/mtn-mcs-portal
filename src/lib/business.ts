@@ -8,6 +8,16 @@ const optionalString = z.preprocess(
   z.string().trim().min(1).optional()
 );
 
+const optionalDigits = z.preprocess(
+  emptyToUndefined,
+  z.string().trim().regex(/^\d+$/, "Must contain only digits").optional()
+);
+
+const optionalImei = z.preprocess(
+  emptyToUndefined,
+  z.string().trim().regex(/^\d+$/, "IMEI must contain only digits").max(15, "IMEI must be at most 15 digits").optional()
+);
+
 export const businessSchema = z.object({
   businessName: z.string().trim().min(1, "Business name is required"),
   addressRegionCode: z.string().trim().min(1, "Region is required"),
@@ -20,6 +30,8 @@ export const businessSchema = z.object({
   landmark: optionalString,
   storeFrontUrl: z.string().url("Store front photo is required"),
   storeInsideUrl: z.string().url("Store inside photo is required"),
+  apn: optionalDigits,
+  mifiImei: optionalImei,
 });
 
 export type BusinessInput = z.infer<typeof businessSchema>;

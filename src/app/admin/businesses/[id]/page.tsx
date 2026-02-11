@@ -23,6 +23,8 @@ const editableFields = [
   { key: "gpsLongitude", label: "GPS Longitude" },
   { key: "city", label: "City/Town" },
   { key: "landmark", label: "Landmark" },
+  { key: "apn", label: "APN" },
+  { key: "mifiImei", label: "MiFi/Router IMEI" },
 ];
 
 const fileFields = [
@@ -237,6 +239,20 @@ export default function AdminBusinessDetailPage() {
               disabled={!canEdit || !form.addressDistrictCode}
             />
           </div>
+        ) : field.key === "apn" || field.key === "mifiImei" ? (
+          <input
+            className="input"
+            inputMode="numeric"
+            pattern="\\d*"
+            maxLength={field.key === "mifiImei" ? 15 : undefined}
+            value={form[field.key] ?? ""}
+            onChange={(event) => {
+              let digits = event.target.value.replace(/\D/g, "");
+              if (field.key === "mifiImei") digits = digits.slice(0, 15);
+              updateField(field.key, digits);
+            }}
+            disabled={!canEdit}
+          />
         ) : (
           <input
             className="input"

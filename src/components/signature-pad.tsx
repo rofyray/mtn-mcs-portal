@@ -6,6 +6,7 @@ import { uploadFile } from "@/lib/storage/upload-client";
 type SignaturePadProps = {
   onSignatureReady: (url: string) => void;
   onClear?: () => void;
+  onError?: (message: string) => void;
   uploading?: boolean;
   disabled?: boolean;
   existingSignatureUrl?: string;
@@ -14,6 +15,7 @@ type SignaturePadProps = {
 export default function SignaturePad({
   onSignatureReady,
   onClear,
+  onError,
   uploading: externalUploading = false,
   disabled = false,
   existingSignatureUrl,
@@ -39,15 +41,15 @@ export default function SignaturePad({
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
     ctx.scale(dpr, dpr);
+
+    // White background so exported PNGs are readable in any theme
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, rect.width, rect.height);
+
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.lineWidth = 2;
     ctx.strokeStyle = "#111827";
-
-    // Check dark theme
-    if (document.documentElement.classList.contains("theme-dark")) {
-      ctx.strokeStyle = "#e5e7eb";
-    }
   }, [tab]);
 
   const getPos = useCallback(
@@ -102,7 +104,14 @@ export default function SignaturePad({
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, rect.width, rect.height);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#111827";
     hasDrawnRef.current = false;
     onClear?.();
   }, [onClear]);
@@ -124,7 +133,7 @@ export default function SignaturePad({
       });
       onSignatureReady(result.url);
     } catch {
-      // Upload failed silently — user can retry
+      onError?.("Signature upload failed. Please try again.");
     } finally {
       setUploading(false);
     }
@@ -140,12 +149,11 @@ export default function SignaturePad({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    ctx.fillStyle = "transparent";
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // White background so exported PNGs are readable in any theme
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.font = 'italic 48px "Brush Script MT", "Segoe Script", cursive';
-    ctx.fillStyle = document.documentElement.classList.contains("theme-dark")
-      ? "#e5e7eb"
-      : "#111827";
+    ctx.fillStyle = "#111827";
     ctx.textBaseline = "middle";
     ctx.fillText(typedName.trim(), 20, 75);
 
