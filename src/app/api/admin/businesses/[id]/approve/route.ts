@@ -5,7 +5,7 @@ import { getAdminAndBusiness } from "@/lib/admin-access";
 import { logAuditEvent } from "@/lib/audit";
 import { sendEmail } from "@/lib/email";
 import { buildEmailTemplate } from "@/lib/email-template";
-import { getCoordinatorEmailsForRegions, sendAdminNotification } from "@/lib/notifications";
+import { getCoordinatorEmailsForRegions, sendAdminNotification, sendPartnerNotification } from "@/lib/notifications";
 
 export async function POST(
   _request: Request,
@@ -77,6 +77,12 @@ export async function POST(
   await sendAdminNotification(access.admin.id, {
     title: "Business submission approved",
     message: `Business: ${updated.businessName}`,
+    category: "SUCCESS",
+  });
+
+  await sendPartnerNotification(updated.partnerProfile.userId, {
+    title: "Business approved",
+    message: `Your business ${updated.businessName} was approved.`,
     category: "SUCCESS",
   });
 

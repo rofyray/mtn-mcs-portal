@@ -6,7 +6,7 @@ import { getAdminAndBusiness } from "@/lib/admin-access";
 import { logAuditEvent } from "@/lib/audit";
 import { sendEmail } from "@/lib/email";
 import { buildEmailTemplate } from "@/lib/email-template";
-import { getCoordinatorEmailsForRegions, sendAdminNotification } from "@/lib/notifications";
+import { getCoordinatorEmailsForRegions, sendAdminNotification, sendPartnerNotification } from "@/lib/notifications";
 import { formatZodError } from "@/lib/validation";
 
 const denialSchema = z.object({
@@ -92,6 +92,12 @@ export async function POST(
   await sendAdminNotification(access.admin.id, {
     title: "Business submission denied",
     message: `Business: ${updated.businessName}`,
+    category: "WARNING",
+  });
+
+  await sendPartnerNotification(updated.partnerProfile.userId, {
+    title: "Business denied",
+    message: `Your business ${updated.businessName} was denied. Reason: ${parsed.data.reason}`,
     category: "WARNING",
   });
 

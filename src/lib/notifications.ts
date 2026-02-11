@@ -101,6 +101,24 @@ export async function sendAdminNotification(
 }
 
 /**
+ * Send notification to a specific partner by user ID.
+ */
+export async function sendPartnerNotification(
+  userId: string,
+  input: NotificationInput
+) {
+  await prisma.notification.create({
+    data: {
+      recipientType: "PARTNER",
+      recipientUserId: userId,
+      title: input.title,
+      message: input.message,
+      category: input.category ?? "INFO",
+    },
+  });
+}
+
+/**
  * Notify all admins with given roles, optionally filtered by region.
  */
 export async function notifyAdminsByRole(

@@ -6,6 +6,7 @@ import { logAuditEvent } from "@/lib/audit";
 import { sendEmail } from "@/lib/email";
 import { buildEmailTemplate } from "@/lib/email-template";
 import { requiredEnv } from "@/lib/env";
+import { sendPartnerNotification } from "@/lib/notifications";
 
 export async function POST(
   _request: Request,
@@ -115,6 +116,14 @@ export async function POST(
     subject: nowSuspended ? "Partner suspended" : "Partner unsuspended",
     text: adminMsg.text,
     html: adminMsg.html,
+  });
+
+  await sendPartnerNotification(updated.userId, {
+    title: nowSuspended ? "Account suspended" : "Account reactivated",
+    message: nowSuspended
+      ? "Your partner account has been suspended. Contact support if you believe this is an error."
+      : "Your partner account has been reactivated. You can now access the platform again.",
+    category: nowSuspended ? "WARNING" : "SUCCESS",
   });
 
   return NextResponse.json({ profile: updated });

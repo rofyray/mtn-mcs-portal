@@ -5,7 +5,7 @@ import { getAdminAndProfile } from "@/lib/admin-access";
 import { logAuditEvent } from "@/lib/audit";
 import { sendEmail } from "@/lib/email";
 import { buildEmailTemplate } from "@/lib/email-template";
-import { getCoordinatorEmailsForRegions, sendAdminNotification } from "@/lib/notifications";
+import { getCoordinatorEmailsForRegions, sendAdminNotification, sendPartnerNotification } from "@/lib/notifications";
 import { getPartnerRegionCodes } from "@/lib/partner";
 
 export async function POST(
@@ -78,6 +78,12 @@ export async function POST(
   await sendAdminNotification(access.admin.id, {
     title: "Partner submission approved",
     message: `Partner: ${updated.businessName ?? "Unknown"}`,
+    category: "SUCCESS",
+  });
+
+  await sendPartnerNotification(updated.userId, {
+    title: "Partner submission approved",
+    message: "Your partner submission was approved. You can now manage agents and businesses in your dashboard.",
     category: "SUCCESS",
   });
 

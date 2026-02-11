@@ -6,7 +6,7 @@ import { getAdminAndAgent } from "@/lib/admin-access";
 import { logAuditEvent } from "@/lib/audit";
 import { sendEmail } from "@/lib/email";
 import { buildEmailTemplate } from "@/lib/email-template";
-import { getCoordinatorEmailsForRegions, sendAdminNotification } from "@/lib/notifications";
+import { getCoordinatorEmailsForRegions, sendAdminNotification, sendPartnerNotification } from "@/lib/notifications";
 import { formatZodError } from "@/lib/validation";
 
 const denialSchema = z.object({
@@ -92,6 +92,12 @@ export async function POST(
   await sendAdminNotification(access.admin.id, {
     title: "Agent submission denied",
     message: `Agent: ${updated.firstName} ${updated.surname}`,
+    category: "WARNING",
+  });
+
+  await sendPartnerNotification(updated.partnerProfile.userId, {
+    title: "Agent denied",
+    message: `Your agent ${updated.firstName} ${updated.surname} was denied. Reason: ${parsed.data.reason}`,
     category: "WARNING",
   });
 

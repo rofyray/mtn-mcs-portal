@@ -4,6 +4,8 @@ import { z } from "zod";
 import prisma from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-guard";
 import { logAuditEvent } from "@/lib/audit";
+import { sendEmail } from "@/lib/email";
+import { buildEmailTemplate } from "@/lib/email-template";
 
 const replySchema = z.object({
   message: z.string().trim().min(1, "Message is required"),
@@ -29,7 +31,7 @@ export async function POST(
     where: { id },
     include: {
       partnerProfile: {
-        select: { userId: true, businessName: true },
+        select: { userId: true, businessName: true, user: { select: { email: true } } },
       },
     },
   });
@@ -65,6 +67,24 @@ export async function POST(
       category: "INFO",
     },
   });
+
+  const partnerEmail = restockRequest.partnerProfile.user?.email;
+  if (partnerEmail) {
+    const emailMsg = buildEmailTemplate({
+      title: "Admin responded to your restock request",
+      preheader: "You have a new reply on your restock request.",
+      message: [
+        `Business: ${restockRequest.partnerProfile.businessName ?? "MTN Community Shop"}`,
+        "An admin has responded to your restock request. Log in to view the reply.",
+      ],
+    });
+    await sendEmail({
+      to: partnerEmail,
+      subject: "Admin responded to your restock request",
+      text: emailMsg.text,
+      html: emailMsg.html,
+    });
+  }
 
   await logAuditEvent({
     adminId: adminContext.admin.id,

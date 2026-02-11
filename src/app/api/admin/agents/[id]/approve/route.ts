@@ -5,7 +5,7 @@ import { getAdminAndAgent } from "@/lib/admin-access";
 import { logAuditEvent } from "@/lib/audit";
 import { sendEmail } from "@/lib/email";
 import { buildEmailTemplate } from "@/lib/email-template";
-import { getCoordinatorEmailsForRegions, sendAdminNotification } from "@/lib/notifications";
+import { getCoordinatorEmailsForRegions, sendAdminNotification, sendPartnerNotification } from "@/lib/notifications";
 
 export async function POST(
   _request: Request,
@@ -86,6 +86,12 @@ export async function POST(
   await sendAdminNotification(access.admin.id, {
     title: "Agent submission approved",
     message: `Agent: ${updated.firstName} ${updated.surname}`,
+    category: "SUCCESS",
+  });
+
+  await sendPartnerNotification(updated.partnerProfile.userId, {
+    title: "Agent approved",
+    message: `Your agent ${updated.firstName} ${updated.surname} was approved.`,
     category: "SUCCESS",
   });
 

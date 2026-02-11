@@ -5,7 +5,7 @@ import prisma from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { broadcastAdminNotification, getCoordinatorEmailsForRegions } from "@/lib/notifications";
 import { buildEmailTemplate } from "@/lib/email-template";
-import { getApprovedPartnerProfile, getPartnerRegionCodes } from "@/lib/partner";
+import { getApprovedPartnerProfile } from "@/lib/partner";
 import { formatZodError } from "@/lib/validation";
 
 const trainingSchema = z.object({
@@ -33,6 +33,7 @@ export async function POST(request: Request) {
       id: { in: parsed.data.agentIds },
       partnerProfileId: result.profile.id,
     },
+    include: { business: { select: { addressRegionCode: true } } },
   });
 
   const agentNames = agents.map((agent) => `${agent.firstName} ${agent.surname}`);
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
     },
   });
 
-  const regionCodes = await getPartnerRegionCodes(result.profile.id);
+  const regionCodes = [...new Set(agents.map((a) => a.business.addressRegionCode))];
   await broadcastAdminNotification(
     {
       title: "Training request",
