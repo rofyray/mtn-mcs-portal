@@ -78,6 +78,17 @@ const partnerLinks: NavLink[] = [
     ),
   },
   {
+    href: "/partner/payslips",
+    label: "Pay Slips",
+    icon: (
+      <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
+        <path d="M4 4h16v16H4z" />
+        <path d="M4 16l4-4 3 3 5-5 4 4" />
+        <circle cx="9" cy="9" r="1.5" />
+      </svg>
+    ),
+  },
+  {
     href: "/partner/feedback",
     label: "Feedback",
     icon: (
@@ -89,7 +100,7 @@ const partnerLinks: NavLink[] = [
   },
 ];
 
-type AdminNavLink = NavLink & { fullOnly?: boolean; seniorManagerOnly?: boolean; platformAdminOnly?: boolean };
+type AdminNavLink = NavLink & { fullOnly?: boolean; seniorManagerOnly?: boolean; coordinatorOnly?: boolean };
 
 const adminLinks: AdminNavLink[] = [
   {
@@ -170,6 +181,18 @@ const adminLinks: AdminNavLink[] = [
     ),
   },
   {
+    href: "/admin/payslips",
+    label: "Pay Slips",
+    coordinatorOnly: true,
+    icon: (
+      <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
+        <path d="M4 4h16v16H4z" />
+        <path d="M4 16l4-4 3 3 5-5 4 4" />
+        <circle cx="9" cy="9" r="1.5" />
+      </svg>
+    ),
+  },
+  {
     href: "/admin/feedback",
     label: "Feedback",
     fullOnly: true,
@@ -183,7 +206,7 @@ const adminLinks: AdminNavLink[] = [
   {
     href: "/admin/reports",
     label: "Reports",
-    platformAdminOnly: true,
+    fullOnly: true,
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24" {...iconProps}>
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -345,9 +368,10 @@ export default function NavShell({ children }: { children: React.ReactNode }) {
     if (!isAdmin) return partnerLinks;
     const isFullAccess = adminRole === "FULL";
     const isManager = adminRole === "MANAGER";
+    const isCoordinator = adminRole === "COORDINATOR";
     return adminLinks.filter((link) => {
-      if (link.platformAdminOnly && !isFullAccess) return false;
       if (link.fullOnly && !isFullAccess && !isManager) return false;
+      if (link.coordinatorOnly && !isCoordinator) return false;
       return true;
     });
   }, [adminRole, isAdmin]);

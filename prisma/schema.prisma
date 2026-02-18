@@ -247,8 +247,6 @@ model PartnerProfile {
   passportPhotoUrl          String?
   taxIdentityNumber        String?
   businessCertificateUrl    String?
-  fireCertificateUrl        String?
-  insuranceUrl              String?
   regionCode                String?
   sbuCode                   String?
   createdAt                 DateTime         @default(now())
@@ -262,6 +260,7 @@ model PartnerProfile {
   restockRequests RestockRequest[]
   feedbackItems Feedback[]
   formRequests FormRequest[]
+  paySlips PaySlip[]
 
   @@index([status])
 }
@@ -314,6 +313,8 @@ model Business {
   landmark           String?
   storeFrontUrl      String?
   storeInsideUrl     String?
+  fireCertificateUrl String?
+  insuranceUrl       String?
   apn                String?
   mifiImei           String?
   createdAt          DateTime     @default(now())
@@ -366,6 +367,7 @@ model RestockRequest {
   partnerProfileId String
   businessId       String
   items            String[]
+  simQuantity      Int?
   message          String?
   status           RequestStatus @default(OPEN)
   createdAt        DateTime      @default(now())
@@ -543,4 +545,18 @@ model TrainingRequestReply {
   trainingRequest TrainingRequest @relation(fields: [trainingRequestId], references: [id], onDelete: Cascade)
 
   @@index([trainingRequestId])
+}
+
+model PaySlip {
+  id               String         @id @default(cuid())
+  partnerProfileId String
+  imageUrl         String
+  originalFilename String
+  displayFilename  String
+  createdAt        DateTime       @default(now())
+
+  partnerProfile   PartnerProfile @relation(fields: [partnerProfileId], references: [id], onDelete: Cascade)
+
+  @@index([partnerProfileId])
+  @@index([createdAt])
 }

@@ -60,7 +60,7 @@ export async function DELETE(
       title: "Your partner account has been removed",
       preheader: "Your partner account has been permanently removed.",
       message: [
-        `Business: ${businessName}`,
+        `Location: ${businessName}`,
         "Your partner account and all associated data have been permanently removed from the MTN Community Shop platform by an administrator.",
         "If you believe this is an error, please contact support.",
       ],
@@ -108,7 +108,7 @@ export async function DELETE(
     message: [
       `Admin: ${access.admin.name} (${access.admin.email})`,
       `Partner: ${partnerName} (${partnerEmail ?? "no email"})`,
-      `Business: ${businessName}`,
+      `Location: ${businessName}`,
       "All associated data has been cascade-deleted.",
     ],
   });

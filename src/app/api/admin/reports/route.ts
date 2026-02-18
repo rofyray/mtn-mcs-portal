@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
   }
 
   const { admin } = session;
-  if (admin.role !== "FULL") {
+  if (!["FULL", "MANAGER"].includes(admin.role)) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -52,6 +52,11 @@ export async function GET(request: NextRequest) {
 
   if (!type || !ALLOWED_TYPES.includes(type)) {
     return Response.json({ error: "Invalid report type" }, { status: 400 });
+  }
+
+  const MANAGER_ALLOWED_TYPES: ReportType[] = ["partners", "agents"];
+  if (admin.role === "MANAGER" && !MANAGER_ALLOWED_TYPES.includes(type)) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const dateFilter: { gte?: Date; lte?: Date } = {};

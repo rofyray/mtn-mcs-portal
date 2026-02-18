@@ -74,7 +74,7 @@ export async function POST(
       title: "Admin responded to your training request",
       preheader: "You have a new reply on your training request.",
       message: [
-        `Business: ${trainingRequest.partnerProfile.businessName ?? "MTN Community Shop"}`,
+        `Location: ${trainingRequest.partnerProfile.businessName ?? "MTN Community Shop"}`,
         "An admin has responded to your training request. Log in to view the reply.",
       ],
     });

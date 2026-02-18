@@ -62,7 +62,7 @@ export async function POST(
         title: "Your account has been suspended",
         preheader: "Your partner account has been suspended.",
         message: [
-          `Business: ${updated.businessName ?? "MTN Community Shop"}`,
+          `Location: ${updated.businessName ?? "MTN Community Shop"}`,
           "Your partner account has been suspended by an administrator. You will not be able to access the platform until your account is reactivated.",
           "If you believe this is an error, please contact support.",
         ],
@@ -78,7 +78,7 @@ export async function POST(
         title: "Your account has been reactivated",
         preheader: "Your partner account has been reactivated.",
         message: [
-          `Business: ${updated.businessName ?? "MTN Community Shop"}`,
+          `Location: ${updated.businessName ?? "MTN Community Shop"}`,
           "Your partner account has been reactivated. You can now log in and access the platform again.",
         ],
         cta: {

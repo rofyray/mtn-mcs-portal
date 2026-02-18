@@ -44,8 +44,8 @@ export async function POST(
       title: "Your partner submission was approved",
       preheader: "Your submission has been approved.",
       message: [
-        `Business: ${updated.businessName ?? "MTN Community Shop"}`,
-        "Your submission is approved. You can now manage agents and businesses in your dashboard.",
+        `Location: ${updated.businessName ?? "MTN Community Shop"}`,
+        "Your submission is approved. You can now manage agents and locations in your dashboard.",
       ],
     });
     await sendEmail({
@@ -83,7 +83,7 @@ export async function POST(
 
   await sendPartnerNotification(updated.userId, {
     title: "Partner submission approved",
-    message: "Your partner submission was approved. You can now manage agents and businesses in your dashboard.",
+    message: "Your partner submission was approved. You can now manage agents and locations in your dashboard.",
     category: "SUCCESS",
   });
 

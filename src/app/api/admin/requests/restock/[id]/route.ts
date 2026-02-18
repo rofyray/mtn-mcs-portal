@@ -110,7 +110,7 @@ export async function PATCH(
         ? "Your restock request has been closed."
         : "Your restock request has been reopened.",
       message: [
-        `Business: ${existing.partnerProfile.businessName ?? "MTN Community Shop"}`,
+        `Location: ${existing.partnerProfile.businessName ?? "MTN Community Shop"}`,
         isClosed
           ? "Your restock request has been closed by an admin. If you need further assistance, please submit a new request."
           : "Your restock request has been reopened by an admin. You can continue the conversation.",

@@ -30,6 +30,8 @@ export const businessSchema = z.object({
   landmark: optionalString,
   storeFrontUrl: z.string().url("Store front photo is required"),
   storeInsideUrl: z.string().url("Store inside photo is required"),
+  fireCertificateUrl: z.string().url("Fire certificate is required"),
+  insuranceUrl: z.string().url("Insurance document is required"),
   apn: optionalDigits,
   mifiImei: optionalImei,
 });
@@ -39,4 +41,6 @@ export type BusinessInput = z.infer<typeof businessSchema>;
 export const businessUpdateSchema = businessSchema.partial().extend({
   storeFrontUrl: z.string().url("Store front photo is required").nullable().optional(),
   storeInsideUrl: z.string().url("Store inside photo is required").nullable().optional(),
+  fireCertificateUrl: z.string().url("Fire certificate is required").nullable().optional(),
+  insuranceUrl: z.string().url("Insurance document is required").nullable().optional(),
 });

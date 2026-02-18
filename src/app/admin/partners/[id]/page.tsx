@@ -28,8 +28,6 @@ const editableFields = [
 const fileFields = [
   { key: "passportPhotoUrl", label: "Passport Photo", kind: "image" as const, accept: IMAGE_ACCEPT },
   { key: "businessCertificateUrl", label: "Business Certificate", kind: "pdf" as const, accept: DOCUMENT_ACCEPT },
-  { key: "fireCertificateUrl", label: "Fire Certificate", kind: "pdf" as const, accept: DOCUMENT_ACCEPT },
-  { key: "insuranceUrl", label: "Insurance Document", kind: "pdf" as const, accept: DOCUMENT_ACCEPT },
 ];
 
 const phonePrefix = "+233";

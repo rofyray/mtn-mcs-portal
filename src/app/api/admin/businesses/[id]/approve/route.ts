@@ -39,16 +39,16 @@ export async function POST(
   const partnerEmail = updated.partnerProfile.user?.email;
   if (partnerEmail) {
     const partnerMessage = buildEmailTemplate({
-      title: "A business submission was approved",
-      preheader: "A business submission has been approved.",
+      title: "A location submission was approved",
+      preheader: "A location submission has been approved.",
       message: [
-        `Business: ${updated.businessName}`,
+        `Location: ${updated.businessName}`,
         `Partner: ${updated.partnerProfile.businessName ?? "MTN Community Shop"}`,
       ],
     });
     await sendEmail({
       to: partnerEmail,
-      subject: "Business submission approved",
+      subject: "Location submission approved",
       text: partnerMessage.text,
       html: partnerMessage.html,
     });
@@ -58,31 +58,31 @@ export async function POST(
   const adminRecipients = coordinatorEmails.filter(Boolean).join(",");
   if (adminRecipients) {
     const adminMessage = buildEmailTemplate({
-      title: "Business submission approved",
-      preheader: "A business submission was approved.",
+      title: "Location submission approved",
+      preheader: "A location submission was approved.",
       message: [
         `Admin: ${access.admin.name} (${access.admin.email})`,
-        `Business: ${updated.businessName}`,
+        `Location: ${updated.businessName}`,
         `Partner: ${updated.partnerProfile.businessName ?? "Unknown"}`,
       ],
     });
     await sendEmail({
       to: adminRecipients,
-      subject: "Business submission approved",
+      subject: "Location submission approved",
       text: adminMessage.text,
       html: adminMessage.html,
     });
   }
 
   await sendAdminNotification(access.admin.id, {
-    title: "Business submission approved",
-    message: `Business: ${updated.businessName}`,
+    title: "Location submission approved",
+    message: `Location: ${updated.businessName}`,
     category: "SUCCESS",
   });
 
   await sendPartnerNotification(updated.partnerProfile.userId, {
-    title: "Business approved",
-    message: `Your business ${updated.businessName} was approved.`,
+    title: "Location approved",
+    message: `Your location ${updated.businessName} was approved.`,
     category: "SUCCESS",
   });
 

@@ -125,6 +125,13 @@ export default function AdminReportsPage() {
 
   const debouncedSearch = useDebounce(partnerSearch, 300);
 
+  const visibleReportTypes = useMemo(() => {
+    if (admin?.role === "MANAGER") {
+      return REPORT_TYPES.filter((r) => r.key === "partners" || r.key === "agents");
+    }
+    return REPORT_TYPES;
+  }, [admin?.role]);
+
   const reportConfig = useMemo(
     () => REPORT_TYPES.find((r) => r.key === selected) ?? null,
     [selected]
@@ -208,7 +215,7 @@ export default function AdminReportsPage() {
     );
   }
 
-  if (!admin || admin.role !== "FULL") {
+  if (!admin || (admin.role !== "FULL" && admin.role !== "MANAGER")) {
     return (
       <main className="min-h-screen px-6 py-10">
         <div className="mx-auto w-full max-w-5xl glass-panel p-6">
@@ -230,7 +237,7 @@ export default function AdminReportsPage() {
 
         {/* Report type selection */}
         <div className="report-type-grid">
-          {REPORT_TYPES.map((rt) => (
+          {visibleReportTypes.map((rt) => (
             <button
               key={rt.key}
               type="button"

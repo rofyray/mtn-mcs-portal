@@ -57,7 +57,7 @@ export async function POST(
       title: "Your partner submission was denied",
       preheader: "Your submission needs updates.",
       message: [
-        `Business: ${updated.businessName ?? "MTN Community Shop"}`,
+        `Location: ${updated.businessName ?? "MTN Community Shop"}`,
         `Reason: ${parsed.data.reason}`,
         "Please update your submission and resubmit when ready.",
       ],

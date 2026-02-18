@@ -23,8 +23,6 @@ export const onboardingSchema = z.object({
   passportPhotoUrl: optionalUrl,
   taxIdentityNumber: optionalString,
   businessCertificateUrl: optionalUrl,
-  fireCertificateUrl: optionalUrl,
-  insuranceUrl: optionalUrl,
   regionCode: optionalString,
   sbuCode: optionalString,
 });

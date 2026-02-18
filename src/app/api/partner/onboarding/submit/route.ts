@@ -13,8 +13,6 @@ const requiredFields = [
   "passportPhotoUrl",
   "taxIdentityNumber",
   "businessCertificateUrl",
-  "fireCertificateUrl",
-  "insuranceUrl",
   "regionCode",
 ];
 

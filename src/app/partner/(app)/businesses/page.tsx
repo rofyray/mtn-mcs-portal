@@ -14,7 +14,7 @@ import EmptyState from "@/components/empty-state";
 import UploadField from "@/components/upload-field";
 import FilePreviewModal from "@/components/file-preview-modal";
 import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
-import { IMAGE_ACCEPT } from "@/lib/storage/accepts";
+import { DOCUMENT_ACCEPT, IMAGE_ACCEPT } from "@/lib/storage/accepts";
 import { uploadFile } from "@/lib/storage/upload-client";
 
 const BusinessDeviceModal = dynamic(
@@ -44,6 +44,8 @@ const initialForm = {
   landmark: "",
   storeFrontUrl: "",
   storeInsideUrl: "",
+  fireCertificateUrl: "",
+  insuranceUrl: "",
 };
 
 export default function PartnerBusinessesPage() {
@@ -448,6 +450,36 @@ export default function PartnerBusinessesPage() {
                   })
                 }
                 onSelect={(file) => handleUpload("storeInsideUrl", file)}
+              />
+              <UploadField
+                label="Fire Certificate"
+                value={form.fireCertificateUrl}
+                accept={DOCUMENT_ACCEPT}
+                uploading={uploading.fireCertificateUrl}
+                onPreview={(url, anchorRect) =>
+                  setPreview({
+                    url,
+                    label: "Fire Certificate",
+                    kind: "pdf",
+                    anchorRect: anchorRect ?? null,
+                  })
+                }
+                onSelect={(file) => handleUpload("fireCertificateUrl", file)}
+              />
+              <UploadField
+                label="Insurance Document"
+                value={form.insuranceUrl}
+                accept={DOCUMENT_ACCEPT}
+                uploading={uploading.insuranceUrl}
+                onPreview={(url, anchorRect) =>
+                  setPreview({
+                    url,
+                    label: "Insurance Document",
+                    kind: "pdf",
+                    anchorRect: anchorRect ?? null,
+                  })
+                }
+                onSelect={(file) => handleUpload("insuranceUrl", file)}
               />
 
               <div className="md:col-span-2 flex flex-wrap gap-3">

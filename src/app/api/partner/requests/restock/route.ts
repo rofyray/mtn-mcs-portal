@@ -13,8 +13,12 @@ const itemOptions = ["SIM Cards", "Y'ello Biz", "Y'ello Cameras"] as const;
 const restockSchema = z.object({
   businessId: z.string().min(1, "Business location is required"),
   items: z.array(z.enum(itemOptions)).min(1, "At least one item is required"),
+  simQuantity: z.number().int().min(1, "SIM card quantity must be at least 1").optional(),
   message: z.string().trim().optional(),
-});
+}).refine(
+  (data) => !data.items.includes("SIM Cards") || (data.simQuantity != null && data.simQuantity >= 1),
+  { message: "SIM card quantity is required when SIM Cards is selected", path: ["simQuantity"] }
+);
 
 export async function POST(request: Request) {
   const result = await getApprovedPartnerProfile();
@@ -48,16 +52,19 @@ export async function POST(request: Request) {
       partnerProfileId: result.profile.id,
       businessId: parsed.data.businessId,
       items: parsed.data.items,
+      simQuantity: parsed.data.simQuantity ?? null,
       message: parsed.data.message,
     },
   });
 
   const locationInfo = `${business.businessName} (${business.city})`;
+  const simQtyLabel = parsed.data.simQuantity ? ` (qty: ${parsed.data.simQuantity})` : "";
+  const itemsLabel = parsed.data.items.map(i => i === "SIM Cards" ? `SIM Cards${simQtyLabel}` : i).join(", ");
 
   await broadcastAdminNotification(
     {
       title: "Restock request",
-      message: `${result.profile.businessName ?? "Partner"} requested restock for ${locationInfo}: ${parsed.data.items.join(", ")}.`,
+      message: `${result.profile.businessName ?? "Partner"} requested restock for ${locationInfo}: ${itemsLabel}.`,
       category: "INFO",
     },
     undefined,
@@ -74,7 +81,7 @@ export async function POST(request: Request) {
         `Location: ${locationInfo}`,
         parsed.data.message ? `Message: ${parsed.data.message}` : "Message: -",
       ],
-      bullets: parsed.data.items.length ? [`Items: ${parsed.data.items.join(", ")}`] : undefined,
+      bullets: parsed.data.items.length ? [`Items: ${itemsLabel}`] : undefined,
     });
     await sendEmail({
       to: coordinatorEmails.join(","),

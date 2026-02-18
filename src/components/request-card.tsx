@@ -21,6 +21,7 @@ export type RequestItem = {
   status: string;
   message: string | null;
   items?: string[];
+  simQuantity?: number | null;
   agentNames?: string[];
   createdAt: string;
   partnerProfile: {
@@ -106,7 +107,7 @@ export const RequestCard = memo(function RequestCard({
 
     let summaryText = "";
     if (item.requestType === "restock") {
-      summaryText = item.items?.join(", ") ?? "Restock request";
+      summaryText = item.items?.map(i => i === "SIM Cards" && item.simQuantity ? `SIM Cards (qty: ${item.simQuantity})` : i).join(", ") ?? "Restock request";
     } else {
       summaryText = item.agentNames?.join(", ") ?? "Training request";
     }
@@ -244,7 +245,7 @@ export const RequestCard = memo(function RequestCard({
             <div className="feedback-detail-grid">
               <DetailRow label="Type" value={item.requestType === "restock" ? "Restock" : "Training"} />
               {item.requestType === "restock" && item.items && (
-                <DetailRow label="Items" value={item.items.join(", ")} />
+                <DetailRow label="Items" value={item.items.map(i => i === "SIM Cards" && item.simQuantity ? `SIM Cards (qty: ${item.simQuantity})` : i).join(", ")} />
               )}
               {item.requestType === "training" && item.agentNames && (
                 <DetailRow label="Agents" value={item.agentNames.join(", ")} />

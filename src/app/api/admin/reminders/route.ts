@@ -86,7 +86,7 @@ export async function runMaintenance() {
     const daysSince = Math.floor((now.getTime() - business.deniedAt.getTime()) / (1000 * 60 * 60 * 24));
 
     if (REJECTION_REMINDER_DAYS.includes(daysSince)) {
-      reminders.push(`Business ${business.businessName} denied ${daysSince} days ago.`);
+      reminders.push(`Location ${business.businessName} denied ${daysSince} days ago.`);
     }
 
     if (daysSince >= REJECTION_EXPIRY_DAYS) {

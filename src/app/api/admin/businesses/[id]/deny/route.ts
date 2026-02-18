@@ -52,17 +52,17 @@ export async function POST(
   const partnerEmail = updated.partnerProfile.user?.email;
   if (partnerEmail) {
     const partnerMessage = buildEmailTemplate({
-      title: "A business submission was denied",
-      preheader: "A business submission needs updates.",
+      title: "A location submission was denied",
+      preheader: "A location submission needs updates.",
       message: [
-        `Business: ${updated.businessName}`,
+        `Location: ${updated.businessName}`,
         `Partner: ${updated.partnerProfile.businessName ?? "MTN Community Shop"}`,
         `Reason: ${parsed.data.reason}`,
       ],
     });
     await sendEmail({
       to: partnerEmail,
-      subject: "Business submission denied",
+      subject: "Location submission denied",
       text: partnerMessage.text,
       html: partnerMessage.html,
     });
@@ -72,32 +72,32 @@ export async function POST(
   const adminRecipients = coordinatorEmails.filter(Boolean).join(",");
   if (adminRecipients) {
     const adminMessage = buildEmailTemplate({
-      title: "Business submission denied",
-      preheader: "A business submission was denied.",
+      title: "Location submission denied",
+      preheader: "A location submission was denied.",
       message: [
         `Admin: ${access.admin.name} (${access.admin.email})`,
-        `Business: ${updated.businessName}`,
+        `Location: ${updated.businessName}`,
         `Partner: ${updated.partnerProfile.businessName ?? "Unknown"}`,
         `Reason: ${parsed.data.reason}`,
       ],
     });
     await sendEmail({
       to: adminRecipients,
-      subject: "Business submission denied",
+      subject: "Location submission denied",
       text: adminMessage.text,
       html: adminMessage.html,
     });
   }
 
   await sendAdminNotification(access.admin.id, {
-    title: "Business submission denied",
-    message: `Business: ${updated.businessName}`,
+    title: "Location submission denied",
+    message: `Location: ${updated.businessName}`,
     category: "WARNING",
   });
 
   await sendPartnerNotification(updated.partnerProfile.userId, {
-    title: "Business denied",
-    message: `Your business ${updated.businessName} was denied. Reason: ${parsed.data.reason}`,
+    title: "Location denied",
+    message: `Your location ${updated.businessName} was denied. Reason: ${parsed.data.reason}`,
     category: "WARNING",
   });
 

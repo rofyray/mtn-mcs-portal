@@ -74,7 +74,7 @@ export async function POST(
       title: "Admin responded to your restock request",
       preheader: "You have a new reply on your restock request.",
       message: [
-        `Business: ${restockRequest.partnerProfile.businessName ?? "MTN Community Shop"}`,
+        `Location: ${restockRequest.partnerProfile.businessName ?? "MTN Community Shop"}`,
         "An admin has responded to your restock request. Log in to view the reply.",
       ],
     });

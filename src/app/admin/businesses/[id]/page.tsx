@@ -11,7 +11,7 @@ import { useAdminActionsEnabled } from "@/hooks/use-admin-actions-enabled";
 import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import UploadField from "@/components/upload-field";
 import FilePreviewModal from "@/components/file-preview-modal";
-import { IMAGE_ACCEPT } from "@/lib/storage/accepts";
+import { DOCUMENT_ACCEPT, IMAGE_ACCEPT } from "@/lib/storage/accepts";
 import { deleteUploadedFile, uploadFile } from "@/lib/storage/upload-client";
 
 const editableFields = [
@@ -30,6 +30,8 @@ const editableFields = [
 const fileFields = [
   { key: "storeFrontUrl", label: "Store Front Photo", kind: "image" as const, accept: IMAGE_ACCEPT },
   { key: "storeInsideUrl", label: "Store Inside Photo", kind: "image" as const, accept: IMAGE_ACCEPT },
+  { key: "fireCertificateUrl", label: "Fire Certificate", kind: "pdf" as const, accept: DOCUMENT_ACCEPT },
+  { key: "insuranceUrl", label: "Insurance Document", kind: "pdf" as const, accept: DOCUMENT_ACCEPT },
 ];
 
 export default function AdminBusinessDetailPage() {
@@ -43,7 +45,7 @@ export default function AdminBusinessDetailPage() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [deleting, setDeleting] = useState<Record<string, boolean>>({});
-  const [activeTab, setActiveTab] = useState<"details" | "location" | "photos">("details");
+  const [activeTab, setActiveTab] = useState<"details" | "location" | "photos" | "documents">("details");
   const [preview, setPreview] = useState<{
     url: string;
     label: string;
@@ -94,6 +96,7 @@ export default function AdminBusinessDetailPage() {
     ["addressRegionCode", "addressDistrictCode", "addressCode"].includes(field.key)
   );
   const photoFields = fileFields.filter((field) => field.kind === "image");
+  const documentFields = fileFields.filter((field) => field.kind === "pdf");
 
   const regionOptions = useMemo(() => {
     return Object.values(ghanaLocations)
@@ -523,6 +526,18 @@ export default function AdminBusinessDetailPage() {
               Photos
             </button>
           ) : null}
+          {documentFields.length > 0 ? (
+            <button
+              className="tab-button"
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "documents"}
+              aria-controls="business-documents-tab"
+              onClick={() => setActiveTab("documents")}
+            >
+              Documents
+            </button>
+          ) : null}
         </div>
         {activeTab === "details" ? (
           <div id="business-details-tab" role="tabpanel" className="grid gap-4 md:grid-cols-2">
@@ -537,6 +552,33 @@ export default function AdminBusinessDetailPage() {
         {activeTab === "photos" ? (
           <div id="business-photos-tab" role="tabpanel" className="grid gap-4 md:grid-cols-2">
             {photoFields.map((field) => {
+              const lockReplace = canEdit && Boolean(form[field.key]);
+              return (
+                <UploadField
+                  key={field.key}
+                  className="md:col-span-2"
+                  label={field.label}
+                  value={form[field.key]}
+                  accept={field.accept}
+                  uploading={uploading[field.key]}
+                  deleting={deleting[field.key]}
+                  disabled={!canEdit}
+                  uploadDisabled={lockReplace}
+                  helperNote={lockReplace ? "Delete first to upload a new file." : undefined}
+                  buttonLabel={form[field.key] ? "Replace file" : "Upload file"}
+                  onSelect={(file) => handleFileUpload(field.key, file)}
+                  onRemove={() => handleFileDelete(field.key, field.label)}
+                  onPreview={(url, anchorRect) =>
+                    setPreview({ url, label: field.label, kind: field.kind, anchorRect: anchorRect ?? null })
+                  }
+                />
+              );
+            })}
+          </div>
+        ) : null}
+        {activeTab === "documents" ? (
+          <div id="business-documents-tab" role="tabpanel" className="grid gap-4 md:grid-cols-2">
+            {documentFields.map((field) => {
               const lockReplace = canEdit && Boolean(form[field.key]);
               return (
                 <UploadField

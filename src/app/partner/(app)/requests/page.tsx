@@ -34,6 +34,7 @@ export default function PartnerRequestsPage() {
   const [selectedBusinessId, setSelectedBusinessId] = useState("");
   const [restockSelection, setRestockSelection] = useState<string[]>([]);
   const [restockMessage, setRestockMessage] = useState("");
+  const [simQuantity, setSimQuantity] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pastRequests, setPastRequests] = useState<RequestItem[]>([]);
@@ -131,10 +132,25 @@ export default function PartnerRequestsPage() {
       return;
     }
 
+    if (restockSelection.includes("SIM Cards") && (!simQuantity || Number(simQuantity) < 1)) {
+      setError("Please enter a valid SIM card quantity.");
+      notify({ title: "Restock request failed", message: "Please enter a valid SIM card quantity.", kind: "error" });
+      return;
+    }
+
+    const payload: Record<string, unknown> = {
+      businessId: selectedBusinessId,
+      items: restockSelection,
+      message: restockMessage,
+    };
+    if (restockSelection.includes("SIM Cards") && simQuantity) {
+      payload.simQuantity = Number(simQuantity);
+    }
+
     const response = await fetch("/api/partner/requests/restock", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ businessId: selectedBusinessId, items: restockSelection, message: restockMessage }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -149,6 +165,7 @@ export default function PartnerRequestsPage() {
     setSelectedBusinessId("");
     setRestockSelection([]);
     setRestockMessage("");
+    setSimQuantity("");
     setRequestsRefreshKey((k) => k + 1);
   }
 
@@ -244,6 +261,19 @@ export default function PartnerRequestsPage() {
                   placeholder="Select items to restock"
                 />
               </div>
+              {restockSelection.includes("SIM Cards") && (
+                <div className="space-y-1">
+                  <label className="form-label">SIM Card Quantity</label>
+                  <input
+                    type="number"
+                    className="input"
+                    min={1}
+                    placeholder="Enter number of SIM cards needed"
+                    value={simQuantity}
+                    onChange={(event) => setSimQuantity(event.target.value)}
+                  />
+                </div>
+              )}
               <textarea
                 className="input"
                 rows={3}

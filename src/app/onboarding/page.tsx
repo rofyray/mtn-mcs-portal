@@ -95,18 +95,6 @@ const steps: Step[] = [
         type: "upload",
         accept: DOCUMENT_ACCEPT,
       },
-      {
-        key: "fireCertificateUrl",
-        label: "Fire Certificate",
-        type: "upload",
-        accept: DOCUMENT_ACCEPT,
-      },
-      {
-        key: "insuranceUrl",
-        label: "Insurance Document",
-        type: "upload",
-        accept: DOCUMENT_ACCEPT,
-      },
     ],
   },
 ];
