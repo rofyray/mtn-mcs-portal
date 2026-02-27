@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { useAdmin } from "@/contexts/admin-context";
+import { formatGhanaDate } from "@/lib/date-format";
 import { ghanaLocations } from "@/lib/ghana-locations";
 import EmptyState from "@/components/empty-state";
 import { AdminOnboardRequestsEmptyIcon } from "@/components/admin-empty-icons";
@@ -56,14 +57,6 @@ function getStatusClass(status: string) {
 
 function formatStatusLabel(status: string) {
   return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
 }
 
 export default function OnboardRequestsPage() {
@@ -163,7 +156,7 @@ export default function OnboardRequestsPage() {
                 </div>
                 <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                   <span>By {form.createdByAdmin?.name ?? form.submitterName ?? "Public"}</span>
-                  <span>{formatDate(form.createdAt)}</span>
+                  <span>{formatGhanaDate(form.createdAt, { includeTime: false })}</span>
                 </div>
               </Link>
             ))}

@@ -26,7 +26,7 @@ export function formatGhanaDate(
     dateOptions.hour12 = true;
   }
 
-  return new Intl.DateTimeFormat("en-GH", dateOptions).format(d);
+  return new Intl.DateTimeFormat("en-GB", dateOptions).format(d);
 }
 
 export function formatRelativeTime(date: Date | string): string {

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 
 import { useAdmin, useAdminRole } from "@/contexts/admin-context";
+import { formatGhanaDate } from "@/lib/date-format";
 import { useToast } from "@/components/toast";
 import { ghanaLocations } from "@/lib/ghana-locations";
 import { uploadFile } from "@/lib/storage/upload-client";
@@ -74,11 +75,7 @@ const ROLE_BADGE_CLASSES: Record<string, string> = {
 
 function formatDate(dateStr: string | null) {
   if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return formatGhanaDate(dateStr, { includeTime: false });
 }
 
 function formatStatusLabel(status: string) {
@@ -705,6 +702,11 @@ export default function OnboardRequestDetailPage() {
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={approval.signatureUrl} alt="Signature" />
                     </div>
+                    {approval.signatureDate && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Signed: {formatDate(approval.signatureDate)}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>

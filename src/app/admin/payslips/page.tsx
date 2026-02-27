@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import EmptyState from "@/components/empty-state";
 import { useToast } from "@/components/toast";
+import { formatGhanaDate } from "@/lib/date-format";
 import { useDebounce } from "@/hooks/use-debounce";
 
 const FilePreviewModal = dynamic(() => import("@/components/file-preview-modal"));
@@ -346,11 +347,7 @@ export default function AdminPaySlipsPage() {
                   />
                   <p className="text-xs font-medium truncate">{slip.displayFilename}</p>
                   <p className="text-xs text-gray-500">
-                    {new Date(slip.createdAt).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
+                    {formatGhanaDate(slip.createdAt, { includeTime: false })}
                   </p>
                 </button>
               ))}

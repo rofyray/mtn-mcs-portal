@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import EmptyState from "@/components/empty-state";
 import { useToast } from "@/components/toast";
+import { formatGhanaDate } from "@/lib/date-format";
 import { useAutoDismiss } from "@/hooks/use-auto-dismiss";
 import { IMAGE_ACCEPT } from "@/lib/storage/accepts";
 import { uploadFile } from "@/lib/storage/upload-client";
@@ -166,11 +167,7 @@ export default function PartnerPaySlipsPage() {
                 />
                 <p className="text-xs font-medium truncate">{slip.displayFilename}</p>
                 <p className="text-xs text-gray-500">
-                  {new Date(slip.createdAt).toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
+                  {formatGhanaDate(slip.createdAt, { includeTime: false })}
                 </p>
               </button>
             ))}

@@ -128,7 +128,7 @@ export default function SignaturePad({
       const file = new File([blob], `signature-${Date.now()}.png`, { type: "image/png" });
       const result = await uploadFile({
         file,
-        pathname: `signatures/${file.name}`,
+        pathname: `onboarding/signatures/${file.name}`,
         contentType: "image/png",
       });
       onSignatureReady(result.url);
