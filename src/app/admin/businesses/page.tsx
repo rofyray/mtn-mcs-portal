@@ -432,10 +432,10 @@ export default function AdminBusinessesPage() {
                     {business.status}
                   </span>
                   <p className="text-lg font-semibold">{business.businessName}</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">{business.city}</p>
+                  <p className="text-xs text-subtext">{business.city}</p>
                   {business.addressRegionCode && business.addressDistrictCode ? (
                     <>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                      <p className="text-xs text-subtext">
                         {getRegionName(business.addressRegionCode) ?? "Region"} ·{" "}
                         {getDistrictName(business.addressRegionCode, business.addressDistrictCode) ?? "District"}
                       </p>

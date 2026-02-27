@@ -79,8 +79,23 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-0">
-      <div className="fixed inset-0 flex items-center justify-center px-6 pointer-events-none">
-        <div className="w-full max-w-md space-y-6 glass-panel p-6 page-animate pointer-events-auto">
+      <div className="fixed inset-0 flex items-center justify-center px-6">
+        {/* Adinkra background */}
+        <div
+          className="absolute inset-0 z-0 bg-[#014d6d] dark:bg-[#FFCA06] opacity-[0.025]"
+          style={{
+            maskImage: `url(/adinkra/adinkra_background.svg), linear-gradient(to bottom, black 0%, transparent 95%)`,
+            maskSize: "cover, 100% 100%",
+            maskRepeat: "no-repeat, no-repeat",
+            maskComposite: "intersect",
+            WebkitMaskImage: `url(/adinkra/adinkra_background.svg), linear-gradient(to bottom, black 0%, transparent 95%)`,
+            WebkitMaskSize: "cover, 100% 100%",
+            WebkitMaskRepeat: "no-repeat, no-repeat",
+            WebkitMaskComposite: "source-in",
+          }}
+        />
+        {/* Login form */}
+        <div className="relative z-10 w-full max-w-md space-y-6 glass-panel p-6 page-animate pointer-events-auto">
           <h1 className="text-2xl font-semibold">Partner Login</h1>
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-1">

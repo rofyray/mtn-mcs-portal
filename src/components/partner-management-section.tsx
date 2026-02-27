@@ -178,7 +178,7 @@ export default function PartnerManagementSection() {
       <div className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold">Partner Management</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-subtext">
             Search, suspend, or remove partner accounts.
           </p>
         </div>
@@ -192,7 +192,7 @@ export default function PartnerManagementSection() {
       <div className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold">Partner Management</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-subtext">
             Search, suspend, or remove partner accounts.
           </p>
         </div>
@@ -210,7 +210,7 @@ export default function PartnerManagementSection() {
       <div className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold">Partner Management</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-subtext">
             Search, suspend, or remove partner accounts.
           </p>
         </div>

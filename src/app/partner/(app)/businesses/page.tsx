@@ -234,7 +234,7 @@ export default function PartnerBusinessesPage() {
                     {business.status}
                   </span>
                   <p className="text-sm font-medium">{business.businessName}</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">{business.city}</p>
+                  <p className="text-xs text-subtext">{business.city}</p>
                   {business.apn ? (
                     <p className="text-xs text-gray-600 dark:text-gray-400">APN: {business.apn}</p>
                   ) : null}

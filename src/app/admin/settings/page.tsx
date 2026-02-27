@@ -25,7 +25,7 @@ export default async function AdminSettingsPage() {
             <section className="card space-y-4">
               <div>
                 <h2 className="text-lg font-semibold">Submission Actions</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-subtext">
                   Enable approve/deny controls for full-access admins. This is off by default.
                 </p>
               </div>
@@ -46,7 +46,7 @@ export default async function AdminSettingsPage() {
           </>
         ) : (
           <div className="card">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-subtext">
               Settings are currently limited to full-access admins.
             </p>
           </div>

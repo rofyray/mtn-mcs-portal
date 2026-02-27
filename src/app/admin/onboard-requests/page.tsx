@@ -146,7 +146,7 @@ export default function OnboardRequestsPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="font-medium truncate">{form.businessName}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-subtext">
                       {ghanaLocations[form.regionCode]?.name ?? form.regionCode}
                     </p>
                   </div>

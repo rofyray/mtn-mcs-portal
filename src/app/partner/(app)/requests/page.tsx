@@ -180,7 +180,7 @@ export default function PartnerRequestsPage() {
 
         <section className="card space-y-4">
           <h2 className="text-lg font-semibold">Training request</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Select agents who need training.</p>
+          <p className="text-sm text-subtext">Select agents who need training.</p>
           {agents.length === 0 ? (
             <EmptyState
               icon={trainingEmptyIcon}
@@ -223,7 +223,7 @@ export default function PartnerRequestsPage() {
 
         <section className="card space-y-4">
           <h2 className="text-lg font-semibold">Restock request</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Request inventory for a business location.</p>
+          <p className="text-sm text-subtext">Request inventory for a business location.</p>
           {businesses.length === 0 ? (
             <EmptyState
               icon={
@@ -297,7 +297,7 @@ export default function PartnerRequestsPage() {
         <section className="space-y-4">
           <div>
             <h2 className="text-lg font-semibold">My Requests</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Your submitted requests and admin responses.</p>
+            <p className="text-sm text-subtext">Your submitted requests and admin responses.</p>
           </div>
           <div className="space-y-3">
             {pastRequests.length === 0 ? (

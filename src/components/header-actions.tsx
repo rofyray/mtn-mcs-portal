@@ -28,6 +28,9 @@ export default function HeaderActions() {
     status === "authenticated" && isPartnerRoute && pathname !== "/partner/login";
   const showAdminNotifications =
     isAdminRoute && pathname !== "/admin/login";
+  const showGovernanceHome =
+    isAdminRoute && adminRole === "GOVERNANCE" &&
+    pathname !== "/admin/onboard-requests" && pathname !== "/admin/login";
   const showSeniorMapReports =
     isAdminRoute && adminRole === "SENIOR_MANAGER" &&
     pathname !== "/admin/login" && pathname !== "/admin/map-reports";
@@ -83,6 +86,21 @@ export default function HeaderActions() {
           >
             <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7Z" />
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+        </Link>
+      ) : null}
+      {showGovernanceHome ? (
+        <Link
+          href="/admin/onboard-requests"
+          className="icon-button icon-button-accent"
+          aria-label="Onboard Requests"
+          title="Onboard Requests"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z" />
+            <path d="M9 14H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Z" />
+            <path d="M14 4h7M14 9h5M14 16h7M14 21h5" />
+            <path d="M21 12l-3 3-2-2" />
           </svg>
         </Link>
       ) : null}

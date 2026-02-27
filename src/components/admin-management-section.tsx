@@ -217,7 +217,7 @@ export default function AdminManagementSection() {
     <div className="flex items-start justify-between gap-4">
       <div>
         <h2 className="text-lg font-semibold">Admin Management</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-subtext">
           Manage admin accounts, enable/disable access, and assign regions.
         </p>
       </div>

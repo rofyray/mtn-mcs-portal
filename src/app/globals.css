@@ -99,10 +99,7 @@
 }
 
 body {
-  background: radial-gradient(circle at top, rgba(255, 204, 8, 0.22), transparent 45%),
-    radial-gradient(circle at 20% 20%, rgba(1, 77, 109, 0.12), transparent 50%),
-    var(--background);
-  background-attachment: fixed;
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-mtn), sans-serif;
   font-weight: 400;
@@ -190,7 +187,19 @@ a:hover {
 
 .logo-subtitle {
   font-size: 0.75rem;
-  color: var(--muted);
+  color: var(--momo-blue);
+}
+
+.theme-dark .logo-subtitle {
+  color: var(--mtn-yellow);
+}
+
+.text-subtext {
+  color: var(--momo-blue);
+}
+
+.theme-dark .text-subtext {
+  color: var(--mtn-yellow);
 }
 
 h1,
@@ -1045,7 +1054,11 @@ p {
 
 .upload-placeholder-subtitle {
   font-size: 0.75rem;
-  color: var(--muted);
+  color: var(--momo-blue);
+}
+
+.theme-dark .upload-placeholder-subtitle {
+  color: var(--mtn-yellow);
 }
 
 .upload-doc {
@@ -1440,8 +1453,12 @@ p {
 
 .admin-hero-subtitle {
   font-size: 0.95rem;
-  color: var(--muted);
+  color: var(--momo-blue);
   max-width: 560px;
+}
+
+.theme-dark .admin-hero-subtitle {
+  color: var(--mtn-yellow);
 }
 
 .admin-hero-actions {
@@ -2769,8 +2786,12 @@ select.input {
 
 .map-reports-subtitle {
   font-size: 0.95rem;
-  color: var(--muted);
+  color: var(--momo-blue);
   max-width: 560px;
+}
+
+.theme-dark .map-reports-subtitle {
+  color: var(--mtn-yellow);
 }
 
 .map-reports-hero-compact {
@@ -3150,8 +3171,12 @@ select.input {
 
 .drilldown-subtitle {
   font-size: 0.85rem;
-  color: var(--muted);
+  color: var(--momo-blue);
   margin-top: 4px;
+}
+
+.theme-dark .drilldown-subtitle {
+  color: var(--mtn-yellow);
 }
 
 .drilldown-close {
@@ -3283,8 +3308,12 @@ select.input {
 
 .drilldown-card-subtitle {
   font-size: 0.75rem;
-  color: var(--muted);
+  color: var(--momo-blue);
   margin-top: 2px;
+}
+
+.theme-dark .drilldown-card-subtitle {
+  color: var(--mtn-yellow);
 }
 
 .drilldown-card-meta {
