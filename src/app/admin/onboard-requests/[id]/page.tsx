@@ -291,7 +291,7 @@ export default function OnboardRequestDetailPage() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-semibold">{form.businessName}</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-subtext">
             {ghanaLocations[form.regionCode]?.name ?? form.regionCode} &middot;{" "}
             {form.createdByAdmin
               ? `Created by ${form.createdByAdmin.name}`
@@ -321,17 +321,17 @@ export default function OnboardRequestDetailPage() {
         <section className="card-flat p-4 space-y-3">
           <h3 className="text-sm font-semibold">Submitter Information</h3>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            <span className="text-gray-500 dark:text-gray-400">Name</span>
+            <span className="text-subtext">Name</span>
             <span>{form.submitterName}</span>
             {form.submitterPhone && (
               <>
-                <span className="text-gray-500 dark:text-gray-400">Phone</span>
+                <span className="text-subtext">Phone</span>
                 <span>{form.submitterPhone}</span>
               </>
             )}
             {form.submitterEmail && (
               <>
-                <span className="text-gray-500 dark:text-gray-400">Email</span>
+                <span className="text-subtext">Email</span>
                 <span>{form.submitterEmail}</span>
               </>
             )}
@@ -343,31 +343,31 @@ export default function OnboardRequestDetailPage() {
       <section className="card-flat p-4 space-y-3">
         <h3 className="text-sm font-semibold">Company Details</h3>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-          <span className="text-gray-500 dark:text-gray-400">Business Name</span>
+          <span className="text-subtext">Business Name</span>
           <span>{form.businessName}</span>
-          <span className="text-gray-500 dark:text-gray-400">Date of Incorporation</span>
+          <span className="text-subtext">Date of Incorporation</span>
           <span>{formatDate(form.dateOfIncorporation)}</span>
-          <span className="text-gray-500 dark:text-gray-400">Business Type</span>
+          <span className="text-subtext">Business Type</span>
           <span>
             {form.businessType === "Other"
               ? form.businessTypeOther ?? "Other"
               : form.businessType ?? "—"}
           </span>
-          <span className="text-gray-500 dark:text-gray-400">Registered Nature</span>
+          <span className="text-subtext">Registered Nature</span>
           <span>{form.registeredNature ?? "—"}</span>
-          <span className="text-gray-500 dark:text-gray-400">Registration No.</span>
+          <span className="text-subtext">Registration No.</span>
           <span>{form.registrationCertNo ?? "—"}</span>
-          <span className="text-gray-500 dark:text-gray-400">Main Office</span>
+          <span className="text-subtext">Main Office</span>
           <span>{form.mainOfficeLocation ?? "—"}</span>
-          <span className="text-gray-500 dark:text-gray-400">TIN</span>
+          <span className="text-subtext">TIN</span>
           <span>{form.tinNumber ?? "—"}</span>
-          <span className="text-gray-500 dark:text-gray-400">Postal Address</span>
+          <span className="text-subtext">Postal Address</span>
           <span>{form.postalAddress ?? "—"}</span>
-          <span className="text-gray-500 dark:text-gray-400">Physical Address</span>
+          <span className="text-subtext">Physical Address</span>
           <span>{form.physicalAddress ?? "—"}</span>
-          <span className="text-gray-500 dark:text-gray-400">Phone</span>
+          <span className="text-subtext">Phone</span>
           <span>{form.companyPhone ?? "—"}</span>
-          <span className="text-gray-500 dark:text-gray-400">Digital Post Address</span>
+          <span className="text-subtext">Digital Post Address</span>
           <span>{form.digitalPostAddress ?? "—"}</span>
         </div>
       </section>
@@ -377,13 +377,13 @@ export default function OnboardRequestDetailPage() {
         <section className="card-flat p-4 space-y-3">
           <h3 className="text-sm font-semibold">Authorized Signatory</h3>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            <span className="text-gray-500 dark:text-gray-400">Name</span>
+            <span className="text-subtext">Name</span>
             <span>{form.authorizedSignatory.name || "—"}</span>
-            <span className="text-gray-500 dark:text-gray-400">Designation</span>
+            <span className="text-subtext">Designation</span>
             <span>{form.authorizedSignatory.designation || "—"}</span>
-            <span className="text-gray-500 dark:text-gray-400">Phone</span>
+            <span className="text-subtext">Phone</span>
             <span>{form.authorizedSignatory.phone || "—"}</span>
-            <span className="text-gray-500 dark:text-gray-400">Email</span>
+            <span className="text-subtext">Email</span>
             <span>{form.authorizedSignatory.email || "—"}</span>
           </div>
         </section>
@@ -394,15 +394,15 @@ export default function OnboardRequestDetailPage() {
         <section className="card-flat p-4 space-y-3">
           <h3 className="text-sm font-semibold">Contact Person</h3>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            <span className="text-gray-500 dark:text-gray-400">Name</span>
+            <span className="text-subtext">Name</span>
             <span>{form.contactPerson.name || "—"}</span>
-            <span className="text-gray-500 dark:text-gray-400">Designation</span>
+            <span className="text-subtext">Designation</span>
             <span>{form.contactPerson.designation || "—"}</span>
-            <span className="text-gray-500 dark:text-gray-400">Phone</span>
+            <span className="text-subtext">Phone</span>
             <span>{form.contactPerson.phone || "—"}</span>
-            <span className="text-gray-500 dark:text-gray-400">Email</span>
+            <span className="text-subtext">Email</span>
             <span>{form.contactPerson.email || "—"}</span>
-            <span className="text-gray-500 dark:text-gray-400">Date</span>
+            <span className="text-subtext">Date</span>
             <span>{form.contactPerson.date || "—"}</span>
           </div>
         </section>
@@ -413,27 +413,27 @@ export default function OnboardRequestDetailPage() {
         <section className="card-flat p-4 space-y-3">
           <h3 className="text-sm font-semibold">PEP Declaration</h3>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            <span className="text-gray-500 dark:text-gray-400">Q1: Is PEP</span>
+            <span className="text-subtext">Q1: Is PEP</span>
             <span>{form.pepDeclaration.q1 || "—"}</span>
-            <span className="text-gray-500 dark:text-gray-400">Q2: Held public position</span>
+            <span className="text-subtext">Q2: Held public position</span>
             <span>{form.pepDeclaration.q2 || "—"}</span>
             {form.pepDeclaration.q2 === "Yes" && (
               <>
-                <span className="text-gray-500 dark:text-gray-400">Q2: Timeframe</span>
+                <span className="text-subtext">Q2: Timeframe</span>
                 <span>{form.pepDeclaration.q2Timeframe || "—"}</span>
               </>
             )}
-            <span className="text-gray-500 dark:text-gray-400">Q3: Related to PEP</span>
+            <span className="text-subtext">Q3: Related to PEP</span>
             <span>{form.pepDeclaration.q3 || "—"}</span>
             {form.pepDeclaration.q3 === "Yes" && (
               <>
-                <span className="text-gray-500 dark:text-gray-400">Q3: PEP Name</span>
+                <span className="text-subtext">Q3: PEP Name</span>
                 <span>{form.pepDeclaration.q3Name || "—"}</span>
-                <span className="text-gray-500 dark:text-gray-400">Q3: Position</span>
+                <span className="text-subtext">Q3: Position</span>
                 <span>{form.pepDeclaration.q3Position || "—"}</span>
-                <span className="text-gray-500 dark:text-gray-400">Q3: Year</span>
+                <span className="text-subtext">Q3: Year</span>
                 <span>{form.pepDeclaration.q3Year || "—"}</span>
-                <span className="text-gray-500 dark:text-gray-400">Q3: Relationship</span>
+                <span className="text-subtext">Q3: Relationship</span>
                 <span>{form.pepDeclaration.q3Relationship || "—"}</span>
               </>
             )}
@@ -469,7 +469,7 @@ export default function OnboardRequestDetailPage() {
       {form.completionDate && (
         <section className="card-flat p-4">
           <div className="text-sm">
-            <span className="text-gray-500 dark:text-gray-400">Completion Date: </span>
+            <span className="text-subtext">Completion Date: </span>
             <span>{formatDate(form.completionDate)}</span>
           </div>
         </section>
@@ -479,13 +479,13 @@ export default function OnboardRequestDetailPage() {
       {canCoordinatorAct && (
         <section className="card-flat p-4 space-y-4 border-2 border-[var(--momo-blue)]">
           <h3 className="text-sm font-semibold">Coordinator Review</h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-subtext">
             Upload photos, add comments, and sign before submitting to the manager.
           </p>
 
           {/* Image upload */}
           <div className="space-y-3">
-            <label className="label">Business Photos (up to 5)</label>
+            <label className="label">Location Photos (up to 5)</label>
             {coordImageUrls.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {coordImageUrls.map((url, i) => (
@@ -511,7 +511,7 @@ export default function OnboardRequestDetailPage() {
             )}
             {coordImageUrls.length < 5 && (
               <UploadField
-                label="Business Photo"
+                label="Location Photo"
                 accept={IMAGE_ACCEPT}
                 uploading={coordUploading}
                 onSelect={async (file: File) => {
@@ -688,7 +688,7 @@ export default function OnboardRequestDetailPage() {
                 <p className="approval-step-meta">{formatDate(approval.createdAt)}</p>
                 {approval.governanceScore !== null && (
                   <p className="text-xs mt-1">
-                    <span className="text-gray-500 dark:text-gray-400">Governance Score: </span>
+                    <span className="text-subtext">Governance Score: </span>
                     <span className="font-semibold">{approval.governanceScore}%</span>
                   </p>
                 )}
@@ -697,13 +697,13 @@ export default function OnboardRequestDetailPage() {
                 )}
                 {approval.signatureUrl && (
                   <div className="mt-2">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Signature</p>
+                    <p className="text-xs text-subtext mb-1">Signature</p>
                     <div className="approval-step-signature">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={approval.signatureUrl} alt="Signature" />
                     </div>
                     {approval.signatureDate && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <p className="text-xs text-subtext mt-1">
                         Signed: {formatDate(approval.signatureDate)}
                       </p>
                     )}

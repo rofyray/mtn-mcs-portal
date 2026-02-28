@@ -26,7 +26,7 @@ export default function SuspendedOverlay() {
 
         <div className="space-y-2">
           <h2 className="text-xl font-semibold">Account Suspended</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-subtext">
             Your partner account has been suspended by an administrator. Please
             contact support if you believe this is an error.
           </p>

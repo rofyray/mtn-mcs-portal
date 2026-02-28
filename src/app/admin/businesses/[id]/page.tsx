@@ -15,7 +15,7 @@ import { DOCUMENT_ACCEPT, IMAGE_ACCEPT } from "@/lib/storage/accepts";
 import { deleteUploadedFile, uploadFile } from "@/lib/storage/upload-client";
 
 const editableFields = [
-  { key: "businessName", label: "Business Name" },
+  { key: "businessName", label: "Location Name" },
   { key: "addressRegionCode", label: "Region" },
   { key: "addressDistrictCode", label: "District" },
   { key: "addressCode", label: "Digital Address Code" },
@@ -66,7 +66,7 @@ export default function AdminBusinessDetailPage() {
     async function loadBusiness() {
       const response = await fetch(`/api/admin/businesses/${id}`);
       if (!response.ok) {
-        setError("Unable to load business.");
+        setError("Unable to load location.");
         return;
       }
       const data = await response.json();
@@ -167,7 +167,7 @@ export default function AdminBusinessDetailPage() {
               </div>
             )}
             {form.addressRegionCode ? (
-              <p className="text-xs text-gray-500 dark:text-gray-400">Code: {form.addressRegionCode}</p>
+              <p className="text-xs text-subtext">Code: {form.addressRegionCode}</p>
             ) : null}
           </div>
         ) : field.key === "addressDistrictCode" ? (
@@ -189,7 +189,7 @@ export default function AdminBusinessDetailPage() {
               ))}
             </select>
             {form.addressDistrictCode ? (
-              <p className="text-xs text-gray-500 dark:text-gray-400">Code: {form.addressDistrictCode}</p>
+              <p className="text-xs text-subtext">Code: {form.addressDistrictCode}</p>
             ) : null}
           </div>
         ) : field.key === "addressCode" ? (
@@ -393,7 +393,7 @@ export default function AdminBusinessDetailPage() {
       setStatus("Changes saved.");
       notify({
         title: "Changes saved",
-        message: "Business details updated.",
+        message: "Location details updated.",
         kind: "success",
       });
     }
@@ -466,7 +466,7 @@ export default function AdminBusinessDetailPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold">Location Details</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Review and edit location info.</p>
+            <p className="text-sm text-subtext">Review and edit location info.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button className="btn btn-secondary" type="button" onClick={() => router.back()}>
@@ -493,7 +493,7 @@ export default function AdminBusinessDetailPage() {
         {error ? <p className="form-message form-message-error">{error}</p> : null}
         {status ? <p className="form-message form-message-success">{status}</p> : null}
 
-        <div className="tab-group" role="tablist" aria-label="Business detail sections">
+        <div className="tab-group" role="tablist" aria-label="Location detail sections">
           <button
             className="tab-button"
             type="button"

@@ -4,8 +4,7 @@ import { z } from "zod";
 import prisma from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-guard";
 import { logAuditEvent } from "@/lib/audit";
-import { sendEmail } from "@/lib/email";
-import { buildEmailTemplate } from "@/lib/email-template";
+
 import { sendPartnerNotification } from "@/lib/notifications";
 
 const statusSchema = z.object({
@@ -68,7 +67,7 @@ export async function PATCH(
     where: { id },
     include: {
       partnerProfile: {
-        select: { userId: true, businessName: true, user: { select: { email: true } } },
+        select: { userId: true, businessName: true },
       },
     },
   });
@@ -99,27 +98,6 @@ export async function PATCH(
     category: isClosed ? "WARNING" : "INFO",
   });
 
-  const partnerEmail = feedback.partnerProfile.user?.email;
-  if (partnerEmail) {
-    const emailMsg = buildEmailTemplate({
-      title: isClosed ? "Feedback closed" : "Feedback reopened",
-      preheader: isClosed
-        ? `Your feedback "${feedback.title}" has been closed.`
-        : `Your feedback "${feedback.title}" has been reopened.`,
-      message: [
-        `Feedback: ${feedback.title}`,
-        isClosed
-          ? "Your feedback has been closed by an admin. If you need further assistance, please submit new feedback."
-          : "Your feedback has been reopened by an admin. You can continue the conversation.",
-      ],
-    });
-    await sendEmail({
-      to: partnerEmail,
-      subject: isClosed ? "Feedback closed" : "Feedback reopened",
-      text: emailMsg.text,
-      html: emailMsg.html,
-    });
-  }
 
   return NextResponse.json({ feedback: updated });
 }

@@ -207,7 +207,7 @@ export default function PartnerAgentsPage() {
       <div className="mx-auto w-full max-w-5xl space-y-8 glass-panel p-6 page-animate">
         <div>
           <h1 className="text-2xl font-semibold">Agents</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Add agents for approval and track their status.</p>
+          <p className="text-sm text-subtext">Add agents for approval and track their status.</p>
         </div>
 
         <div className="space-y-3">
@@ -251,22 +251,22 @@ export default function PartnerAgentsPage() {
                     <p className="text-sm font-medium">
                       {agent.firstName} {agent.surname}
                     </p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">{agent.phoneNumber}</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">{agent.email}</p>
+                    <p className="text-xs text-subtext">{agent.phoneNumber}</p>
+                    <p className="text-xs text-subtext">{agent.email}</p>
                     {agent.business ? (
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                      <p className="text-xs text-subtext">
                         Location: {agent.business.city} ({agent.business.addressCode})
                       </p>
                     ) : null}
                   </div>
                   {agent.cpAppNumber ? (
-                    <p className="text-xs text-gray-600 dark:text-gray-400">CP App Number: {agent.cpAppNumber}</p>
+                    <p className="text-xs text-subtext">CP App Number: {agent.cpAppNumber}</p>
                   ) : null}
                   {agent.agentUsername ? (
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Username: {agent.agentUsername}</p>
+                    <p className="text-xs text-subtext">Username: {agent.agentUsername}</p>
                   ) : null}
                   {agent.minervaReferralCode ? (
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Minerva Code: {agent.minervaReferralCode}</p>
+                    <p className="text-xs text-subtext">Minerva Code: {agent.minervaReferralCode}</p>
                   ) : null}
                   {(!agent.cpAppNumber || !agent.agentUsername || !agent.minervaReferralCode) ? (
                     <button
@@ -347,15 +347,15 @@ export default function PartnerAgentsPage() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="label">Business Name</label>
+                <label className="label">Location Name</label>
                 <input
                   className="input bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
                   value={form.businessName}
                   readOnly
                   disabled
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  This is your registered business name from onboarding.
+                <p className="text-xs text-subtext">
+                  This is your registered location name from onboarding.
                 </p>
               </div>
               <div className="space-y-1">
@@ -403,7 +403,7 @@ export default function PartnerAgentsPage() {
                 })()}
               </div>
               <div className="space-y-1 md:col-span-2">
-                <label className="label">Business Location</label>
+                <label className="label">Location</label>
                 <select
                   className="input"
                   value={form.businessId}
@@ -416,7 +416,7 @@ export default function PartnerAgentsPage() {
                     </option>
                   ))}
                 </select>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-subtext">
                   Select the location where this agent will be assigned.
                 </p>
               </div>

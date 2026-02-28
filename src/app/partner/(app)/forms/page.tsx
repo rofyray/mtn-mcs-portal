@@ -165,7 +165,7 @@ export default function PartnerFormsPage() {
       <div className="mx-auto w-full max-w-5xl space-y-8 glass-panel p-6 page-animate">
         <div>
           <h1 className="text-2xl font-semibold">Forms</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Sign and submit forms from admins.</p>
+          <p className="text-sm text-subtext">Sign and submit forms from admins.</p>
         </div>
 
         {forms.length === 0 ? (

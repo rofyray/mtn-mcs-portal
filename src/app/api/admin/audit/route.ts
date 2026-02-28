@@ -177,7 +177,7 @@ export async function GET() {
         const business = businessMap.get(log.targetId);
         if (business) {
           targetDetails = {
-            name: business.businessName || "Unknown Business",
+            name: business.businessName || "Unknown Location",
             location: {
               regionCode: business.addressRegionCode,
               city: business.city,

@@ -231,7 +231,7 @@ export default function AdminManagementSection() {
     return (
       <>
         {header}
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">Loading admins...</p>
+        <p className="text-sm text-subtext mt-4">Loading admins...</p>
       </>
     );
   }
@@ -256,7 +256,7 @@ export default function AdminManagementSection() {
         {header}
 
         {admins.length === 0 ? (
-          <p className="text-sm text-gray-600 dark:text-gray-400">No admins found.</p>
+          <p className="text-sm text-subtext">No admins found.</p>
         ) : (
           ROLE_ORDER.map((role) => {
             const roleAdmins = adminsByRole[role];
@@ -358,7 +358,7 @@ const AdminCard = memo(function AdminCard({
             </span>
             {!admin.enabled && <span className="badge badge-muted">Disabled</span>}
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{admin.email}</p>
+          <p className="text-sm text-subtext truncate">{admin.email}</p>
         </div>
 
         <label className="toggle-field shrink-0">
@@ -402,7 +402,7 @@ const AdminCard = memo(function AdminCard({
               </>
             ) : (
               <>
-                <span className="text-sm text-gray-500 dark:text-gray-400 italic flex-1">
+                <span className="text-sm text-subtext italic flex-1">
                   No regions assigned
                 </span>
                 <span className="text-gray-400 dark:text-gray-500 text-xs shrink-0">Edit</span>
@@ -413,7 +413,7 @@ const AdminCard = memo(function AdminCard({
       )}
 
       {(admin.role === "FULL" || admin.role === "MANAGER" || admin.role === "GOVERNANCE") && (
-        <p className="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700">
+        <p className="text-xs text-subtext pt-2 border-t border-gray-200 dark:border-gray-700">
           {admin.role === "GOVERNANCE" ? "Governance admins have global access to all regions." : `${admin.role === "FULL" ? "Platform admins" : "Managers"} have global access to all regions.`}
         </p>
       )}

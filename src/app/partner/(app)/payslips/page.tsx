@@ -100,7 +100,7 @@ export default function PartnerPaySlipsPage() {
       <div className="mx-auto w-full max-w-5xl space-y-8 glass-panel p-6 page-animate">
         <div>
           <h1 className="text-2xl font-semibold">Pay Slips</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-subtext">
             Upload photos of your bank payment slips.
           </p>
         </div>
@@ -166,7 +166,7 @@ export default function PartnerPaySlipsPage() {
                   className="w-full h-32 object-cover rounded"
                 />
                 <p className="text-xs font-medium truncate">{slip.displayFilename}</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-subtext">
                   {formatGhanaDate(slip.createdAt, { includeTime: false })}
                 </p>
               </button>

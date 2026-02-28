@@ -4,8 +4,7 @@ import { z } from "zod";
 import prisma from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-guard";
 import { logAuditEvent } from "@/lib/audit";
-import { sendEmail } from "@/lib/email";
-import { buildEmailTemplate } from "@/lib/email-template";
+
 import { sendPartnerNotification } from "@/lib/notifications";
 
 const statusSchema = z.object({
@@ -71,7 +70,7 @@ export async function PATCH(
     where: { id },
     include: {
       partnerProfile: {
-        select: { userId: true, businessName: true, user: { select: { email: true } } },
+        select: { userId: true, businessName: true },
       },
     },
   });
@@ -102,27 +101,6 @@ export async function PATCH(
     category: isClosed ? "WARNING" : "INFO",
   });
 
-  const partnerEmail = existing.partnerProfile.user?.email;
-  if (partnerEmail) {
-    const emailMsg = buildEmailTemplate({
-      title: isClosed ? "Restock request closed" : "Restock request reopened",
-      preheader: isClosed
-        ? "Your restock request has been closed."
-        : "Your restock request has been reopened.",
-      message: [
-        `Location: ${existing.partnerProfile.businessName ?? "MTN Community Shop"}`,
-        isClosed
-          ? "Your restock request has been closed by an admin. If you need further assistance, please submit a new request."
-          : "Your restock request has been reopened by an admin. You can continue the conversation.",
-      ],
-    });
-    await sendEmail({
-      to: partnerEmail,
-      subject: isClosed ? "Restock request closed" : "Restock request reopened",
-      text: emailMsg.text,
-      html: emailMsg.html,
-    });
-  }
 
   return NextResponse.json({ request: updated });
 }

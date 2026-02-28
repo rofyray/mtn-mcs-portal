@@ -95,7 +95,7 @@ export default function OnboardRequestsPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold">Onboard Requests</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-subtext">
               MCS Partner Onboard Request Forms
             </p>
           </div>
@@ -154,7 +154,7 @@ export default function OnboardRequestsPage() {
                     {formatStatusLabel(form.status)}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                <div className="flex items-center justify-between text-xs text-subtext">
                   <span>By {form.createdByAdmin?.name ?? form.submitterName ?? "Public"}</span>
                   <span>{formatGhanaDate(form.createdAt, { includeTime: false })}</span>
                 </div>
@@ -172,7 +172,7 @@ export default function OnboardRequestsPage() {
             >
               Previous
             </button>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="text-sm text-subtext">
               Page {page} of {pagination.totalPages}
             </span>
             <button

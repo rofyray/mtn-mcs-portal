@@ -11,7 +11,7 @@ import { formatZodError } from "@/lib/validation";
 const itemOptions = ["SIM Cards", "Y'ello Biz", "Y'ello Cameras"] as const;
 
 const restockSchema = z.object({
-  businessId: z.string().min(1, "Business location is required"),
+  businessId: z.string().min(1, "Location is required"),
   items: z.array(z.enum(itemOptions)).min(1, "At least one item is required"),
   simQuantity: z.number().int().min(1, "SIM card quantity must be at least 1").optional(),
   message: z.string().trim().optional(),
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
   });
 
   if (!business) {
-    return NextResponse.json({ error: "Business not found or not approved" }, { status: 400 });
+    return NextResponse.json({ error: "Location not found or not approved" }, { status: 400 });
   }
 
   const requestRecord = await prisma.restockRequest.create({

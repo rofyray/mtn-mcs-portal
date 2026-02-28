@@ -140,7 +140,7 @@ export default function AdminCreateModal({
         <div className="modal-header">
           <div>
             <h2 className="text-lg font-semibold">Add Admin</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-subtext">
               Create a new admin account
             </p>
           </div>
@@ -239,7 +239,7 @@ export default function AdminCreateModal({
             )}
 
             {!showRegions && (
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-subtext">
                 This role has global access to all regions.
               </p>
             )}

@@ -7,7 +7,7 @@ import { logAuditEvent } from "@/lib/audit";
 import { formatZodError } from "@/lib/validation";
 
 const createSchema = z.object({
-  businessName: z.string().min(1, "Business name is required"),
+  businessName: z.string().min(1, "Location name is required"),
   dateOfIncorporation: z.string().optional(),
   businessType: z.string().optional(),
   businessTypeOther: z.string().optional(),

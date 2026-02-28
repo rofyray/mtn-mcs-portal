@@ -173,7 +173,7 @@ export default function PartnerBusinessesPage() {
     setDeviceBusiness(null);
     notify({
       title: "Device details saved",
-      message: "Business device info has been updated.",
+      message: "Location device info has been updated.",
       kind: "success",
     });
     loadBusinesses();
@@ -193,7 +193,7 @@ export default function PartnerBusinessesPage() {
       <div className="mx-auto w-full max-w-5xl space-y-8 glass-panel p-6 page-animate">
         <div>
           <h1 className="text-2xl font-semibold">Locations</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Add additional locations for approval.</p>
+          <p className="text-sm text-subtext">Add additional locations for approval.</p>
         </div>
 
         <div className="space-y-3">
@@ -236,10 +236,10 @@ export default function PartnerBusinessesPage() {
                   <p className="text-sm font-medium">{business.businessName}</p>
                   <p className="text-xs text-subtext">{business.city}</p>
                   {business.apn ? (
-                    <p className="text-xs text-gray-600 dark:text-gray-400">APN: {business.apn}</p>
+                    <p className="text-xs text-subtext">APN: {business.apn}</p>
                   ) : null}
                   {business.mifiImei ? (
-                    <p className="text-xs text-gray-600 dark:text-gray-400">IMEI: {business.mifiImei}</p>
+                    <p className="text-xs text-subtext">IMEI: {business.mifiImei}</p>
                   ) : null}
                   {(!business.apn || !business.mifiImei) ? (
                     <button
@@ -269,15 +269,15 @@ export default function PartnerBusinessesPage() {
             </div>
             <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit} noValidate>
               <div className="space-y-1">
-                <label className="label">Business Name</label>
+                <label className="label">Location Name</label>
                 <input
                   className="input bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
                   value={form.businessName}
                   readOnly
                   disabled
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  This is your registered business name from onboarding.
+                <p className="text-xs text-subtext">
+                  This is your registered location name from onboarding.
                 </p>
               </div>
               <div className="space-y-1">

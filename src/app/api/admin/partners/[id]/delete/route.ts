@@ -32,7 +32,7 @@ export async function DELETE(
       (access.profile.businessName ?? "").toLowerCase()
   ) {
     return NextResponse.json(
-      { error: "Business name does not match" },
+      { error: "Name does not match" },
       { status: 400 }
     );
   }

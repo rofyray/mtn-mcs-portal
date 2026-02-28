@@ -19,8 +19,8 @@ export const agentSchema = z.object({
   ),
   ghanaCardNumber: z.string().trim().min(1, "Ghana card number is required"),
   passportPhotoUrl: z.string().url("Passport photo is required"),
-  businessId: z.string().trim().min(1, "Business location is required"),
-  businessName: z.string().trim().min(1, "Business name is required"),
+  businessId: z.string().trim().min(1, "Location is required"),
+  businessName: z.string().trim().min(1, "Location name is required"),
 });
 
 export type AgentInput = z.infer<typeof agentSchema>;

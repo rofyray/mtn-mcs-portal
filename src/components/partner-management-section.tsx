@@ -182,7 +182,7 @@ export default function PartnerManagementSection() {
             Search, suspend, or remove partner accounts.
           </p>
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-400">Loading...</p>
+        <p className="text-sm text-subtext">Loading...</p>
       </div>
     );
   }
@@ -218,7 +218,7 @@ export default function PartnerManagementSection() {
         <input
           className="input"
           type="text"
-          placeholder="Search by name, email, or business name..."
+          placeholder="Search by name, email, or location name..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -226,13 +226,13 @@ export default function PartnerManagementSection() {
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         {loading && (
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-subtext">
             Searching...
           </p>
         )}
 
         {!loading && debouncedQuery.length >= 2 && partners.length === 0 && (
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-subtext">
             No partners found.
           </p>
         )}
@@ -283,7 +283,7 @@ export default function PartnerManagementSection() {
       <ConfirmModal
         open={deleteStep1.open}
         title="Delete Partner"
-        description={`Are you sure you want to permanently delete ${deleteStep1.partner?.businessName ?? "this partner"}? This action is irreversible. All partner data, agents, businesses, and requests will be permanently removed.`}
+        description={`Are you sure you want to permanently delete ${deleteStep1.partner?.businessName ?? "this partner"}? This action is irreversible. All partner data, agents, locations, and requests will be permanently removed.`}
         confirmLabel="Continue"
         confirmVariant="danger"
         onConfirm={handleDeleteStep1Confirm}
@@ -297,8 +297,8 @@ export default function PartnerManagementSection() {
         description={`Type "${deleteStep2.partner?.businessName ?? ""}" to confirm deletion.`}
         confirmLabel="Delete Permanently"
         confirmVariant="danger"
-        inputLabel="Business name"
-        inputPlaceholder="Type the business name to confirm"
+        inputLabel="Location name"
+        inputPlaceholder="Type the location name to confirm"
         inputValue={deleteStep2.inputValue}
         inputRequired
         inputMatch={deleteStep2.partner?.businessName ?? ""}
@@ -344,11 +344,11 @@ const PartnerCard = memo(function PartnerCard({
           )}
         </div>
         {partner.businessName && (
-          <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+          <p className="text-sm text-subtext truncate">
             {partner.businessName}
           </p>
         )}
-        <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+        <p className="text-sm text-subtext truncate">
           {partner.user.email ?? "No email"}
         </p>
       </div>

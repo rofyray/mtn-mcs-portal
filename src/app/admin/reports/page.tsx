@@ -23,7 +23,7 @@ const REPORT_TYPES = [
   {
     key: "agents",
     title: "Agents",
-    description: "Agent details including region, business, and partner info.",
+    description: "Agent details including region, location, and partner info.",
     icon: (
       <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
         <path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -38,7 +38,7 @@ const REPORT_TYPES = [
   {
     key: "locations",
     title: "Locations",
-    description: "Business locations with full address and GPS coordinates.",
+    description: "Locations with full address and GPS coordinates.",
     icon: (
       <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
         <path d="M3 11h18" />
@@ -53,7 +53,7 @@ const REPORT_TYPES = [
   {
     key: "location-coordinates",
     title: "Location Coordinates",
-    description: "GPS coordinates for all business locations (lat/long).",
+    description: "GPS coordinates for all locations (lat/long).",
     icon: (
       <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
         <circle cx="12" cy="10" r="3" />
@@ -79,7 +79,7 @@ const REPORT_TYPES = [
   {
     key: "restock-requests",
     title: "Restock Requests",
-    description: "Restock requests with business and item details.",
+    description: "Restock requests with location and item details.",
     icon: (
       <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
         <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
@@ -230,7 +230,7 @@ export default function AdminReportsPage() {
       <div className="mx-auto w-full max-w-5xl space-y-6">
         <div className="glass-panel p-6">
           <h1 className="text-2xl font-semibold">Reports</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-sm text-subtext mt-1">
             Generate and download CSV reports across the platform.
           </p>
         </div>
@@ -263,7 +263,7 @@ export default function AdminReportsPage() {
             <div className="admin-filter-grid">
               {hasFilter("region") && (
                 <div className="admin-filter-field">
-                  <label className="block text-xs font-medium mb-1 text-gray-500">Region</label>
+                  <label className="block text-xs font-medium mb-1 text-subtext">Region</label>
                   <select
                     className="input w-full"
                     value={region}
@@ -281,7 +281,7 @@ export default function AdminReportsPage() {
 
               {hasFilter("status") && reportConfig.statusOptions.length > 0 && (
                 <div className="admin-filter-field">
-                  <label className="block text-xs font-medium mb-1 text-gray-500">Status</label>
+                  <label className="block text-xs font-medium mb-1 text-subtext">Status</label>
                   <select
                     className="input w-full"
                     value={status}
@@ -300,7 +300,7 @@ export default function AdminReportsPage() {
               {hasFilter("dateRange") && (
                 <>
                   <div className="admin-filter-field">
-                    <label className="block text-xs font-medium mb-1 text-gray-500">From date</label>
+                    <label className="block text-xs font-medium mb-1 text-subtext">From date</label>
                     <input
                       type="date"
                       className="input w-full"
@@ -309,7 +309,7 @@ export default function AdminReportsPage() {
                     />
                   </div>
                   <div className="admin-filter-field">
-                    <label className="block text-xs font-medium mb-1 text-gray-500">To date</label>
+                    <label className="block text-xs font-medium mb-1 text-subtext">To date</label>
                     <input
                       type="date"
                       className="input w-full"
@@ -322,11 +322,11 @@ export default function AdminReportsPage() {
 
               {hasFilter("partnerSearch") && (
                 <div className="admin-filter-field">
-                  <label className="block text-xs font-medium mb-1 text-gray-500">Partner search</label>
+                  <label className="block text-xs font-medium mb-1 text-subtext">Partner search</label>
                   <input
                     type="text"
                     className="input w-full"
-                    placeholder="Search by name or business..."
+                    placeholder="Search by name or location..."
                     value={partnerSearch}
                     onChange={(e) => setPartnerSearch(e.target.value)}
                   />

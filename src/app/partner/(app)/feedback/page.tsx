@@ -77,7 +77,7 @@ export default function PartnerFeedbackPage() {
       <div className="mx-auto w-full max-w-5xl space-y-6 glass-panel p-6 page-animate">
         <div>
           <h1 className="text-2xl font-semibold">Feedback</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-subtext">
             Send feedback or view past submissions and admin responses.
           </p>
         </div>

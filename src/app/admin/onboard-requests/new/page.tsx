@@ -309,7 +309,7 @@ function NewOnboardRequestPage() {
 
   async function handleSaveDraft() {
     if (!form.businessName.trim() || !form.regionCode) {
-      setError("Business name and region are required");
+      setError("Location name and region are required");
       return;
     }
     setSaving(true);
@@ -346,7 +346,7 @@ function NewOnboardRequestPage() {
 
   async function handleSubmit() {
     if (!form.businessName.trim() || !form.regionCode) {
-      setError("Business name and region are required");
+      setError("Location name and region are required");
       return;
     }
     if (!form.signatureUrl) {
@@ -426,7 +426,7 @@ function NewOnboardRequestPage() {
           <h1 className="text-2xl font-semibold">
             {editId ? "Edit Onboard Request" : "New Onboard Request"}
           </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-subtext">
             MCS Partner Onboard Request Form
           </p>
         </div>
@@ -456,7 +456,7 @@ function NewOnboardRequestPage() {
             </span>
             <h2 className="text-lg font-semibold">{STEPS[step].label}</h2>
           </div>
-          <p className="text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 ml-12">
+          <p className="text-xs uppercase tracking-[0.2em] text-subtext ml-12">
             Step {step + 1} of {STEPS.length}
           </p>
         </div>
@@ -467,12 +467,12 @@ function NewOnboardRequestPage() {
         {step === 0 && (
           <div className="space-y-4">
             <div className="space-y-1">
-              <label className="label">Business Name</label>
+              <label className="label">Location Name</label>
               <input
                 className="input"
                 value={form.businessName}
                 onChange={(e) => updateField("businessName", e.target.value)}
-                placeholder="Enter business name"
+                placeholder="Enter location name"
               />
             </div>
 
@@ -753,7 +753,7 @@ function NewOnboardRequestPage() {
         {/* Step 3: PEP Declaration */}
         {step === 2 && (
           <div className="space-y-6">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-subtext">
               Politically Exposed Person (PEP) Declaration
             </p>
 
@@ -878,8 +878,8 @@ function NewOnboardRequestPage() {
         {/* Step 4: Photos */}
         {step === 3 && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Upload up to 5 photos of the business premises.
+            <p className="text-sm text-subtext">
+              Upload up to 5 photos of the location premises.
             </p>
 
             {form.imageUrls.length > 0 && (
@@ -906,7 +906,7 @@ function NewOnboardRequestPage() {
 
             {form.imageUrls.length < 5 && (
               <UploadField
-                label="Business Photo"
+                label="Location Photo"
                 accept={IMAGE_ACCEPT}
                 uploading={uploading.photos}
                 onSelect={handleImageUpload}
@@ -922,27 +922,27 @@ function NewOnboardRequestPage() {
             <div className="card-flat p-4 space-y-3">
               <h3 className="text-sm font-semibold">Company Details</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Business Name</span>
+                <span className="text-subtext">Location Name</span>
                 <span>{form.businessName || "—"}</span>
-                <span className="text-gray-500 dark:text-gray-400">Region</span>
+                <span className="text-subtext">Region</span>
                 <span>{ghanaLocations[form.regionCode]?.name ?? (form.regionCode || "—")}</span>
                 {form.regionCode === GREATER_ACCRA_REGION_CODE && form.sbuCode && (
                   <>
-                    <span className="text-gray-500 dark:text-gray-400">SBU</span>
+                    <span className="text-subtext">SBU</span>
                     <span>{GREATER_ACCRA_SBUS.find((s) => s.code === form.sbuCode)?.name || form.sbuCode}</span>
                   </>
                 )}
-                <span className="text-gray-500 dark:text-gray-400">Business Type</span>
+                <span className="text-subtext">Business Type</span>
                 <span>
                   {form.businessType === "Other"
                     ? form.businessTypeOther || "Other"
                     : form.businessType || "—"}
                 </span>
-                <span className="text-gray-500 dark:text-gray-400">Registration No.</span>
+                <span className="text-subtext">Registration No.</span>
                 <span>{form.registrationCertNo || "—"}</span>
-                <span className="text-gray-500 dark:text-gray-400">TIN</span>
+                <span className="text-subtext">TIN</span>
                 <span>{form.tinNumber || "—"}</span>
-                <span className="text-gray-500 dark:text-gray-400">Company Phone</span>
+                <span className="text-subtext">Company Phone</span>
                 <span>{form.companyPhone || "—"}</span>
               </div>
             </div>
@@ -950,13 +950,13 @@ function NewOnboardRequestPage() {
             <div className="card-flat p-4 space-y-3">
               <h3 className="text-sm font-semibold">Authorized Signatory</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Name</span>
+                <span className="text-subtext">Name</span>
                 <span>{form.authorizedSignatory.name || "—"}</span>
-                <span className="text-gray-500 dark:text-gray-400">Designation</span>
+                <span className="text-subtext">Designation</span>
                 <span>{form.authorizedSignatory.designation || "—"}</span>
-                <span className="text-gray-500 dark:text-gray-400">Phone</span>
+                <span className="text-subtext">Phone</span>
                 <span>{form.authorizedSignatory.phone || "—"}</span>
-                <span className="text-gray-500 dark:text-gray-400">Email</span>
+                <span className="text-subtext">Email</span>
                 <span>{form.authorizedSignatory.email || "—"}</span>
               </div>
             </div>
@@ -964,27 +964,27 @@ function NewOnboardRequestPage() {
             <div className="card-flat p-4 space-y-3">
               <h3 className="text-sm font-semibold">PEP Declaration</h3>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                <span className="text-gray-500 dark:text-gray-400">Q1: Is PEP</span>
+                <span className="text-subtext">Q1: Is PEP</span>
                 <span>{form.pepDeclaration.q1 || "—"}</span>
-                <span className="text-gray-500 dark:text-gray-400">Q2: Held public position</span>
+                <span className="text-subtext">Q2: Held public position</span>
                 <span>{form.pepDeclaration.q2 || "—"}</span>
                 {form.pepDeclaration.q2 === "Yes" && (
                   <>
-                    <span className="text-gray-500 dark:text-gray-400">Q2: Timeframe</span>
+                    <span className="text-subtext">Q2: Timeframe</span>
                     <span>{form.pepDeclaration.q2Timeframe || "—"}</span>
                   </>
                 )}
-                <span className="text-gray-500 dark:text-gray-400">Q3: Related to PEP</span>
+                <span className="text-subtext">Q3: Related to PEP</span>
                 <span>{form.pepDeclaration.q3 || "—"}</span>
                 {form.pepDeclaration.q3 === "Yes" && (
                   <>
-                    <span className="text-gray-500 dark:text-gray-400">Q3: PEP Name</span>
+                    <span className="text-subtext">Q3: PEP Name</span>
                     <span>{form.pepDeclaration.q3Name || "—"}</span>
-                    <span className="text-gray-500 dark:text-gray-400">Q3: Position</span>
+                    <span className="text-subtext">Q3: Position</span>
                     <span>{form.pepDeclaration.q3Position || "—"}</span>
-                    <span className="text-gray-500 dark:text-gray-400">Q3: Year</span>
+                    <span className="text-subtext">Q3: Year</span>
                     <span>{form.pepDeclaration.q3Year || "—"}</span>
-                    <span className="text-gray-500 dark:text-gray-400">Q3: Relationship</span>
+                    <span className="text-subtext">Q3: Relationship</span>
                     <span>{form.pepDeclaration.q3Relationship || "—"}</span>
                   </>
                 )}

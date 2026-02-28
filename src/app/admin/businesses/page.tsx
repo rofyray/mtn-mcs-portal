@@ -51,7 +51,7 @@ export default function AdminBusinessesPage() {
 
     const response = await fetch(`/api/admin/businesses?status=${selectedStatus}`);
     if (!response.ok) {
-      setError("Unable to load businesses.");
+      setError("Unable to load locations.");
       setLoading(false);
       return;
     }
@@ -64,7 +64,7 @@ export default function AdminBusinessesPage() {
 
   async function handleApprove(id: string) {
     const confirmed = await confirm({
-      title: "Approve business?",
+      title: "Approve location?",
       description: "This will mark the submission as approved.",
       confirmLabel: "Approve",
       confirmVariant: "primary",
@@ -84,7 +84,7 @@ export default function AdminBusinessesPage() {
 
   async function handleDeny(id: string) {
     const confirmed = await confirm({
-      title: "Deny business?",
+      title: "Deny location?",
       description: "Provide a reason for denying this submission.",
       confirmLabel: "Deny",
       confirmVariant: "danger",
@@ -217,7 +217,7 @@ export default function AdminBusinessesPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold">Location Submissions</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Review and approve new locations.</p>
+            <p className="text-sm text-subtext">Review and approve new locations.</p>
           </div>
         </div>
         {loading ? <span className="panel-spinner" aria-label="Loading" /> : null}
@@ -313,8 +313,9 @@ export default function AdminBusinessesPage() {
           </div>
         </div>
 
+        <p className="text-xs text-subtext">Showing {filteredBusinesses.length} locations</p>
+
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        
 
         {filteredBusinesses.length === 0 ? (
           <div className="card">
@@ -347,7 +348,7 @@ export default function AdminBusinessesPage() {
           <div className="submission-list submission-list-businesses">
             <div className="submission-list-header">
               <span>Status</span>
-              <span>Business Name</span>
+              <span>Location Name</span>
               <span>City</span>
               <span>Region</span>
               <span>District</span>
@@ -370,7 +371,7 @@ export default function AdminBusinessesPage() {
                     {business.status}
                   </span>
                 </span>
-                <span className="submission-list-cell" data-label="Business Name">
+                <span className="submission-list-cell" data-label="Location Name">
                   {business.businessName}
                 </span>
                 <span className="submission-list-cell submission-list-cell-muted" data-label="City">
@@ -439,7 +440,7 @@ export default function AdminBusinessesPage() {
                         {getRegionName(business.addressRegionCode) ?? "Region"} ·{" "}
                         {getDistrictName(business.addressRegionCode, business.addressDistrictCode) ?? "District"}
                       </p>
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                      <p className="text-[11px] text-subtext">
                         Codes: {business.addressRegionCode} · {business.addressDistrictCode}
                       </p>
                     </>

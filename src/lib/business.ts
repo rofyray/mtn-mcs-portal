@@ -19,7 +19,7 @@ const optionalImei = z.preprocess(
 );
 
 export const businessSchema = z.object({
-  businessName: z.string().trim().min(1, "Business name is required"),
+  businessName: z.string().trim().min(1, "Location name is required"),
   addressRegionCode: z.string().trim().min(1, "Region is required"),
   addressSbuCode: optionalString,
   addressDistrictCode: z.string().trim().min(1, "District is required"),

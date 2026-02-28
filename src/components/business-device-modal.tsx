@@ -97,7 +97,7 @@ export default function BusinessDeviceModal({
         <div className="modal-header">
           <div>
             <h2 className="text-lg font-semibold">Device Details</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{businessName}</p>
+            <p className="text-sm text-subtext">{businessName}</p>
           </div>
           <button
             className="modal-close"

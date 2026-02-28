@@ -133,7 +133,7 @@ export default function RegionDrilldownPanel({
             <input
               type="text"
               className="input"
-              placeholder="Search partners, businesses, agents..."
+              placeholder="Search partners, locations, agents..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -158,7 +158,7 @@ export default function RegionDrilldownPanel({
               <svg viewBox="0 0 24 24" {...iconProps} width={48} height={48}>
                 <path d="M3 11h18M5 11V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4M4 11v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9" />
               </svg>
-              <p>No businesses found</p>
+              <p>No locations found</p>
             </div>
           ) : (
             <div className="drilldown-list">

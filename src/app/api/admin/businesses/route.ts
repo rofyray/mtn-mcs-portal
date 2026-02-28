@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     where.status = status;
   }
 
-  if (admin.role !== "FULL") {
+  if (admin.role !== "FULL" && admin.role !== "MANAGER") {
     const sbuAssignments = admin.regions.filter((r) => r.sbuCode);
     const sbuRegionCodes = sbuAssignments.map((s) => s.regionCode);
     const nonSbuRegions = regionCodes.filter((rc) => !sbuRegionCodes.includes(rc));

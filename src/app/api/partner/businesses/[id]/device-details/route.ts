@@ -47,7 +47,7 @@ export async function POST(
   });
 
   if (!business) {
-    return NextResponse.json({ error: "Business not found" }, { status: 404 });
+    return NextResponse.json({ error: "Location not found" }, { status: 404 });
   }
 
   const data: Record<string, string> = {};

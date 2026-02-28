@@ -166,7 +166,7 @@ export default function AdminLoginPage() {
         <div className="relative z-10 w-full max-w-md space-y-6 glass-panel p-6 page-animate pointer-events-auto">
           <div>
           <h1 className="text-2xl font-semibold">Admin Login</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Select your name to receive an OTP.</p>
+          <p className="text-sm text-subtext">Select your name to receive an OTP.</p>
         </div>
 
         <div className="space-y-4">

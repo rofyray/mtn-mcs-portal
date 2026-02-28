@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: formatZodError(parsed.error) }, { status: 400 });
   }
 
-  // Validate that the business belongs to this partner
+  // Validate that the location belongs to this partner
   const business = await prisma.business.findFirst({
     where: {
       id: parsed.data.businessId,
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
   });
 
   if (!business) {
-    return NextResponse.json({ error: "Invalid business" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid location" }, { status: 400 });
   }
 
   const { cpAppNumber, agentUsername, minervaReferralCode, ...agentData } = parsed.data;

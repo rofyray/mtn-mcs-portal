@@ -191,7 +191,7 @@ export default function AdminPaySlipsPage() {
       <main className="min-h-screen px-6 py-10">
         <div className="mx-auto w-full max-w-5xl glass-panel p-6 page-animate">
           <h1 className="text-2xl font-semibold">Pay Slips</h1>
-          <p className="mt-2 text-sm text-gray-500">Loading...</p>
+          <p className="mt-2 text-sm text-subtext">Loading...</p>
         </div>
       </main>
     );
@@ -202,7 +202,7 @@ export default function AdminPaySlipsPage() {
       <div className="mx-auto w-full max-w-5xl space-y-6 glass-panel p-6 page-animate">
         <div>
           <h1 className="text-2xl font-semibold">Pay Slips</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-subtext">
             Browse partner payment slip uploads.
           </p>
         </div>
@@ -269,7 +269,7 @@ export default function AdminPaySlipsPage() {
                     <span className="text-gray-400">{folderIcon}</span>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium truncate">{partner.name}</p>
-                      <p className="text-xs text-gray-500">{partner.count} slip{partner.count !== 1 ? "s" : ""}</p>
+                      <p className="text-xs text-subtext">{partner.count} slip{partner.count !== 1 ? "s" : ""}</p>
                     </div>
                   </button>
                 ))}
@@ -294,7 +294,7 @@ export default function AdminPaySlipsPage() {
                   <span className="text-gray-400">{folderIcon}</span>
                   <div>
                     <p className="text-sm font-medium">{yg.year}</p>
-                    <p className="text-xs text-gray-500">{yg.count} slip{yg.count !== 1 ? "s" : ""}</p>
+                    <p className="text-xs text-subtext">{yg.count} slip{yg.count !== 1 ? "s" : ""}</p>
                   </div>
                 </button>
               ))}
@@ -318,7 +318,7 @@ export default function AdminPaySlipsPage() {
                   <span className="text-gray-400">{folderIcon}</span>
                   <div>
                     <p className="text-sm font-medium">{mg.label}</p>
-                    <p className="text-xs text-gray-500">{mg.count} slip{mg.count !== 1 ? "s" : ""}</p>
+                    <p className="text-xs text-subtext">{mg.count} slip{mg.count !== 1 ? "s" : ""}</p>
                   </div>
                 </button>
               ))}
@@ -346,7 +346,7 @@ export default function AdminPaySlipsPage() {
                     className="w-full h-32 object-cover rounded"
                   />
                   <p className="text-xs font-medium truncate">{slip.displayFilename}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-subtext">
                     {formatGhanaDate(slip.createdAt, { includeTime: false })}
                   </p>
                 </button>

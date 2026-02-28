@@ -455,7 +455,7 @@ export default function AdminPartnerDetailPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold">Partner Details</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Review and edit onboarding info.</p>
+            <p className="text-sm text-subtext">Review and edit onboarding info.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button

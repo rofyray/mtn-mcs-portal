@@ -66,7 +66,7 @@ export default function AdminRequestsPage() {
       <div className="mx-auto w-full max-w-4xl space-y-6 glass-panel p-6">
         <div>
           <h1 className="text-2xl font-semibold">Partner Requests</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Restock and training requests from partners.</p>
+          <p className="text-sm text-subtext">Restock and training requests from partners.</p>
         </div>
 
         <div className="space-y-3">

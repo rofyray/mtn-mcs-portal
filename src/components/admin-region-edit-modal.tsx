@@ -109,7 +109,7 @@ export default function AdminRegionEditModal({
         <div className="modal-header">
           <div>
             <h2 className="text-lg font-semibold">Edit Regions</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-subtext">
               {admin.name} &bull; {admin.email}
             </p>
           </div>
@@ -125,7 +125,7 @@ export default function AdminRegionEditModal({
         </div>
 
         <div className="modal-body">
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-sm text-subtext mb-4">
             Select the regions this admin can manage.
           </p>
           <MultiSelectDropdown
@@ -157,7 +157,7 @@ export default function AdminRegionEditModal({
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-subtext">
                 Assign a specific sub-business unit within Greater Accra.
               </p>
             </div>

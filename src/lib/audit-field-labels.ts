@@ -4,7 +4,7 @@
 
 const FIELD_LABELS: Record<string, string> = {
   // Partner profile fields
-  businessName: "Business Name",
+  businessName: "Location Name",
   partnerFirstName: "First Name",
   partnerSurname: "Surname",
   phoneNumber: "Phone Number",
@@ -26,7 +26,7 @@ const FIELD_LABELS: Record<string, string> = {
   agentUsername: "Agent Username",
   minervaReferralCode: "Minerva Referral Code",
 
-  // Business / location fields
+  // Location fields
   addressRegionCode: "Region",
   addressSbuCode: "SBU",
   addressDistrictCode: "District",

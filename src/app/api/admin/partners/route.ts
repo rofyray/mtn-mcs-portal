@@ -39,6 +39,7 @@ export async function GET(request: Request) {
       deniedAt: true,
       denialReason: true,
       createdAt: true,
+      regionCode: true,
       updatedAt: true,
       user: {
         select: {

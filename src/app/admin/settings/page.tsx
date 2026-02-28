@@ -17,7 +17,7 @@ export default async function AdminSettingsPage() {
       <div className="mx-auto w-full max-w-4xl space-y-6 glass-panel p-6 page-animate">
         <div>
           <h1 className="text-2xl font-semibold">Settings</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Admin preferences and permissions.</p>
+          <p className="text-sm text-subtext">Admin preferences and permissions.</p>
         </div>
 
         {adminRole === "FULL" || adminRole === "MANAGER" ? (

@@ -105,7 +105,7 @@ export default function AgentCredentialsModal({
         <div className="modal-header">
           <div>
             <h2 className="text-lg font-semibold">Agent Credentials</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{agentName}</p>
+            <p className="text-sm text-subtext">{agentName}</p>
           </div>
           <button
             className="modal-close"

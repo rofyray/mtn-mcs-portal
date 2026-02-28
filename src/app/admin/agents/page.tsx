@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 
 import EmptyState from "@/components/empty-state";
 import { AdminAgentsEmptyIcon } from "@/components/admin-empty-icons";
+import MultiSelectDropdown from "@/components/multi-select-dropdown";
 import { useToast } from "@/components/toast";
 import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
+import { ghanaLocations } from "@/lib/ghana-locations";
 import ViewModeToggle from "@/components/view-mode-toggle";
 import { useViewMode } from "@/hooks/use-view-mode";
 
@@ -14,6 +16,7 @@ type Business = {
   businessName: string;
   city: string;
   addressCode: string;
+  addressRegionCode: string;
 };
 
 type Agent = {
@@ -40,6 +43,7 @@ export default function AdminAgentsPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBusiness, setSelectedBusiness] = useState("");
+  const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [adminRole, setAdminRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -132,19 +136,30 @@ export default function AdminAgentsPage() {
     ).sort();
   }, [agents]);
 
+  const regionOptions = useMemo(() => {
+    return Object.values(ghanaLocations)
+      .map((region) => ({
+        value: region.code,
+        label: region.name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, []);
+
   const filteredAgents = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLowerCase();
-    if (!normalizedSearch) {
-      return agents.filter((agent) => {
-        if (!selectedBusiness) {
-          return true;
-        }
-        return agent.businessName === selectedBusiness;
-      });
-    }
     return agents.filter((agent) => {
       if (selectedBusiness && agent.businessName !== selectedBusiness) {
         return false;
+      }
+      if (
+        selectedRegions.length > 0 &&
+        (!agent.business?.addressRegionCode ||
+          !selectedRegions.includes(agent.business.addressRegionCode))
+      ) {
+        return false;
+      }
+      if (!normalizedSearch) {
+        return true;
       }
       const fullName = `${agent.firstName} ${agent.surname}`.toLowerCase();
       return (
@@ -153,7 +168,7 @@ export default function AdminAgentsPage() {
         agent.phoneNumber.toLowerCase().includes(normalizedSearch)
       );
     });
-  }, [agents, searchQuery, selectedBusiness]);
+  }, [agents, searchQuery, selectedBusiness, selectedRegions]);
 
   return (
     <main className="min-h-screen px-6 py-10">
@@ -161,12 +176,12 @@ export default function AdminAgentsPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold">Agent Submissions</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Review and approve agent requests.</p>
+            <p className="text-sm text-subtext">Review and approve agent requests.</p>
           </div>
         </div>
         {loading ? <span className="panel-spinner" aria-label="Loading" /> : null}
-        <div className="admin-filter-bar">
-          <div className="admin-filter-field">
+        <div className="admin-filter-bar admin-filter-grid">
+          <div className="admin-filter-field admin-filter-span-2">
             <label className="label" htmlFor="agent-search">
               Search
             </label>
@@ -214,10 +229,22 @@ export default function AdminAgentsPage() {
               ))}
             </select>
           </div>
-          <div className="admin-filter-field" style={{ flex: "0 0 auto" }}>
+          <div className="admin-filter-field">
+            <label className="label">Regions</label>
+            <MultiSelectDropdown
+              label="Regions"
+              placeholder="All regions"
+              options={regionOptions}
+              selectedValues={selectedRegions}
+              onChange={setSelectedRegions}
+            />
+          </div>
+          <div style={{ display: "flex", alignItems: "flex-end", marginLeft: "auto" }}>
             <ViewModeToggle />
           </div>
         </div>
+
+        <p className="text-xs text-subtext">Showing {filteredAgents.length} agents</p>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
         
@@ -227,14 +254,14 @@ export default function AdminAgentsPage() {
             <EmptyState
               icon={<AdminAgentsEmptyIcon />}
               title={
-                searchQuery.trim() || selectedBusiness
+                searchQuery.trim() || selectedBusiness || selectedRegions.length > 0
                   ? `No ${statusLabelLower} agents match those filters`
                   : status === "SUBMITTED"
                     ? "No agents submitted yet"
                     : `No ${statusLabelLower} agents yet`
               }
               description={
-                searchQuery.trim() || selectedBusiness
+                searchQuery.trim() || selectedBusiness || selectedRegions.length > 0
                   ? "Try adjusting the search, status, or location filter."
                   : status === "SUBMITTED"
                     ? "Agent onboarding requests will appear here."
@@ -334,10 +361,10 @@ export default function AdminAgentsPage() {
                   <p className="text-lg font-semibold">
                     {agent.firstName} {agent.surname}
                   </p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">{agent.phoneNumber}</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">{agent.email}</p>
+                  <p className="text-xs text-subtext">{agent.phoneNumber}</p>
+                  <p className="text-xs text-subtext">{agent.email}</p>
                   {agent.business ? (
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                    <p className="text-xs text-subtext">
                       Location: {agent.business.city} ({agent.business.addressCode})
                     </p>
                   ) : null}

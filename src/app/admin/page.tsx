@@ -57,7 +57,7 @@ export default async function AdminHomePage() {
                 </svg>
               </div>
               <h3 className="text-sm font-semibold">Requests</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-subtext">
                 View and respond to partner training and restock requests.
               </p>
             </Link>
@@ -69,7 +69,7 @@ export default async function AdminHomePage() {
                 </svg>
               </div>
               <h3 className="text-sm font-semibold">Audit Logs</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-subtext">
                 Track admin actions and compliance signals across the platform.
               </p>
             </Link>
@@ -82,7 +82,7 @@ export default async function AdminHomePage() {
                 </svg>
               </div>
               <h3 className="text-sm font-semibold">Reports</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-subtext">
                 Generate and download CSV exports of platform data.
               </p>
             </Link>
@@ -95,7 +95,7 @@ export default async function AdminHomePage() {
                 </svg>
               </div>
               <h3 className="text-sm font-semibold">Onboard Requests</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-xs text-subtext">
                 Review and process partner onboarding request forms.
               </p>
             </Link>

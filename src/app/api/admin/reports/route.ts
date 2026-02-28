@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
 
         headers = [
           "First Name", "Surname", "Phone", "Email", "CP App #",
-          "Agent Username", "Minerva Code", "Ghana Card #", "Business Name",
+          "Agent Username", "Minerva Code", "Ghana Card #", "Location Name",
           "Region", "City", "Partner", "Status", "Submitted", "Approved", "Denied",
         ];
         rows = agents.map((a) => [
@@ -192,7 +192,7 @@ export async function GET(request: NextRequest) {
         });
 
         headers = [
-          "Business Name", "Region", "District", "City", "Landmark",
+          "Location Name", "Region", "District", "City", "Landmark",
           "Latitude", "Longitude", "APN", "MiFi IMEI", "Partner", "Status", "Submitted", "Approved", "Denied",
         ];
         rows = locations.map((b) => [
@@ -238,7 +238,7 @@ export async function GET(request: NextRequest) {
           orderBy: { createdAt: "desc" },
         });
 
-        headers = ["Business Name", "Latitude", "Longitude"];
+        headers = ["Location Name", "Latitude", "Longitude"];
         rows = coords.map((b) => [
           b.businessName,
           b.gpsLatitude ?? "",
@@ -316,7 +316,7 @@ export async function GET(request: NextRequest) {
           orderBy: { createdAt: "desc" },
         });
 
-        headers = ["Partner", "Business", "City", "Items", "Message", "Status", "Created"];
+        headers = ["Partner", "Location", "City", "Items", "Message", "Status", "Created"];
         rows = restocks.map((r) => [
           [r.partnerProfile.partnerFirstName, r.partnerProfile.partnerSurname].filter(Boolean).join(" "),
           r.business.businessName,

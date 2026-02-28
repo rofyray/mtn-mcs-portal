@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import EmptyState from "@/components/empty-state";
 import { AdminPartnersEmptyIcon } from "@/components/admin-empty-icons";
+import MultiSelectDropdown from "@/components/multi-select-dropdown";
 import { useToast } from "@/components/toast";
 import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
+import { ghanaLocations } from "@/lib/ghana-locations";
 import ViewModeToggle from "@/components/view-mode-toggle";
 import { useViewMode } from "@/hooks/use-view-mode";
 
@@ -16,6 +18,7 @@ type PartnerProfile = {
   partnerFirstName: string | null;
   partnerSurname: string | null;
   phoneNumber: string | null;
+  regionCode: string | null;
   submittedAt: string | null;
   updatedAt: string;
   user: { id: string; name: string | null; email: string | null };
@@ -32,6 +35,7 @@ const statusOptions = [
 export default function AdminPartnersPage() {
   const [status, setStatus] = useState("SUBMITTED");
   const [partners, setPartners] = useState<PartnerProfile[]>([]);
+  const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
   const [adminRole, setAdminRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -114,17 +118,35 @@ export default function AdminPartnersPage() {
     loadPartners(status);
   }, [status]);
 
+  const regionOptions = useMemo(() => {
+    return Object.values(ghanaLocations)
+      .map((region) => ({
+        value: region.code,
+        label: region.name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, []);
+
+  const filteredPartners = useMemo(() => {
+    if (selectedRegions.length === 0) {
+      return partners;
+    }
+    return partners.filter(
+      (partner) => partner.regionCode && selectedRegions.includes(partner.regionCode)
+    );
+  }, [partners, selectedRegions]);
+
   return (
     <main className="min-h-screen px-6 py-10">
       <div className="mx-auto w-full max-w-5xl space-y-6 glass-panel p-6 page-animate panel-loading">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold">Partner Submissions</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Review and manage onboarding submissions.</p>
+            <p className="text-sm text-subtext">Review and manage onboarding submissions.</p>
           </div>
         </div>
         {loading ? <span className="panel-spinner" aria-label="Loading" /> : null}
-        <div className="admin-filter-bar">
+        <div className="admin-filter-bar admin-filter-grid">
           <div className="admin-filter-field">
             <label className="label" htmlFor="partner-status">
               Status
@@ -142,28 +164,44 @@ export default function AdminPartnersPage() {
               ))}
             </select>
           </div>
-          <div className="admin-filter-field" style={{ flex: "0 0 auto" }}>
+          <div className="admin-filter-field">
+            <label className="label">Regions</label>
+            <MultiSelectDropdown
+              label="Regions"
+              placeholder="All regions"
+              options={regionOptions}
+              selectedValues={selectedRegions}
+              onChange={setSelectedRegions}
+            />
+          </div>
+          <div style={{ display: "flex", alignItems: "flex-end", marginLeft: "auto" }}>
             <ViewModeToggle />
           </div>
         </div>
 
+        <p className="text-xs text-subtext">Showing {filteredPartners.length} partners</p>
+
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
-        {partners.length === 0 ? (
+        {filteredPartners.length === 0 ? (
           <div className="card">
             <EmptyState
               icon={<AdminPartnersEmptyIcon />}
               title={
-                status === "SUBMITTED"
-                  ? "No partner submissions yet"
-                  : `No ${statusLabelLower} partners yet`
+                selectedRegions.length > 0
+                  ? `No ${statusLabelLower} partners match those filters`
+                  : status === "SUBMITTED"
+                    ? "No partner submissions yet"
+                    : `No ${statusLabelLower} partners yet`
               }
               description={
-                status === "SUBMITTED"
-                  ? "New partner onboarding requests will show here."
-                  : status === "DRAFT"
-                    ? "Once partners start drafts, they'll appear here."
-                    : `Once partners are ${statusLabelLower}, they'll appear here.`
+                selectedRegions.length > 0
+                  ? "Try adjusting the status or region filter."
+                  : status === "SUBMITTED"
+                    ? "New partner onboarding requests will show here."
+                    : status === "DRAFT"
+                      ? "Once partners start drafts, they'll appear here."
+                      : `Once partners are ${statusLabelLower}, they'll appear here.`
               }
               variant="inset"
             />
@@ -177,7 +215,7 @@ export default function AdminPartnersPage() {
               <span>Phone</span>
               <span>Actions</span>
             </div>
-            {partners.map((partner) => (
+            {filteredPartners.map((partner) => (
               <div key={partner.id} className="submission-list-row">
                 <span className="submission-list-cell" data-label="Status">
                   <span
@@ -241,7 +279,7 @@ export default function AdminPartnersPage() {
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-3 justify-items-start stagger">
-            {partners.map((partner) => (
+            {filteredPartners.map((partner) => (
               <div key={partner.id} className="card grid-card space-y-3">
                 <div className="space-y-1">
                   <span
@@ -263,7 +301,7 @@ export default function AdminPartnersPage() {
                   <p className="text-sm">
                     {partner.partnerFirstName} {partner.partnerSurname}
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{partner.phoneNumber}</p>
+                  <p className="text-sm text-subtext">{partner.phoneNumber}</p>
                 </div>
 
                 {adminRole ? (

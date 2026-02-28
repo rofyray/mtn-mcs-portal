@@ -120,7 +120,7 @@ export default function GhanaMap({
             </div>
             <div className="map-tooltip-stat">
               <span className="map-tooltip-stat-value">{hoveredStat.businessCount}</span>
-              <span className="map-tooltip-stat-label">Businesses</span>
+              <span className="map-tooltip-stat-label">Locations</span>
             </div>
             <div className="map-tooltip-stat">
               <span className="map-tooltip-stat-value">{hoveredStat.agentCount}</span>

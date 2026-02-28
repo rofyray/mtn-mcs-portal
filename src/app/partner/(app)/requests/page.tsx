@@ -121,8 +121,8 @@ export default function PartnerRequestsPage() {
     setStatus(null);
 
     if (!selectedBusinessId) {
-      setError("Please select a business location.");
-      notify({ title: "Restock request failed", message: "Please select a business location.", kind: "error" });
+      setError("Please select a location.");
+      notify({ title: "Restock request failed", message: "Please select a location.", kind: "error" });
       return;
     }
 
@@ -175,7 +175,7 @@ export default function PartnerRequestsPage() {
       <div className="mx-auto w-full max-w-5xl space-y-10 glass-panel p-6 page-animate">
         <div>
           <h1 className="text-2xl font-semibold">Requests</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Send operational requests to the MTN admin team.</p>
+          <p className="text-sm text-subtext">Send operational requests to the MTN admin team.</p>
         </div>
 
         <section className="card space-y-4">
@@ -223,7 +223,7 @@ export default function PartnerRequestsPage() {
 
         <section className="card space-y-4">
           <h2 className="text-lg font-semibold">Restock request</h2>
-          <p className="text-sm text-subtext">Request inventory for a business location.</p>
+          <p className="text-sm text-subtext">Request inventory for a location.</p>
           {businesses.length === 0 ? (
             <EmptyState
               icon={
@@ -231,19 +231,19 @@ export default function PartnerRequestsPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" />
                 </svg>
               }
-              title="No approved businesses"
-              description="You need at least one approved business to request restocking."
+              title="No approved locations"
+              description="You need at least one approved location to request restocking."
             />
           ) : (
             <>
               <div className="space-y-1">
-                <label className="form-label">Business Location</label>
+                <label className="form-label">Location</label>
                 <select
                   className="input"
                   value={selectedBusinessId}
                   onChange={(event) => setSelectedBusinessId(event.target.value)}
                 >
-                  <option value="">Select a business</option>
+                  <option value="">Select a location</option>
                   {businesses.map((business) => (
                     <option key={business.id} value={business.id}>
                       {business.businessName} ({business.city})
