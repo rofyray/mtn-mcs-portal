@@ -5,8 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import EmptyState from "@/components/empty-state";
 import { AdminPartnersEmptyIcon } from "@/components/admin-empty-icons";
 import MultiSelectDropdown from "@/components/multi-select-dropdown";
-import { useToast } from "@/components/toast";
-import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import { ghanaLocations } from "@/lib/ghana-locations";
 import ViewModeToggle from "@/components/view-mode-toggle";
 import { useViewMode } from "@/hooks/use-view-mode";
@@ -39,8 +37,6 @@ export default function AdminPartnersPage() {
   const [adminRole, setAdminRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { notify } = useToast();
-  const { confirm, confirmDialog, getInputValue } = useConfirmDialog();
   const viewMode = useViewMode();
   const statusLabel = statusOptions.find((option) => option.value === status)?.label ?? status;
   const statusLabelLower = statusLabel.toLowerCase();
@@ -60,57 +56,6 @@ export default function AdminPartnersPage() {
     setPartners(data.partners ?? []);
     setAdminRole(data.adminRole ?? null);
     setLoading(false);
-  }
-
-  async function handleApprove(id: string) {
-    const confirmed = await confirm({
-      title: "Approve partner?",
-      description: "This will mark the submission as approved.",
-      confirmLabel: "Approve",
-      confirmVariant: "primary",
-    });
-    if (!confirmed) {
-      return;
-    }
-    const response = await fetch(`/api/admin/partners/${id}/approve`, { method: "POST" });
-    if (!response.ok) {
-      setError("Unable to approve partner.");
-      notify({ title: "Approval failed", message: "Unable to approve partner.", kind: "error" });
-      return;
-    }
-    notify({ title: "Partner approved", message: "Partner status updated.", kind: "success" });
-    loadPartners(status);
-  }
-
-  async function handleDeny(id: string) {
-    const confirmed = await confirm({
-      title: "Deny partner?",
-      description: "Provide a reason for denying this submission.",
-      confirmLabel: "Deny",
-      confirmVariant: "danger",
-      inputLabel: "Reason for denial",
-      inputPlaceholder: "Add a brief reason",
-      inputRequired: true,
-    });
-    if (!confirmed) {
-      return;
-    }
-    const reason = getInputValue().trim();
-    if (!reason) {
-      return;
-    }
-    const response = await fetch(`/api/admin/partners/${id}/deny`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reason }),
-    });
-    if (!response.ok) {
-      setError("Unable to deny partner.");
-      notify({ title: "Denial failed", message: "Unable to deny partner.", kind: "error" });
-      return;
-    }
-    notify({ title: "Partner denied", message: "Partner status updated.", kind: "warning" });
-    loadPartners(status);
   }
 
   useEffect(() => {
@@ -248,29 +193,9 @@ export default function AdminPartnersPage() {
                         View details
                       </a>
                     ) : (
-                      <>
-                        <a className="btn btn-secondary" href={`/admin/partners/${partner.id}`}>
-                          View & edit
-                        </a>
-                        {partner.status === "SUBMITTED" ? (
-                          <>
-                            <button
-                              className="btn btn-primary"
-                              type="button"
-                              onClick={() => handleApprove(partner.id)}
-                            >
-                              Approve
-                            </button>
-                            <button
-                              className="btn btn-danger-light"
-                              type="button"
-                              onClick={() => handleDeny(partner.id)}
-                            >
-                              Deny
-                            </button>
-                          </>
-                        ) : null}
-                      </>
+                      <a className="btn btn-secondary" href={`/admin/partners/${partner.id}`}>
+                        View & edit
+                      </a>
                     )
                   ) : null}
                 </div>
@@ -312,29 +237,9 @@ export default function AdminPartnersPage() {
                       </a>
                     </div>
                   ) : (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <a className="btn btn-secondary" href={`/admin/partners/${partner.id}`}>
-                        View & edit
-                      </a>
-                      {partner.status === "SUBMITTED" ? (
-                        <>
-                          <button
-                            className="btn btn-primary"
-                            type="button"
-                            onClick={() => handleApprove(partner.id)}
-                          >
-                            Approve
-                          </button>
-                          <button
-                            className="btn btn-danger-light"
-                            type="button"
-                            onClick={() => handleDeny(partner.id)}
-                          >
-                            Deny
-                          </button>
-                        </>
-                      ) : null}
-                    </div>
+                    <a className="btn btn-secondary" href={`/admin/partners/${partner.id}`}>
+                      View & edit
+                    </a>
                   )
                 ) : null}
               </div>
@@ -342,7 +247,6 @@ export default function AdminPartnersPage() {
           </div>
         )}
       </div>
-      {confirmDialog}
     </main>
   );
 }

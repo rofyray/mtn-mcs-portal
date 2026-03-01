@@ -35,7 +35,7 @@ export async function getAdminAndAgent(agentId: string) {
     return { error: "not_found" as const };
   }
 
-  if (adminContext.admin.role !== "FULL") {
+  if (adminContext.admin.role !== "FULL" && adminContext.admin.role !== "MANAGER") {
     if (!adminContext.regionCodes.includes(agent.business.addressRegionCode)) {
       return { error: "forbidden" as const };
     }
@@ -65,7 +65,7 @@ export async function getAdminAndBusiness(businessId: string) {
     return { error: "not_found" as const };
   }
 
-  if (adminContext.admin.role !== "FULL") {
+  if (adminContext.admin.role !== "FULL" && adminContext.admin.role !== "MANAGER") {
     if (!adminContext.regionCodes.includes(business.addressRegionCode)) {
       return { error: "forbidden" as const };
     }

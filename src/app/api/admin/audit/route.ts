@@ -17,7 +17,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (adminContext.admin.role !== "FULL") {
+  if (adminContext.admin.role !== "FULL" && adminContext.admin.role !== "MANAGER") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

@@ -5,8 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import EmptyState from "@/components/empty-state";
 import { AdminBusinessesEmptyIcon } from "@/components/admin-empty-icons";
 import MultiSelectDropdown from "@/components/multi-select-dropdown";
-import { useToast } from "@/components/toast";
-import { useConfirmDialog } from "@/hooks/use-confirm-dialog";
 import { ghanaLocations, GREATER_ACCRA_SBUS, GREATER_ACCRA_REGION_CODE } from "@/lib/ghana-locations";
 import ViewModeToggle from "@/components/view-mode-toggle";
 import { useViewMode } from "@/hooks/use-view-mode";
@@ -39,8 +37,6 @@ export default function AdminBusinessesPage() {
   const [adminRole, setAdminRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { notify } = useToast();
-  const { confirm, confirmDialog, getInputValue } = useConfirmDialog();
   const viewMode = useViewMode();
   const statusLabel = statusOptions.find((option) => option.value === status)?.label ?? status;
   const statusLabelLower = statusLabel.toLowerCase();
@@ -60,57 +56,6 @@ export default function AdminBusinessesPage() {
     setBusinesses(data.businesses ?? []);
     setAdminRole(data.adminRole ?? null);
     setLoading(false);
-  }
-
-  async function handleApprove(id: string) {
-    const confirmed = await confirm({
-      title: "Approve location?",
-      description: "This will mark the submission as approved.",
-      confirmLabel: "Approve",
-      confirmVariant: "primary",
-    });
-    if (!confirmed) {
-      return;
-    }
-    const response = await fetch(`/api/admin/businesses/${id}/approve`, { method: "POST" });
-    if (!response.ok) {
-      setError("Unable to approve location.");
-      notify({ title: "Approval failed", message: "Unable to approve location.", kind: "error" });
-      return;
-    }
-    notify({ title: "Location approved", message: "Location status updated.", kind: "success" });
-    loadBusinesses(status);
-  }
-
-  async function handleDeny(id: string) {
-    const confirmed = await confirm({
-      title: "Deny location?",
-      description: "Provide a reason for denying this submission.",
-      confirmLabel: "Deny",
-      confirmVariant: "danger",
-      inputLabel: "Reason for denial",
-      inputPlaceholder: "Add a brief reason",
-      inputRequired: true,
-    });
-    if (!confirmed) {
-      return;
-    }
-    const reason = getInputValue().trim();
-    if (!reason) {
-      return;
-    }
-    const response = await fetch(`/api/admin/businesses/${id}/deny`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reason }),
-    });
-    if (!response.ok) {
-      setError("Unable to deny location.");
-      notify({ title: "Denial failed", message: "Unable to deny location.", kind: "error" });
-      return;
-    }
-    notify({ title: "Location denied", message: "Location status updated.", kind: "warning" });
-    loadBusinesses(status);
   }
 
   useEffect(() => {
@@ -390,29 +335,9 @@ export default function AdminBusinessesPage() {
                         View details
                       </a>
                     ) : (
-                      <>
-                        <a className="btn btn-secondary" href={`/admin/businesses/${business.id}`}>
-                          View & edit
-                        </a>
-                        {business.status === "SUBMITTED" ? (
-                          <>
-                            <button
-                              className="btn btn-primary"
-                              type="button"
-                              onClick={() => handleApprove(business.id)}
-                            >
-                              Approve
-                            </button>
-                            <button
-                              className="btn btn-danger-light"
-                              type="button"
-                              onClick={() => handleDeny(business.id)}
-                            >
-                              Deny
-                            </button>
-                          </>
-                        ) : null}
-                      </>
+                      <a className="btn btn-secondary" href={`/admin/businesses/${business.id}`}>
+                        View & edit
+                      </a>
                     )
                   ) : null}
                 </div>
@@ -452,29 +377,9 @@ export default function AdminBusinessesPage() {
                       View details
                     </a>
                   ) : (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <a className="btn btn-secondary" href={`/admin/businesses/${business.id}`}>
-                        View & edit
-                      </a>
-                      {business.status === "SUBMITTED" ? (
-                        <>
-                          <button
-                            className="btn btn-primary"
-                            type="button"
-                            onClick={() => handleApprove(business.id)}
-                          >
-                            Approve
-                          </button>
-                          <button
-                            className="btn btn-danger-light"
-                            type="button"
-                            onClick={() => handleDeny(business.id)}
-                          >
-                            Deny
-                          </button>
-                        </>
-                      ) : null}
-                    </div>
+                    <a className="btn btn-secondary" href={`/admin/businesses/${business.id}`}>
+                      View & edit
+                    </a>
                   )
                 ) : null}
               </div>
@@ -482,7 +387,6 @@ export default function AdminBusinessesPage() {
           </div>
         )}
       </div>
-      {confirmDialog}
     </main>
   );
 }
